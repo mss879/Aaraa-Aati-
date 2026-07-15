@@ -50,7 +50,7 @@ export default function PremiumServices() {
         <div data-reveal className="max-w-2xl mb-16 md:mb-24">
           <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-gold-400/20 bg-gold-400/5 mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-gold-300 animate-pulse" />
-            <span className="text-[0.62rem] tracking-[0.3em] uppercase text-gold-200 font-sans font-light">
+            <span className="text-[0.7rem] tracking-[0.3em] uppercase text-gold-200 font-sans font-medium">
               Exclusive Concierge
             </span>
           </div>
@@ -60,7 +60,7 @@ export default function PremiumServices() {
             <span className="italic text-gold-300 font-serif font-light">for the Connoisseur</span>
           </h2>
           
-          <p className="text-xs md:text-sm text-zinc-400 font-sans font-light leading-relaxed tracking-wide">
+          <p className="text-sm md:text-base text-zinc-300 font-sans leading-relaxed">
             To ensure your acquisitions match the significance of your milestones, Ceylon Gem Maison offers bespoke private assistance that fits seamlessly around your lifestyle.
           </p>
         </div>
@@ -91,7 +91,7 @@ export default function PremiumServices() {
 
                 <div className="space-y-2.5">
                   {/* Service Highlight Tag */}
-                  <span className="text-[0.58rem] tracking-[0.2em] uppercase text-gold-400 font-sans font-medium block">
+                  <span className="text-[0.68rem] tracking-[0.2em] uppercase text-gold-400 font-sans font-medium block">
                     {service.highlight}
                   </span>
                   
@@ -102,14 +102,14 @@ export default function PremiumServices() {
                 </div>
 
                 {/* Service Description */}
-                <p className="text-[0.72rem] md:text-[0.76rem] text-zinc-400 font-sans font-light leading-relaxed tracking-wide max-w-sm">
+                <p className="text-[0.85rem] md:text-sm text-zinc-300 font-sans leading-relaxed max-w-sm">
                   {service.description}
                 </p>
               </div>
 
               {/* Action Link inside Card */}
               <div className="pt-8 border-t border-zinc-900/60 mt-8 flex items-center gap-2 text-gold-300 group-hover:text-white transition-colors cursor-pointer self-start relative z-10">
-                <span className="text-[0.62rem] md:text-[0.68rem] tracking-[0.25em] uppercase font-sans font-semibold">
+                <span className="text-[0.7rem] md:text-[0.72rem] tracking-[0.25em] uppercase font-sans font-semibold">
                   Inquire Now
                 </span>
                 <svg className="w-3.5 h-3.5 transform transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">

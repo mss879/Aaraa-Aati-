@@ -144,7 +144,7 @@ export default function FeaturedProducts() {
               className="carousel-card group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer w-[280px] sm:w-[320px] md:w-[360px] lg:w-[380px] flex-shrink-0 snap-start border border-zinc-900/80 hover:border-zinc-800 transition-colors duration-300"
             >
               {/* Category label */}
-              <span className="text-[0.62rem] tracking-[0.25em] text-zinc-500 uppercase font-sans">
+              <span className="text-[0.7rem] tracking-[0.25em] text-zinc-400 uppercase font-sans font-medium">
                 {product.category}
               </span>
 
@@ -165,7 +165,7 @@ export default function FeaturedProducts() {
 
               {/* Footer row - product name & hover arrow */}
               <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
-                <h4 className="text-sm tracking-wide text-white font-serif font-light transition-colors group-hover:text-gold-300">
+                <h4 className="text-base md:text-lg tracking-wide text-white font-serif transition-colors group-hover:text-gold-300">
                   {product.name}
                 </h4>
                 

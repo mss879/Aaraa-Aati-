@@ -49,7 +49,7 @@ export default function ProductGrid() {
                   />
                 </svg>
               </div>
-              <span className="px-5 py-2.5 text-[0.65rem] tracking-[0.25em] uppercase text-white bg-black/65 backdrop-blur-md border border-white/10 font-sans font-medium transition-colors hover:bg-black/80">
+              <span className="px-5 py-2.5 text-[0.7rem] tracking-[0.25em] uppercase text-white bg-black/65 backdrop-blur-md border border-white/10 font-sans font-medium transition-colors hover:bg-black/80">
                 View all
               </span>
             </div>
@@ -58,7 +58,7 @@ export default function ProductGrid() {
 
         {/* Card 2: Celeste Diamond Ring */}
         <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
-          <span className="text-[0.62rem] tracking-[0.25em] text-zinc-500 uppercase font-sans">
+          <span className="text-[0.7rem] tracking-[0.25em] text-zinc-400 uppercase font-sans font-medium">
             Ring
           </span>
           <div className="flex-1 flex items-center justify-center relative w-full h-full p-2 my-2 min-h-0">
@@ -74,7 +74,7 @@ export default function ProductGrid() {
             </div>
           </div>
           <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
-            <h4 className="text-sm tracking-wide text-white font-serif font-light transition-colors group-hover:text-gold-300">
+            <h4 className="text-base md:text-lg tracking-wide text-white font-serif transition-colors group-hover:text-gold-300">
               Celeste Diamond Ring
             </h4>
             <div className="text-zinc-500 transition-colors duration-300 group-hover:text-white pr-1 pb-1">
@@ -87,7 +87,7 @@ export default function ProductGrid() {
 
         {/* Card 3: Eternal Bloom Ring */}
         <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
-          <span className="text-[0.62rem] tracking-[0.25em] text-zinc-500 uppercase font-sans">
+          <span className="text-[0.7rem] tracking-[0.25em] text-zinc-400 uppercase font-sans font-medium">
             Ring
           </span>
           <div className="flex-1 flex items-center justify-center relative w-full h-full p-2 my-2 min-h-0">
@@ -103,7 +103,7 @@ export default function ProductGrid() {
             </div>
           </div>
           <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
-            <h4 className="text-sm tracking-wide text-white font-serif font-light transition-colors group-hover:text-gold-300">
+            <h4 className="text-base md:text-lg tracking-wide text-white font-serif transition-colors group-hover:text-gold-300">
               Eternal Bloom Ring
             </h4>
             <div className="text-zinc-500 transition-colors duration-300 group-hover:text-white pr-1 pb-1">
@@ -117,7 +117,7 @@ export default function ProductGrid() {
         {/* ROW 2: EARRINGS */}
         {/* Card 1: Aurea Diamond Drops */}
         <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
-          <span className="text-[0.62rem] tracking-[0.25em] text-zinc-500 uppercase font-sans">
+          <span className="text-[0.7rem] tracking-[0.25em] text-zinc-400 uppercase font-sans font-medium">
             Earrings
           </span>
           <div className="flex-1 flex items-center justify-center relative w-full h-full p-2 my-2 min-h-0">
@@ -133,7 +133,7 @@ export default function ProductGrid() {
             </div>
           </div>
           <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
-            <h4 className="text-sm tracking-wide text-white font-serif font-light transition-colors group-hover:text-gold-300">
+            <h4 className="text-base md:text-lg tracking-wide text-white font-serif transition-colors group-hover:text-gold-300">
               Aurea Diamond Drops
             </h4>
             <div className="text-zinc-500 transition-colors duration-300 group-hover:text-white pr-1 pb-1">
@@ -146,7 +146,7 @@ export default function ProductGrid() {
 
         {/* Card 2: Golden Drop Earrings */}
         <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
-          <span className="text-[0.62rem] tracking-[0.25em] text-zinc-500 uppercase font-sans">
+          <span className="text-[0.7rem] tracking-[0.25em] text-zinc-400 uppercase font-sans font-medium">
             Earrings
           </span>
           <div className="flex-1 flex items-center justify-center relative w-full h-full p-2 my-2 min-h-0">
@@ -162,7 +162,7 @@ export default function ProductGrid() {
             </div>
           </div>
           <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
-            <h4 className="text-sm tracking-wide text-white font-serif font-light transition-colors group-hover:text-gold-300">
+            <h4 className="text-base md:text-lg tracking-wide text-white font-serif transition-colors group-hover:text-gold-300">
               Golden Drop Earrings
             </h4>
             <div className="text-zinc-500 transition-colors duration-300 group-hover:text-white pr-1 pb-1">
@@ -214,7 +214,7 @@ export default function ProductGrid() {
                   />
                 </svg>
               </div>
-              <span className="px-5 py-2.5 text-[0.65rem] tracking-[0.25em] uppercase text-white bg-black/65 backdrop-blur-md border border-white/10 font-sans font-medium transition-colors hover:bg-black/80">
+              <span className="px-5 py-2.5 text-[0.7rem] tracking-[0.25em] uppercase text-white bg-black/65 backdrop-blur-md border border-white/10 font-sans font-medium transition-colors hover:bg-black/80">
                 View all
               </span>
             </div>
@@ -263,7 +263,7 @@ export default function ProductGrid() {
                   />
                 </svg>
               </div>
-              <span className="px-5 py-2.5 text-[0.65rem] tracking-[0.25em] uppercase text-white bg-black/65 backdrop-blur-md border border-white/10 font-sans font-medium transition-colors hover:bg-black/80">
+              <span className="px-5 py-2.5 text-[0.7rem] tracking-[0.25em] uppercase text-white bg-black/65 backdrop-blur-md border border-white/10 font-sans font-medium transition-colors hover:bg-black/80">
                 View all
               </span>
             </div>
@@ -272,7 +272,7 @@ export default function ProductGrid() {
 
         {/* Card 2: Stellar Link Bracelet */}
         <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
-          <span className="text-[0.62rem] tracking-[0.25em] text-zinc-500 uppercase font-sans">
+          <span className="text-[0.7rem] tracking-[0.25em] text-zinc-400 uppercase font-sans font-medium">
             Bracelet
           </span>
           <div className="flex-1 flex items-center justify-center relative w-full h-full p-2 my-2 min-h-0">
@@ -288,7 +288,7 @@ export default function ProductGrid() {
             </div>
           </div>
           <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
-            <h4 className="text-sm tracking-wide text-white font-serif font-light transition-colors group-hover:text-gold-300">
+            <h4 className="text-base md:text-lg tracking-wide text-white font-serif transition-colors group-hover:text-gold-300">
               Stellar Link Bracelet
             </h4>
             <div className="text-zinc-500 transition-colors duration-300 group-hover:text-white pr-1 pb-1">
@@ -301,7 +301,7 @@ export default function ProductGrid() {
 
         {/* Card 3: Golden Maison Band */}
         <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
-          <span className="text-[0.62rem] tracking-[0.25em] text-zinc-500 uppercase font-sans">
+          <span className="text-[0.7rem] tracking-[0.25em] text-zinc-400 uppercase font-sans font-medium">
             Bracelet
           </span>
           <div className="flex-1 flex items-center justify-center relative w-full h-full p-2 my-2 min-h-0">
@@ -317,7 +317,7 @@ export default function ProductGrid() {
             </div>
           </div>
           <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
-            <h4 className="text-sm tracking-wide text-white font-serif font-light transition-colors group-hover:text-gold-300">
+            <h4 className="text-base md:text-lg tracking-wide text-white font-serif transition-colors group-hover:text-gold-300">
               Golden Maison Band
             </h4>
             <div className="text-zinc-500 transition-colors duration-300 group-hover:text-white pr-1 pb-1">

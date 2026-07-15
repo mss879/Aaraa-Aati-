@@ -47,6 +47,18 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-serif), Georgia, Cambria, serif;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Readability: keep paragraph rags tidy and selections on-brand */
+p {
+  text-wrap: pretty;
+}
+
+::selection {
+  background: rgba(219, 174, 102, 0.35);
+  color: #f7f5f0;
 }
 
 /* Glassmorphism custom classes */

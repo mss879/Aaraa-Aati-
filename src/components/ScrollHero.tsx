@@ -320,7 +320,7 @@ export default function ScrollHero() {
                 style={{ opacity: i === 0 ? 1 : 0 }}
                 inert={i === 0 ? undefined : true}
               >
-                <p className="mb-4 font-sans text-[0.65rem] font-medium uppercase tracking-[0.42em] text-gold-300/90 md:text-xs">
+                <p className="mb-4 font-sans text-[0.72rem] font-medium uppercase tracking-[0.42em] text-gold-300 md:text-xs">
                   {s.eyebrow}
                 </p>
                 <Heading className="font-serif text-[2.6rem] font-light leading-[1.04] tracking-wide text-gold-50 md:text-6xl lg:text-[4.4rem]">
@@ -328,7 +328,7 @@ export default function ScrollHero() {
                   <br />
                   <span className="italic text-gold-200">{s.lines[1]}</span>
                 </Heading>
-                <p className="mt-5 max-w-md font-sans text-sm font-light leading-relaxed tracking-wide text-gold-100/70 md:text-base">
+                <p className="mt-5 max-w-md font-sans text-[0.95rem] leading-relaxed text-gold-100/90 md:text-lg">
                   {s.body}
                 </p>
                 {s.cta && (
@@ -358,7 +358,7 @@ export default function ScrollHero() {
           ref={hintRef}
           className="pointer-events-none absolute bottom-7 left-1/2 z-40 hidden -translate-x-1/2 flex-col items-center gap-2 sm:flex"
         >
-          <span className="font-sans text-[0.6rem] uppercase tracking-[0.4em] text-gold-100/60">
+          <span className="font-sans text-[0.65rem] uppercase tracking-[0.4em] text-gold-100/80">
             Scroll to unfold
           </span>
           <span className="relative block h-8 w-px overflow-hidden bg-white/15">
@@ -367,7 +367,7 @@ export default function ScrollHero() {
         </div>
 
         {/* Meta strip */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex items-center justify-between px-6 pb-4 font-sans text-[0.6rem] uppercase tracking-[0.25em] text-gold-100/55 md:px-16 md:text-[0.65rem]">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex items-center justify-between px-6 pb-4 font-sans text-[0.65rem] uppercase tracking-[0.25em] text-gold-100/75 md:px-16 md:text-[0.7rem]">
           <span>Est. 1928 · Sri Lanka</span>
           <span className="hidden sm:block">One Sketch · One Solitaire · One Forever</span>
           <span>Bespoke Atelier</span>

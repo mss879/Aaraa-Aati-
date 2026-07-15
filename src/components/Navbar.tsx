@@ -5,8 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 const NAV_LINKS = [
-  { label: "Collections", href: "/#collection" },
-  { label: "Our Story", href: "/#about" },
+  { label: "Collections", href: "/collections" },
+  { label: "Our Story", href: "/about" },
 ];
 
 export default function Navbar() {
@@ -37,25 +37,25 @@ export default function Navbar() {
         {/* Desktop Menu - Centered absolutely */}
         <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center space-x-12 pt-5">
           {NAV_LINKS.map((link) => (
-            <a
+            <Link
               key={link.label}
               href={link.href}
-              className="relative text-xs tracking-[0.2em] uppercase text-gold-100/80 hover:text-gold-300 transition-colors duration-300 font-sans py-2 group"
+              className="relative text-[0.78rem] tracking-[0.2em] uppercase text-gold-100 hover:text-gold-300 transition-colors duration-300 font-sans font-medium py-2 group"
             >
               {link.label}
               <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-gold-400 transition-all duration-300 group-hover:w-full"></span>
-            </a>
+            </Link>
           ))}
         </div>
 
         {/* Action Buttons - Right-aligned */}
         <div className="hidden md:flex items-center space-x-4 pt-5">
-          <a
-            href="/#contact"
-            className="px-6 py-2.5 rounded-full border border-white/20 text-xs tracking-[0.15em] uppercase text-white/90 hover:text-white hover:bg-white/5 hover:border-white/50 transition-all duration-300 font-sans"
+          <Link
+            href="/contact"
+            className="px-6 py-2.5 rounded-full border border-white/25 text-xs tracking-[0.15em] uppercase text-white font-medium hover:bg-white/5 hover:border-white/50 transition-all duration-300 font-sans"
           >
             Contact
-          </a>
+          </Link>
           <Link
             href="/atelier"
             className="px-6 py-2.5 rounded-full border border-gold-400/40 bg-gold-500/10 text-xs tracking-[0.15em] uppercase text-gold-200 hover:text-obsidian-950 hover:bg-gold-300 hover:border-gold-300 transition-all duration-300 font-sans"
@@ -100,23 +100,23 @@ export default function Navbar() {
         <div className="absolute top-20 left-0 right-0 mx-6 p-6 rounded-2xl bg-obsidian-950/95 border border-gold-500/10 backdrop-blur-xl md:hidden z-50 animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="flex flex-col items-center space-y-6">
             {NAV_LINKS.map((link) => (
-              <a
+              <Link
                 key={link.label}
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className="text-sm tracking-[0.25em] uppercase text-gold-100/90 hover:text-gold-300 transition-colors font-sans"
+                className="text-sm tracking-[0.25em] uppercase text-gold-100 hover:text-gold-300 transition-colors font-sans font-medium"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
             <div className="w-full h-[1px] bg-gold-500/10 my-2" />
-            <a
-              href="/#contact"
+            <Link
+              href="/contact"
               onClick={() => setIsOpen(false)}
-              className="w-full text-center py-3 rounded-full border border-white/20 text-xs tracking-[0.15em] uppercase text-white/90 hover:text-white hover:bg-white/5 hover:border-white/50 transition-all duration-300"
+              className="w-full text-center py-3 rounded-full border border-white/25 text-xs tracking-[0.15em] uppercase text-white font-medium hover:bg-white/5 hover:border-white/50 transition-all duration-300"
             >
               Contact
-            </a>
+            </Link>
             <Link
               href="/atelier"
               onClick={() => setIsOpen(false)}

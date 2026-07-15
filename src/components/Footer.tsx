@@ -15,7 +15,7 @@ export default function Footer() {
             <h3 className="text-2xl font-normal text-white tracking-widest font-serif uppercase">
               Ceylon Gem Maison
             </h3>
-            <p className="text-[0.72rem] md:text-[0.78rem] text-zinc-500 font-sans font-light leading-relaxed max-w-xs">
+            <p className="text-[0.82rem] md:text-sm text-zinc-400 font-sans leading-relaxed max-w-xs">
               Crafting timeless, ethically sourced diamond masterpieces and bespoke high jewelry for generations. Designed in Sri Lanka, worn worldwide.
             </p>
             {/* Social Icons */}
@@ -43,21 +43,21 @@ export default function Footer() {
             <h4 className="text-xs font-semibold tracking-[0.2em] text-white uppercase font-sans">
               Collections
             </h4>
-            <ul className="space-y-2.5 text-[0.72rem] md:text-[0.78rem] font-sans font-light">
+            <ul className="space-y-3 text-[0.82rem] md:text-sm font-sans">
               <li>
-                <a href="#" className="hover:text-gold-200 transition-colors">Engagement & Bridal</a>
+                <a href="/collections?f=rings" className="hover:text-gold-200 transition-colors">Engagement & Bridal</a>
               </li>
               <li>
-                <a href="#" className="hover:text-gold-200 transition-colors">Signature Diamond Rings</a>
+                <a href="/collections?f=rings" className="hover:text-gold-200 transition-colors">Signature Diamond Rings</a>
               </li>
               <li>
-                <a href="#" className="hover:text-gold-200 transition-colors">High Gemstone Necklaces</a>
+                <a href="/collections?f=necklaces" className="hover:text-gold-200 transition-colors">High Gemstone Necklaces</a>
               </li>
               <li>
-                <a href="#" className="hover:text-gold-200 transition-colors">Atelier Diamond Earrings</a>
+                <a href="/collections?f=earrings" className="hover:text-gold-200 transition-colors">Atelier Diamond Earrings</a>
               </li>
               <li>
-                <a href="#" className="hover:text-gold-200 transition-colors">Fine Wavy Bracelets</a>
+                <a href="/collections?f=bracelets" className="hover:text-gold-200 transition-colors">Fine Wavy Bracelets</a>
               </li>
             </ul>
           </div>
@@ -67,21 +67,21 @@ export default function Footer() {
             <h4 className="text-xs font-semibold tracking-[0.2em] text-white uppercase font-sans">
               The Atelier
             </h4>
-            <ul className="space-y-2.5 text-[0.72rem] md:text-[0.78rem] font-sans font-light">
+            <ul className="space-y-3 text-[0.82rem] md:text-sm font-sans">
               <li>
-                <a href="#" className="hover:text-gold-200 transition-colors">Our Sri Lankan Heritage</a>
+                <a href="/about" className="hover:text-gold-200 transition-colors">Our Sri Lankan Heritage</a>
               </li>
               <li>
-                <a href="#" className="hover:text-gold-200 transition-colors">Ethical Sourcing Pledge</a>
+                <a href="/about#values" className="hover:text-gold-200 transition-colors">Ethical Sourcing Pledge</a>
               </li>
               <li>
-                <a href="#" className="hover:text-gold-200 transition-colors">Bespoke Design CAD</a>
+                <a href="/atelier" className="hover:text-gold-200 transition-colors">Bespoke Design CAD</a>
               </li>
               <li>
-                <a href="#" className="hover:text-gold-200 transition-colors">Care & Lifetime Warranty</a>
+                <a href="/about#values" className="hover:text-gold-200 transition-colors">Care & Lifetime Warranty</a>
               </li>
               <li>
-                <a href="#" className="hover:text-gold-200 transition-colors">Book Private Appointment</a>
+                <a href="/contact" className="hover:text-gold-200 transition-colors">Book Private Appointment</a>
               </li>
             </ul>
           </div>
@@ -91,14 +91,14 @@ export default function Footer() {
             <h4 className="text-xs font-semibold tracking-[0.2em] text-white uppercase font-sans">
               Atelier Newsletter
             </h4>
-            <p className="text-[0.72rem] md:text-[0.78rem] text-zinc-500 font-sans font-light leading-relaxed">
+            <p className="text-[0.82rem] md:text-sm text-zinc-400 font-sans leading-relaxed">
               Subscribe to view private catalogs, preview custom drops, and receive invite-only event details.
             </p>
             <form className="relative flex items-center pt-2" onSubmit={(e) => e.preventDefault()}>
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="bg-transparent border-b border-zinc-800 text-white placeholder-zinc-700 text-xs py-2.5 pr-10 focus:outline-none focus:border-gold-300 w-full font-sans font-light tracking-wide transition-colors"
+                className="bg-transparent border-b border-zinc-800 text-white placeholder-zinc-500 text-sm py-2.5 pr-10 focus:outline-none focus:border-gold-300 w-full font-sans tracking-wide transition-colors"
               />
               <button
                 type="submit"
@@ -115,15 +115,15 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-6 pt-10 text-[0.65rem] md:text-[0.7rem] font-sans font-light tracking-widest uppercase">
-          
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-6 pt-10 text-[0.7rem] md:text-[0.75rem] font-sans tracking-widest uppercase">
+
           {/* Copyright */}
           <div>
             &copy; 2026 Ceylon Gem Maison. All Rights Reserved.
           </div>
 
           {/* Ethical Statement */}
-          <div className="text-zinc-600 text-center max-w-sm lg:max-w-none">
+          <div className="text-zinc-500 text-center max-w-sm lg:max-w-none">
             Ethically sourced conflict-free diamonds and materials only.
           </div>
 

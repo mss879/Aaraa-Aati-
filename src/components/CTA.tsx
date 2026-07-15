@@ -20,7 +20,7 @@ export default function CTA() {
           <div className="max-w-2xl mx-auto space-y-8 relative z-10">
             
             {/* Tagline */}
-            <span className="text-[0.62rem] md:text-[0.68rem] tracking-[0.3em] uppercase text-gold-300 font-sans font-medium block">
+            <span className="text-[0.7rem] md:text-[0.72rem] tracking-[0.3em] uppercase text-gold-300 font-sans font-medium block">
               Bespoke Commissions
             </span>
 
@@ -31,7 +31,7 @@ export default function CTA() {
             </h2>
 
             {/* Subtext */}
-            <p className="text-xs md:text-sm text-zinc-300 font-sans font-light leading-relaxed tracking-wide">
+            <p className="text-sm md:text-base text-zinc-200 font-sans leading-relaxed">
               Collaborate directly with our master designers to sculpt a piece of jewelry that embodies your heritage. From raw sketch to three-dimensional CAD render and hand-setting, we ensure every detail tells your story.
             </p>
 
