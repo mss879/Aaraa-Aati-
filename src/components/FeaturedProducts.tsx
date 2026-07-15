@@ -102,7 +102,7 @@ export default function FeaturedProducts() {
       <div className="max-w-7xl mx-auto">
         
         {/* Header with Navigation Controls */}
-        <div className="flex items-center justify-between mb-10 md:mb-14">
+        <div data-reveal className="flex items-center justify-between mb-10 md:mb-14">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-normal tracking-wide text-white font-serif">
             Featured product
           </h2>
@@ -140,6 +140,7 @@ export default function FeaturedProducts() {
           {products.map((product, idx) => (
             <div
               key={idx}
+              data-tilt
               className="carousel-card group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer w-[280px] sm:w-[320px] md:w-[360px] lg:w-[380px] flex-shrink-0 snap-start border border-zinc-900/80 hover:border-zinc-800 transition-colors duration-300"
             >
               {/* Category label */}

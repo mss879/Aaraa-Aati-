@@ -5,7 +5,7 @@ export default function ProductGrid() {
     <section className="relative w-full bg-[#FAF9F6] py-24 md:py-36 z-20 select-none">
       
       {/* 3x3 Grid Wrapper with thin dividers */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-[1px] bg-zinc-900">
+      <div data-reveal-group className="grid grid-cols-1 md:grid-cols-3 gap-[1px] bg-zinc-900">
         
         {/* ROW 1: RINGS */}
         {/* Card 1: Ring Teaser Portrait */}
@@ -57,7 +57,7 @@ export default function ProductGrid() {
         </div>
 
         {/* Card 2: Celeste Diamond Ring */}
-        <div className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
+        <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
           <span className="text-[0.62rem] tracking-[0.25em] text-zinc-500 uppercase font-sans">
             Ring
           </span>
@@ -86,7 +86,7 @@ export default function ProductGrid() {
         </div>
 
         {/* Card 3: Eternal Bloom Ring */}
-        <div className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
+        <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
           <span className="text-[0.62rem] tracking-[0.25em] text-zinc-500 uppercase font-sans">
             Ring
           </span>
@@ -116,7 +116,7 @@ export default function ProductGrid() {
 
         {/* ROW 2: EARRINGS */}
         {/* Card 1: Aurea Diamond Drops */}
-        <div className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
+        <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
           <span className="text-[0.62rem] tracking-[0.25em] text-zinc-500 uppercase font-sans">
             Earrings
           </span>
@@ -145,7 +145,7 @@ export default function ProductGrid() {
         </div>
 
         {/* Card 2: Golden Drop Earrings */}
-        <div className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
+        <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
           <span className="text-[0.62rem] tracking-[0.25em] text-zinc-500 uppercase font-sans">
             Earrings
           </span>
@@ -271,7 +271,7 @@ export default function ProductGrid() {
         </div>
 
         {/* Card 2: Stellar Link Bracelet */}
-        <div className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
+        <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
           <span className="text-[0.62rem] tracking-[0.25em] text-zinc-500 uppercase font-sans">
             Bracelet
           </span>
@@ -300,7 +300,7 @@ export default function ProductGrid() {
         </div>
 
         {/* Card 3: Golden Aura Band */}
-        <div className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
+        <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
           <span className="text-[0.62rem] tracking-[0.25em] text-zinc-500 uppercase font-sans">
             Bracelet
           </span>

@@ -47,7 +47,7 @@ export default function PremiumServices() {
       <div className="max-w-7xl mx-auto relative z-10">
         
         {/* Section Header */}
-        <div className="max-w-2xl mb-16 md:mb-24">
+        <div data-reveal className="max-w-2xl mb-16 md:mb-24">
           <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-gold-400/20 bg-gold-400/5 mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-gold-300 animate-pulse" />
             <span className="text-[0.62rem] tracking-[0.3em] uppercase text-gold-200 font-sans font-light">
@@ -66,7 +66,7 @@ export default function PremiumServices() {
         </div>
 
         {/* 3-Column Services Cards Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div data-reveal-group className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {services.map((service, idx) => (
             <div
               key={idx}

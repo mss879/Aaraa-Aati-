@@ -22,16 +22,18 @@ export default function LuxuryShowcase() {
   return (
     <section className="relative w-full h-[45vh] md:h-[60vh] min-h-[300px] md:min-h-[450px] overflow-hidden select-none z-20 flex items-center justify-center">
       
-      {/* Full-Bleed Gold Necklace Closeup Background Image */}
-      <Image
-        src="https://cdn.prod.website-files.com/6947ba20efe4a10015df32b5/6952261e577cc8a4d1051930_Closeup%20Necklace%20Shot.webp"
-        alt="Closeup Necklace Shot"
-        fill
-        className="object-cover"
-        sizes="100vw"
-        priority
-        unoptimized
-      />
+      {/* Full-Bleed Gold Necklace Closeup Background Image (oversized for parallax drift) */}
+      <div data-parallax="-0.12" className="absolute inset-0 scale-125">
+        <Image
+          src="https://cdn.prod.website-files.com/6947ba20efe4a10015df32b5/6952261e577cc8a4d1051930_Closeup%20Necklace%20Shot.webp"
+          alt="Closeup Necklace Shot"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+          unoptimized
+        />
+      </div>
 
       {/* Dimmed Overlay to enhance typography readability */}
       <div className="absolute inset-0 bg-black/28 z-10 pointer-events-none" />

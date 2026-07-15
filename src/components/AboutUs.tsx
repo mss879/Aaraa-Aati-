@@ -14,7 +14,7 @@ export default function AboutUs() {
         </div>
 
         {/* Tagline */}
-        <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-amber-500/20 bg-amber-500/5 self-start">
+        <div data-reveal className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-amber-500/20 bg-amber-500/5 self-start">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
           <span className="text-[0.62rem] tracking-[0.3em] uppercase text-amber-700 font-sans font-light">
             Our Atelier & Heritage
@@ -22,18 +22,18 @@ export default function AboutUs() {
         </div>
 
         {/* Heading */}
-        <h2 className="text-3xl md:text-5xl font-normal leading-[1.15] tracking-wide text-zinc-900 font-serif">
+        <h2 data-reveal className="text-3xl md:text-5xl font-normal leading-[1.15] tracking-wide text-zinc-900 font-serif">
           A Legacy of <br />
           <span className="italic text-amber-600 font-serif font-light">Pure Craftsmanship</span>
         </h2>
 
         {/* Body Text */}
-        <p className="text-xs md:text-sm text-zinc-600 font-sans font-light leading-relaxed max-w-xl tracking-wide">
+        <p data-reveal className="text-xs md:text-sm text-zinc-600 font-sans font-light leading-relaxed max-w-xl tracking-wide">
           At Aura Jewelers, we believe that jewelry is more than an adornment—it is a vessel for memories, legacy, and human emotion. For nearly a century, our workshop has been dedicated to hand-selecting the world's finest ethically sourced diamonds and carving them into timeless masterpieces.
         </p>
 
         {/* Brand Values List */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-zinc-200">
+        <div data-reveal-group className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-zinc-200">
           <div className="space-y-1">
             <h4 className="text-[0.7rem] md:text-xs font-semibold tracking-[0.15em] text-amber-700 uppercase font-sans">
               100% Ethical Sourcing
@@ -59,16 +59,18 @@ export default function AboutUs() {
 
       {/* Right side: Image showcase */}
       <div className="w-full md:w-[45%] relative min-h-[40vh] md:min-h-full overflow-hidden">
-        {/* Background Image */}
-        <Image
-          src="/artisan_crafting.png"
-          alt="Artisan Crafting"
-          fill
-          sizes="(max-w-768px) 100vw, 45vw"
-          className="object-cover transition-transform duration-[12000ms] hover:scale-105"
-          priority
-          unoptimized
-        />
+        {/* Background Image (slightly oversized so the parallax drift never exposes edges) */}
+        <div data-parallax="-0.08" className="absolute inset-0 scale-110">
+          <Image
+            src="/artisan_crafting.png"
+            alt="Artisan Crafting"
+            fill
+            sizes="(max-w-768px) 100vw, 45vw"
+            className="object-cover"
+            priority
+            unoptimized
+          />
+        </div>
         
         {/* Gradients to blend image edges into the white background */}
         <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#FAF9F6] via-transparent to-transparent z-10 w-full md:w-[15%]" />

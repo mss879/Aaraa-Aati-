@@ -4,11 +4,11 @@ import React from "react";
 
 export default function Footer() {
   return (
-    <footer className="relative w-full bg-[#020202] text-zinc-400 py-20 md:py-28 px-6 md:px-12 z-20 border-t border-zinc-900 select-none">
+    <footer id="contact" className="relative w-full bg-[#020202] text-zinc-400 py-20 md:py-28 px-6 md:px-12 z-20 border-t border-zinc-900 select-none scroll-mt-6">
       <div className="max-w-7xl mx-auto">
-        
+
         {/* Main Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 pb-16 border-b border-zinc-900">
+        <div data-reveal-group className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 pb-16 border-b border-zinc-900">
           
           {/* Brand Info Column */}
           <div className="space-y-6">

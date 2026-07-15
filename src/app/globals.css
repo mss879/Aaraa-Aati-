@@ -94,6 +94,16 @@ h1, h2, h3, h4, h5, h6 {
   animation: marquee 30s linear infinite;
 }
 
+/* Hero scroll-hint line */
+@keyframes heroScrollLine {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(320%);
+  }
+}
+
 /* Utility to hide scrollbars while preserving scroll functionality */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
@@ -101,4 +111,43 @@ h1, h2, h3, h4, h5, h6 {
 .no-scrollbar {
   -ms-overflow-style: none;  /* IE/Edge */
   scrollbar-width: none;  /* Firefox */
+}
+
+/* ---- Atelier configurator: gold carat slider ---- */
+.luxe-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #b8732a, #dbae66);
+  outline: none;
+  cursor: pointer;
+}
+.luxe-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, #f7e7b2, #dbae66 55%, #9c6c1e);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 0 5px rgba(219, 174, 102, 0.12), 0 4px 14px rgba(0, 0, 0, 0.6);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.luxe-range::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 8px rgba(219, 174, 102, 0.16), 0 4px 18px rgba(0, 0, 0, 0.7);
+}
+.luxe-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, #f7e7b2, #dbae66 55%, #9c6c1e);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 0 5px rgba(219, 174, 102, 0.12), 0 4px 14px rgba(0, 0, 0, 0.6);
+}
+.luxe-range::-moz-range-track {
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #b8732a, #dbae66);
 }
