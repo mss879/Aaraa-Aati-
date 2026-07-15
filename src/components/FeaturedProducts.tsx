@@ -40,7 +40,7 @@ export default function FeaturedProducts() {
     },
     {
       category: "Bracelet",
-      name: "Golden Aura Band",
+      name: "Golden Maison Band",
       image: "/bracelet_aura.png",
     },
   ];

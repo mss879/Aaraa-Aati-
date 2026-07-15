@@ -18,15 +18,15 @@ export default function Navbar() {
         {/* Brand Logo in a rounded-edge container */}
         <Link
           href="/"
-          aria-label="Aaraa & Aati — home"
+          aria-label="Ceylon Gem Maison — home"
           className="group flex items-center"
         >
           <div className="rounded-2xl border border-gold-500/25 bg-black px-3 py-2.5 shadow-[0_8px_30px_rgba(0,0,0,0.55)] ring-1 ring-white/5 transition-all duration-300 group-hover:border-gold-400/50 group-hover:shadow-[0_10px_36px_rgba(212,175,55,0.2)] md:rounded-[1.5rem] md:px-4 md:py-3">
             <Image
-              src="/logo-mark.png"
-              alt="Aaraa & Aati — Luxury Jewellery"
-              width={1186}
-              height={910}
+              src="/logo-ceylon.png"
+              alt="Ceylon Gem Maison — Luxury Jewellery"
+              width={1000}
+              height={1000}
               className="h-11 w-auto object-contain md:h-16"
               priority
               unoptimized

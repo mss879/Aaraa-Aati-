@@ -29,7 +29,7 @@ export default function AboutUs() {
 
         {/* Body Text */}
         <p data-reveal className="text-xs md:text-sm text-zinc-600 font-sans font-light leading-relaxed max-w-xl tracking-wide">
-          At Aura Jewelers, we believe that jewelry is more than an adornment—it is a vessel for memories, legacy, and human emotion. For nearly a century, our workshop has been dedicated to hand-selecting the world's finest ethically sourced diamonds and carving them into timeless masterpieces.
+          At Ceylon Gem Maison, we believe that jewelry is more than an adornment—it is a vessel for memories, legacy, and human emotion. For nearly a century, our workshop has been dedicated to hand-selecting the world's finest ethically sourced diamonds and carving them into timeless masterpieces.
         </p>
 
         {/* Brand Values List */}

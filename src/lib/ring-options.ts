@@ -308,7 +308,7 @@ export function sanitizeConfig(input: unknown): RingConfig {
 /** Pre-filled WhatsApp enquiry text for the configured ring. */
 export function buildWhatsAppMessage(config: RingConfig): string {
   const lines = [
-    "Hello Aura Atelier! I just designed a bespoke ring on your site and would love to enquire:",
+    "Hello Ceylon Gem Maison! I just designed a bespoke ring on your site and would love to enquire:",
     `• Setting: ${settingById(config.setting).label}`,
     `• Metal: ${metalById(config.metal).karat} ${metalById(config.metal).label}`,
     `• Stone: ${config.carat.toFixed(1)} ct ${cutById(config.cut).label} ${gemById(config.gem).label}`,

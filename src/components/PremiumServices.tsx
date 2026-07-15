@@ -61,7 +61,7 @@ export default function PremiumServices() {
           </h2>
           
           <p className="text-xs md:text-sm text-zinc-400 font-sans font-light leading-relaxed tracking-wide">
-            To ensure your acquisitions match the significance of your milestones, Aura Atelier offers bespoke private assistance that fits seamlessly around your lifestyle.
+            To ensure your acquisitions match the significance of your milestones, Ceylon Gem Maison offers bespoke private assistance that fits seamlessly around your lifestyle.
           </p>
         </div>
 

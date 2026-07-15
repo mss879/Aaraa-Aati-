@@ -18,17 +18,17 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3001"),
   title: {
-    default: "Aura Jewelers | Luxury Jewelry & Bespoke Atelier",
-    template: "%s | Aura Jewelers",
+    default: "Ceylon Gem Maison | Luxury Jewelry & Bespoke Atelier",
+    template: "%s | Ceylon Gem Maison",
   },
   description:
     "Exquisite craftsmanship and timeless elegance. Experience the finest collection of luxury jewelry, custom rings, and bespoke necklaces — or design your own in our interactive atelier.",
   openGraph: {
-    title: "Aura Jewelers | Luxury Jewelry & Bespoke Atelier",
+    title: "Ceylon Gem Maison | Luxury Jewelry & Bespoke Atelier",
     description:
       "Design your own engagement ring in a live 3D atelier — setting, metal, gemstone, cut and carat — rendered by AI.",
     type: "website",
-    siteName: "Aura Jewelers",
+    siteName: "Ceylon Gem Maison",
   },
 };
 

@@ -13,7 +13,7 @@ export default function Footer() {
           {/* Brand Info Column */}
           <div className="space-y-6">
             <h3 className="text-2xl font-normal text-white tracking-widest font-serif uppercase">
-              AURA
+              Ceylon Gem Maison
             </h3>
             <p className="text-[0.72rem] md:text-[0.78rem] text-zinc-500 font-sans font-light leading-relaxed max-w-xs">
               Crafting timeless, ethically sourced diamond masterpieces and bespoke high jewelry for generations. Designed in Sri Lanka, worn worldwide.
@@ -119,7 +119,7 @@ export default function Footer() {
           
           {/* Copyright */}
           <div>
-            &copy; 2026 Aura Atelier. All Rights Reserved.
+            &copy; 2026 Ceylon Gem Maison. All Rights Reserved.
           </div>
 
           {/* Ethical Statement */}

@@ -299,7 +299,7 @@ export default function ProductGrid() {
           </div>
         </div>
 
-        {/* Card 3: Golden Aura Band */}
+        {/* Card 3: Golden Maison Band */}
         <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
           <span className="text-[0.62rem] tracking-[0.25em] text-zinc-500 uppercase font-sans">
             Bracelet
@@ -308,7 +308,7 @@ export default function ProductGrid() {
             <div className="w-full h-full relative transition-transform duration-500 group-hover:scale-105">
               <Image
                 src="/bracelet_aura.png"
-                alt="Golden Aura Band"
+                alt="Golden Maison Band"
                 fill
                 className="object-contain"
                 sizes="(max-w-768px) 100vw, 33vw"
@@ -318,7 +318,7 @@ export default function ProductGrid() {
           </div>
           <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
             <h4 className="text-sm tracking-wide text-white font-serif font-light transition-colors group-hover:text-gold-300">
-              Golden Aura Band
+              Golden Maison Band
             </h4>
             <div className="text-zinc-500 transition-colors duration-300 group-hover:text-white pr-1 pb-1">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

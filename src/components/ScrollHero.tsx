@@ -70,7 +70,7 @@ const SCENES: Scene[] = [
     // Film 7.1–10s  ·  worn on the hand it was made for
     eyebrow: "IV · Forever Yours",
     lines: ["Made to be", "yours, always"],
-    body: "Slipped onto the hand it was destined for. Begin your own Aura — or design a piece the world has never seen.",
+    body: "Slipped onto the hand it was destined for. Begin your own Ceylon Gem Maison legacy — or design a piece the world has never seen.",
     in: 0.75,
     peak: 0.8,
     fade: 1.1, // stays visible through the end of the track
@@ -260,7 +260,7 @@ export default function ScrollHero() {
   return (
     <section
       ref={sectionRef}
-      aria-label="The making of an Aura solitaire"
+      aria-label="The making of a Ceylon Gem Maison solitaire"
       className="relative z-10 w-full"
       style={{ height: `${TRACK_VH}vh` }}
     >

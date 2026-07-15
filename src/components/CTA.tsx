@@ -44,7 +44,7 @@ export default function CTA() {
                 Design Your Ring Now
               </Link>
               <a
-                href="mailto:atelier@aurajewelers.com?subject=Private%20Consultation%20Request"
+                href="mailto:atelier@ceylongemmaison.com?subject=Private%20Consultation%20Request"
                 className="w-full sm:w-auto px-8 py-3.5 rounded-full border border-gold-400/25 text-gold-200 text-xs tracking-[0.2em] font-sans font-medium uppercase hover:bg-gold-500/10 hover:border-gold-300/50 transition-all duration-300 text-center backdrop-blur-sm hover:-translate-y-0.5 active:translate-y-0"
               >
                 Book Private Consultation

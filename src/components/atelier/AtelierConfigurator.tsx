@@ -315,7 +315,7 @@ export default function AtelierConfigurator() {
             <svg viewBox="0 0 24 24" className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Aura Home
+            Maison Home
           </Link>
           <span className="hidden rounded-full border border-gold-400/20 bg-black/40 px-4 py-2 font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-300 backdrop-blur-md sm:block">
             Bespoke Atelier
@@ -690,7 +690,7 @@ export default function AtelierConfigurator() {
               <div className="flex flex-col items-center justify-center gap-3 px-7 py-6 sm:flex-row">
                 <a
                   href={gen.image}
-                  download="aura-bespoke-ring.png"
+                  download="ceylon-gem-maison-bespoke-ring.png"
                   className="w-full rounded-full bg-gold-400 px-7 py-3 text-center font-sans text-[0.62rem] font-semibold uppercase tracking-[0.25em] text-obsidian-950 transition-colors hover:bg-gold-300 sm:w-auto"
                 >
                   Download portrait
