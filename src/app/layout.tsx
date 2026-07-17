@@ -44,6 +44,8 @@ export const metadata: Metadata = {
   ],
   applicationName: "Ceylon Gem Maison",
   category: "Jewelry",
+  creator: "ARC AI",
+  publisher: "Ceylon Gem Maison",
   openGraph: {
     title: "Ceylon Gem Maison | Bespoke Ceylon Sapphire & Diamond Jewellery",
     description:
@@ -124,6 +126,12 @@ const structuredData = {
       url: SITE_URL,
       name: "Ceylon Gem Maison",
       publisher: { "@id": `${SITE_URL}/#organization` },
+      creator: {
+        "@type": "Organization",
+        "name": "ARC AI",
+        "url": "https://www.arcai.agency",
+        "logo": `${SITE_URL}/arc-logo.webp`
+      },
       inLanguage: "en-SG",
     },
   ],

@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 const NAV_LINKS = [
-  { label: "Collections", href: "/collections" },
   { label: "Our Story", href: "/about" },
   { label: "Services", href: "/services" },
   { label: "Journal", href: "/articles" },
@@ -23,13 +22,13 @@ export default function Navbar() {
           aria-label="Ceylon Gem Maison — home"
           className="group flex items-center"
         >
-          <div className="rounded-2xl border border-white/40 bg-white px-3.5 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.45)] ring-1 ring-black/5 transition-all duration-300 group-hover:border-gold-300/70 group-hover:shadow-[0_10px_36px_rgba(46,91,224,0.25)] md:rounded-[1.5rem] md:px-4 md:py-2.5">
+          <div className="rounded-xl border border-white/40 bg-white px-3 py-1.5 shadow-[0_8px_30px_rgba(0,0,0,0.45)] ring-1 ring-black/5 transition-all duration-300 group-hover:border-gold-300/70 group-hover:shadow-[0_10px_36px_rgba(46,91,224,0.25)] md:rounded-2xl md:px-4 md:py-2 flex items-center justify-center">
             <Image
-              src="/logo-brand.png"
+              src="/main-logo.png?v=2"
               alt="Ceylon Gem Maison — Luxury Jewellery"
-              width={700}
-              height={820}
-              className="h-12 w-auto object-contain md:h-[4.5rem]"
+              width={1565}
+              height={444}
+              className="h-9 w-auto object-contain md:h-12"
               priority
               unoptimized
             />
@@ -37,7 +36,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Menu - Centered absolutely */}
-        <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center space-x-12 pt-5">
+        <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center space-x-12 pt-2">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.label}
@@ -51,7 +50,7 @@ export default function Navbar() {
         </div>
 
         {/* Action Buttons - Right-aligned */}
-        <div className="hidden md:flex items-center space-x-4 pt-5">
+        <div className="hidden md:flex items-center space-x-4 pt-2">
           <Link
             href="/contact"
             className="px-6 py-2.5 rounded-full border border-white/25 text-xs tracking-[0.15em] uppercase text-white font-medium hover:bg-white/5 hover:border-white/50 transition-all duration-300 font-sans"

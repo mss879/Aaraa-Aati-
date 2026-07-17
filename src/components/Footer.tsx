@@ -6,7 +6,7 @@ import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer id="contact" className="relative w-full bg-[#071527] text-[#A9B8D0] py-20 md:py-28 px-6 md:px-12 z-20 border-t border-[#1D3D6B] select-none scroll-mt-6">
+    <footer id="contact" className="relative w-full bg-[#071527] text-[#A9B8D0] pt-20 md:pt-28 pb-10 md:pb-12 px-6 md:px-12 z-20 border-t border-[#1D3D6B] select-none scroll-mt-6">
       <div className="max-w-7xl mx-auto">
 
         {/* Main Grid */}
@@ -144,15 +144,15 @@ export default function Footer() {
             href="https://www.arcai.agency"
             target="_blank"
             rel="noopener"
-            title="ARC AI — AI-powered web design and development agency"
-            className="text-gold-300 hover:text-gold-200 transition-colors font-medium inline-flex items-center gap-1.5 align-middle"
+            title="ARC AI — Premium Web Design & AI Development Agency"
+            className="text-gold-300 hover:text-gold-200 transition-colors font-medium inline-flex items-center gap-1.5 align-middle ml-1"
           >
             <Image
               src="/arc-logo.webp"
-              alt="ARC AI"
-              width={100}
-              height={30}
-              className="h-4 w-auto object-contain brightness-110"
+              alt="ARC AI — Premium Web Design & AI Development Agency"
+              width={120}
+              height={36}
+              className="h-7 md:h-8 w-auto object-contain brightness-110 transition-transform hover:scale-105"
               unoptimized
             />
           </a>

@@ -1,0 +1,15 @@
+/* TEAM */
+Creator/Agency: ARC AI
+Website: https://www.arcai.agency
+Contact: contact@arcai.agency
+Location: Singapore & Global
+
+/* THANKS */
+Client: Ceylon Gem Maison
+Website: https://www.ceylongemmaison.com
+
+/* SITE */
+Last update: 2026/07/17
+Standards: HTML5, CSS3, ES6+, TypeScript, Semantic HTML, JSON-LD Structured Data
+Components: Next.js, React, Tailwind CSS, GSAP
+Software: VS Code
