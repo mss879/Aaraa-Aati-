@@ -214,7 +214,7 @@ export default function OurWork() {
       className="relative w-full scroll-mt-6 select-none overflow-hidden border-t border-zinc-200 bg-[#F7F4EC] py-24 md:py-32"
     >
       {/* Header */}
-      <div className="mx-auto mb-12 max-w-7xl px-6 md:mb-16 md:px-12">
+      <div className="w-full mb-12 px-6 md:mb-16 md:px-12">
         <div data-reveal className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <div>
             <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-amber-500/20 bg-amber-500/5 px-3.5 py-1.5">
