@@ -110,7 +110,7 @@ export default function CollectionGallery() {
                   {piece.notes}
                 </p>
               </div>
-              <p className="font-body text-[0.82rem] leading-relaxed text-[#A9B8D0] md:text-sm">
+              <p className="font-body text-sm leading-relaxed text-[#A9B8D0]">
                 {piece.description}
               </p>
               <div className="flex items-center justify-between border-t border-[#1D3D6B] pt-4">

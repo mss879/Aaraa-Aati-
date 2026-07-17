@@ -178,7 +178,7 @@ export default function ContactPage() {
                       </svg>
                     </span>
                   </summary>
-                  <p className="mt-4 max-w-2xl font-body text-[0.85rem] leading-relaxed text-[#4A6285] md:text-sm">
+                  <p className="mt-4 max-w-2xl font-body text-sm md:text-base leading-relaxed text-[#4A6285]">
                     {faq.a}
                   </p>
                 </details>

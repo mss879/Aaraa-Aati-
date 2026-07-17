@@ -75,7 +75,7 @@ export default function ContactForm() {
       <h3 className="font-serif text-2xl font-normal tracking-wide text-[#13294B] md:text-3xl">
         Send an Enquiry
       </h3>
-      <p className="mt-2 font-body text-[0.85rem] leading-relaxed text-[#4A6285] md:text-sm">
+      <p className="mt-2 font-body text-sm md:text-base leading-relaxed text-[#4A6285]">
         Every message is read by a gemologist, never a bot. We reply within one
         business day.
       </p>

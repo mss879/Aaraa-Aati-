@@ -32,7 +32,7 @@ export default function FAQ() {
             <br />
             <span className="italic font-light text-amber-600">Commission</span>
           </h2>
-          <p className="mt-6 max-w-sm font-body text-sm leading-relaxed text-[#4A6285]">
+          <p className="mt-6 max-w-sm font-body text-sm md:text-base leading-relaxed text-[#4A6285]">
             Everything Singapore clients ask us most — and anything else, the
             concierge answers within the day.
           </p>
@@ -87,7 +87,7 @@ export default function FAQ() {
                   }`}
                 >
                   <div className="overflow-hidden">
-                    <p className="max-w-2xl pb-7 font-body text-[0.9rem] leading-relaxed text-[#4A6285] md:text-sm">
+                    <p className="max-w-2xl pb-7 font-body text-sm md:text-base leading-relaxed text-[#4A6285]">
                       {item.answer}
                     </p>
                   </div>
