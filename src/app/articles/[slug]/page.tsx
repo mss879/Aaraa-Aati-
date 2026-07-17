@@ -38,7 +38,7 @@ export default async function ArticlePage({ params }: Props) {
   if (!article) notFound();
 
   const related = ARTICLES.filter((a) => a.slug !== article.slug).slice(0, 2);
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://ceylongemmaison.com";
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://www.ceylongemmaison.com";
 
   const jsonLd = {
     "@context": "https://schema.org",

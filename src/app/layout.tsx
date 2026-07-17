@@ -21,7 +21,7 @@ const garamond = EB_Garamond({
   display: "swap",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ceylongemmaison.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.ceylongemmaison.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -54,19 +54,19 @@ export const metadata: Metadata = {
     locale: "en_SG",
     images: [
       {
-        url: "/og.jpg",
-        width: 1200,
-        height: 630,
-        alt: "A Ceylon Gem Maison solitaire ring revealed on black silk",
+        url: "/og.png",
+        width: 1024,
+        height: 1024,
+        alt: "Ceylon Gem Maison cushion-cut Ceylon sapphire and diamond ring on blue silk background",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ceylon Gem Maison | Bespoke Ceylon Sapphire Jewellery, Singapore",
+    title: "Ceylon Gem Maison | Bespoke Ceylon Sapphire & Diamond Jewellery, Singapore",
     description:
-      "Bespoke sapphire engagement rings — ethically sourced in Sri Lanka, designed online, delivered insured to Singapore.",
-    images: ["/og.jpg"],
+      "Design your own sapphire ring in a live 3D atelier with instant quotations — ethically sourced Ceylon gemstones, delivered insured to Singapore.",
+    images: ["/og.png"],
   },
   robots: {
     index: true,
@@ -94,16 +94,18 @@ const structuredData = {
       name: "Ceylon Gem Maison",
       url: SITE_URL,
       logo: `${SITE_URL}/logo.jpeg`,
-      image: `${SITE_URL}/og.jpg`,
+      image: `${SITE_URL}/og.png`,
       description:
         "Bespoke Ceylon sapphire and diamond jewellery house with years of professional experience exporting world-class, ethically sourced gemstones — serving private clients in Singapore and worldwide.",
-      email: "atelier@ceylongemmaison.com",
+      email: "support@ceylongemmaison.com",
       priceRange: "$$$",
       currenciesAccepted: "SGD, USD",
       address: {
         "@type": "PostalAddress",
-        addressLocality: "Colombo",
-        addressCountry: "LK",
+        streetAddress: "66 Flora Road, #05-10, The Gale",
+        postalCode: "506912",
+        addressLocality: "Singapore",
+        addressCountry: "SG",
       },
       areaServed: [
         { "@type": "Country", name: "Singapore" },

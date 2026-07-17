@@ -9,14 +9,14 @@ import LuxeCursor from "@/components/fx/LuxeCursor";
 export const metadata: Metadata = {
   title: "Contact & Private Appointments",
   description:
-    "Reach the Ceylon Gem Maison concierge — enquiries, private viewings at the Colombo atelier, bespoke commissions, and lifetime care for your pieces.",
+    "Reach the Ceylon Gem Maison concierge — enquiries, private viewings at the Singapore atelier, bespoke commissions, and lifetime care for your pieces.",
   alternates: { canonical: "/contact" },
 };
 
 const CHANNELS = [
   {
-    label: "The Flagship Atelier",
-    lines: ["No. 12, Galle Face Terrace", "Colombo 03, Sri Lanka"],
+    label: "The Singapore Atelier",
+    lines: ["66 Flora Road, #05-10, The Gale", "Singapore 506912"],
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -26,8 +26,8 @@ const CHANNELS = [
   },
   {
     label: "By Telephone",
-    lines: ["+94 11 234 5678"],
-    href: "tel:+94112345678",
+    lines: ["+65 9842 3404"],
+    href: "tel:+6598423404",
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
@@ -36,8 +36,8 @@ const CHANNELS = [
   },
   {
     label: "By Email",
-    lines: ["atelier@ceylongemmaison.com"],
-    href: "mailto:atelier@ceylongemmaison.com",
+    lines: ["support@ceylongemmaison.com"],
+    href: "mailto:support@ceylongemmaison.com",
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
@@ -66,7 +66,7 @@ const FAQS = [
   },
   {
     q: "Do you ship internationally?",
-    a: "We deliver worldwide by fully insured, hand-carried courier. Within Colombo, pieces are delivered personally by a member of the atelier.",
+    a: "We deliver worldwide by fully insured, hand-carried courier. Within Singapore, pieces are delivered personally by a member of the atelier.",
   },
   {
     q: "What does the lifetime warranty cover?",
@@ -109,7 +109,7 @@ export default function ContactPage() {
                 <span className="italic font-light text-amber-600">One Gemologist</span>
               </h2>
               <p className="mt-6 max-w-lg font-body text-sm leading-relaxed text-[#3A4E6B] md:text-base">
-                Whether you write, call, or walk in from Galle Face, you will
+                Whether you write, call, or visit our Singapore space, you will
                 speak with someone who has held the stones — and who will stay
                 with you from first enquiry to final fitting.
               </p>
@@ -205,13 +205,13 @@ export default function ContactPage() {
             </p>
             <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
               <a
-                href="mailto:atelier@ceylongemmaison.com?subject=Private%20Vault%20Appointment"
+                href="mailto:support@ceylongemmaison.com?subject=Private%20Vault%20Appointment"
                 className="w-full rounded-full bg-gold-400 px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-[0_4px_25px_rgba(46,91,224,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-[0_4px_35px_rgba(46,91,224,0.45)] active:translate-y-0 sm:w-auto"
               >
                 Request an Appointment
               </a>
               <a
-                href="tel:+94112345678"
+                href="tel:+6598423404"
                 className="w-full rounded-full border border-gold-400/25 px-8 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-gold-200 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/60 hover:bg-gold-500/10 active:translate-y-0 sm:w-auto"
               >
                 Call the Atelier

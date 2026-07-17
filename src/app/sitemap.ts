@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { ARTICLES } from "@/lib/articles";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://ceylongemmaison.com";
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://www.ceylongemmaison.com";
   return [
     { url: `${base}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${base}/atelier`, changeFrequency: "monthly", priority: 0.9 },

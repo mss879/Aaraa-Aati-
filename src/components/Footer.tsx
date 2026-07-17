@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -144,9 +145,16 @@ export default function Footer() {
             target="_blank"
             rel="noopener"
             title="ARC AI — AI-powered web design and development agency"
-            className="text-gold-300 hover:text-gold-200 transition-colors font-medium"
+            className="text-gold-300 hover:text-gold-200 transition-colors font-medium inline-flex items-center gap-1.5 align-middle"
           >
-            ARC AI
+            <Image
+              src="/arc-logo.webp"
+              alt="ARC AI"
+              width={100}
+              height={30}
+              className="h-4 w-auto object-contain brightness-110"
+              unoptimized
+            />
           </a>
         </div>
 

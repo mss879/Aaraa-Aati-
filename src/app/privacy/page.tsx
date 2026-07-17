@@ -44,7 +44,7 @@ const SECTIONS: { heading: string; body: string[] }[] = [
   {
     heading: "Contact",
     body: [
-      "For any privacy question or request, write to atelier@ceylongemmaison.com and we will respond promptly.",
+      "For any privacy question or request, write to support@ceylongemmaison.com and we will respond promptly.",
     ],
   },
 ];

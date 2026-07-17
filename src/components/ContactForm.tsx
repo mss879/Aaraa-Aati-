@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 
 /* Same concierge lines as the atelier — set NEXT_PUBLIC_WHATSAPP_NUMBER in .env.local. */
 const WHATSAPP_NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "").replace(/\D/g, "");
-const ATELIER_EMAIL = "atelier@ceylongemmaison.com";
+const ATELIER_EMAIL = "support@ceylongemmaison.com";
 
 const INTERESTS = [
   "A Bespoke Commission",
@@ -123,7 +123,7 @@ export default function ContactForm() {
               id="contact-phone"
               type="tel"
               autoComplete="tel"
-              placeholder="+94 77 123 4567"
+              placeholder="+65 9123 4567"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className={inputClasses}
