@@ -1,25 +1,26 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer id="contact" className="relative w-full bg-[#020202] text-zinc-400 py-20 md:py-28 px-6 md:px-12 z-20 border-t border-zinc-900 select-none scroll-mt-6">
+    <footer id="contact" className="relative w-full bg-[#071527] text-[#A9B8D0] py-20 md:py-28 px-6 md:px-12 z-20 border-t border-[#1D3D6B] select-none scroll-mt-6">
       <div className="max-w-7xl mx-auto">
 
         {/* Main Grid */}
-        <div data-reveal-group className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 pb-16 border-b border-zinc-900">
+        <div data-reveal-group className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 pb-16 border-b border-[#1D3D6B]">
           
           {/* Brand Info Column */}
           <div className="space-y-6">
             <h3 className="text-2xl font-normal text-white tracking-widest font-serif uppercase">
               Ceylon Gem Maison
             </h3>
-            <p className="text-[0.82rem] md:text-sm text-zinc-400 font-sans leading-relaxed max-w-xs">
+            <p className="text-[0.82rem] md:text-sm text-[#A9B8D0] font-body leading-relaxed max-w-xs">
               Crafting timeless, ethically sourced diamond masterpieces and bespoke high jewelry for generations. Designed in Sri Lanka, worn worldwide.
             </p>
             {/* Social Icons */}
-            <div className="flex items-center gap-4 text-zinc-500 pt-2">
+            <div className="flex items-center gap-4 text-[#5E7495] pt-2">
               <a href="#" className="hover:text-gold-300 transition-colors" aria-label="Instagram">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051c-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
@@ -43,45 +44,45 @@ export default function Footer() {
             <h4 className="text-xs font-semibold tracking-[0.2em] text-white uppercase font-sans">
               Collections
             </h4>
-            <ul className="space-y-3 text-[0.82rem] md:text-sm font-sans">
+            <ul className="space-y-3 text-[0.82rem] md:text-sm font-body">
               <li>
-                <a href="/collections?f=rings" className="hover:text-gold-200 transition-colors">Engagement & Bridal</a>
+                <Link href="/collections?f=rings" className="hover:text-gold-200 transition-colors">Engagement & Bridal</Link>
               </li>
               <li>
-                <a href="/collections?f=rings" className="hover:text-gold-200 transition-colors">Signature Diamond Rings</a>
+                <Link href="/collections?f=rings" className="hover:text-gold-200 transition-colors">Signature Diamond Rings</Link>
               </li>
               <li>
-                <a href="/collections?f=necklaces" className="hover:text-gold-200 transition-colors">High Gemstone Necklaces</a>
+                <Link href="/collections?f=necklaces" className="hover:text-gold-200 transition-colors">High Gemstone Necklaces</Link>
               </li>
               <li>
-                <a href="/collections?f=earrings" className="hover:text-gold-200 transition-colors">Atelier Diamond Earrings</a>
+                <Link href="/collections?f=earrings" className="hover:text-gold-200 transition-colors">Atelier Diamond Earrings</Link>
               </li>
               <li>
-                <a href="/collections?f=bracelets" className="hover:text-gold-200 transition-colors">Fine Wavy Bracelets</a>
+                <Link href="/collections?f=bracelets" className="hover:text-gold-200 transition-colors">Fine Wavy Bracelets</Link>
               </li>
             </ul>
           </div>
 
-          {/* Atelier Column */}
+          {/* Maison Column */}
           <div className="space-y-4">
             <h4 className="text-xs font-semibold tracking-[0.2em] text-white uppercase font-sans">
-              The Atelier
+              The Maison
             </h4>
-            <ul className="space-y-3 text-[0.82rem] md:text-sm font-sans">
+            <ul className="space-y-3 text-[0.82rem] md:text-sm font-body">
               <li>
-                <a href="/about" className="hover:text-gold-200 transition-colors">Our Sri Lankan Heritage</a>
+                <Link href="/about" className="hover:text-gold-200 transition-colors">Our Story &amp; Heritage</Link>
               </li>
               <li>
-                <a href="/about#values" className="hover:text-gold-200 transition-colors">Ethical Sourcing Pledge</a>
+                <Link href="/services" className="hover:text-gold-200 transition-colors">Private Client Services</Link>
               </li>
               <li>
-                <a href="/atelier" className="hover:text-gold-200 transition-colors">Bespoke Design CAD</a>
+                <Link href="/atelier" className="hover:text-gold-200 transition-colors">The Digital Atelier</Link>
               </li>
               <li>
-                <a href="/about#values" className="hover:text-gold-200 transition-colors">Care & Lifetime Warranty</a>
+                <Link href="/articles" className="hover:text-gold-200 transition-colors">The Journal</Link>
               </li>
               <li>
-                <a href="/contact" className="hover:text-gold-200 transition-colors">Book Private Appointment</a>
+                <Link href="/contact" className="hover:text-gold-200 transition-colors">Book Private Appointment</Link>
               </li>
             </ul>
           </div>
@@ -91,14 +92,14 @@ export default function Footer() {
             <h4 className="text-xs font-semibold tracking-[0.2em] text-white uppercase font-sans">
               Atelier Newsletter
             </h4>
-            <p className="text-[0.82rem] md:text-sm text-zinc-400 font-sans leading-relaxed">
+            <p className="text-[0.82rem] md:text-sm text-[#A9B8D0] font-body leading-relaxed">
               Subscribe to view private catalogs, preview custom drops, and receive invite-only event details.
             </p>
             <form className="relative flex items-center pt-2" onSubmit={(e) => e.preventDefault()}>
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="bg-transparent border-b border-zinc-800 text-white placeholder-zinc-500 text-sm py-2.5 pr-10 focus:outline-none focus:border-gold-300 w-full font-sans tracking-wide transition-colors"
+                className="bg-transparent border-b border-[#27497A] text-white placeholder-zinc-500 text-sm py-2.5 pr-10 focus:outline-none focus:border-gold-300 w-full font-body tracking-wide transition-colors"
               />
               <button
                 type="submit"
@@ -123,16 +124,30 @@ export default function Footer() {
           </div>
 
           {/* Ethical Statement */}
-          <div className="text-zinc-500 text-center max-w-sm lg:max-w-none">
-            Ethically sourced conflict-free diamonds and materials only.
+          <div className="text-[#5E7495] text-center max-w-sm lg:max-w-none">
+            Ethically sourced conflict-free gemstones and materials only.
           </div>
 
           {/* Links */}
           <div className="flex items-center gap-6">
-            <a href="#" className="hover:text-gold-200 transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-gold-200 transition-colors">Terms of Service</a>
+            <Link href="/privacy" className="hover:text-gold-200 transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-gold-200 transition-colors">Terms of Service</Link>
           </div>
 
+        </div>
+
+        {/* Agency Credit */}
+        <div className="pt-8 mt-8 border-t border-[#1D3D6B]/70 text-center text-[0.68rem] md:text-[0.72rem] font-sans tracking-[0.18em] uppercase text-[#5E7495]">
+          Designed and built by{" "}
+          <a
+            href="https://www.arcai.agency"
+            target="_blank"
+            rel="noopener"
+            title="ARC AI — AI-powered web design and development agency"
+            className="text-gold-300 hover:text-gold-200 transition-colors font-medium"
+          >
+            ARC AI
+          </a>
         </div>
 
       </div>

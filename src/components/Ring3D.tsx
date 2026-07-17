@@ -43,7 +43,7 @@ export default function Ring3D() {
         grad.addColorStop(0.48, "#1a1a1c");   // Sharp dark horizon (creates reflection contrast)
         grad.addColorStop(0.52, "#08080a");   // True horizon separator
         grad.addColorStop(0.68, "#2c2a26");   // Warm golden floor bounce
-        grad.addColorStop(1, "#121214");      // Dark floor
+        grad.addColorStop(1, "#0F2748");      // Dark floor
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 

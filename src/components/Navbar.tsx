@@ -7,6 +7,8 @@ import Link from "next/link";
 const NAV_LINKS = [
   { label: "Collections", href: "/collections" },
   { label: "Our Story", href: "/about" },
+  { label: "Services", href: "/services" },
+  { label: "Journal", href: "/articles" },
 ];
 
 export default function Navbar() {
@@ -21,13 +23,13 @@ export default function Navbar() {
           aria-label="Ceylon Gem Maison — home"
           className="group flex items-center"
         >
-          <div className="rounded-2xl border border-gold-500/25 bg-black px-3 py-2.5 shadow-[0_8px_30px_rgba(0,0,0,0.55)] ring-1 ring-white/5 transition-all duration-300 group-hover:border-gold-400/50 group-hover:shadow-[0_10px_36px_rgba(212,175,55,0.2)] md:rounded-[1.5rem] md:px-4 md:py-3">
+          <div className="rounded-2xl border border-white/40 bg-white px-3.5 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.45)] ring-1 ring-black/5 transition-all duration-300 group-hover:border-gold-300/70 group-hover:shadow-[0_10px_36px_rgba(46,91,224,0.25)] md:rounded-[1.5rem] md:px-4 md:py-2.5">
             <Image
-              src="/logo-ceylon.png"
+              src="/logo-brand.png"
               alt="Ceylon Gem Maison — Luxury Jewellery"
-              width={1000}
-              height={1000}
-              className="h-11 w-auto object-contain md:h-16"
+              width={700}
+              height={820}
+              className="h-12 w-auto object-contain md:h-[4.5rem]"
               priority
               unoptimized
             />
@@ -58,7 +60,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="/atelier"
-            className="px-6 py-2.5 rounded-full border border-gold-400/40 bg-gold-500/10 text-xs tracking-[0.15em] uppercase text-gold-200 hover:text-obsidian-950 hover:bg-gold-300 hover:border-gold-300 transition-all duration-300 font-sans"
+            className="px-6 py-2.5 rounded-full border border-gold-400/40 bg-gold-500/10 text-xs tracking-[0.15em] uppercase text-gold-200 hover:text-white hover:bg-gold-500 hover:border-gold-300 transition-all duration-300 font-sans"
           >
             Craft Yours
           </Link>
@@ -120,7 +122,7 @@ export default function Navbar() {
             <Link
               href="/atelier"
               onClick={() => setIsOpen(false)}
-              className="w-full text-center py-3 rounded-full border border-gold-400/40 bg-gold-500/10 text-xs tracking-[0.15em] uppercase text-gold-200 hover:text-obsidian-950 hover:bg-gold-300 transition-all duration-300"
+              className="w-full text-center py-3 rounded-full border border-gold-400/40 bg-gold-500/10 text-xs tracking-[0.15em] uppercase text-gold-200 hover:text-white hover:bg-gold-500 transition-all duration-300"
             >
               Craft Yours
             </Link>

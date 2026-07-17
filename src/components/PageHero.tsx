@@ -28,7 +28,7 @@ export default function PageHero({
 }: PageHeroProps) {
   return (
     <section className="relative z-10 w-full">
-      <div className="relative flex min-h-[68svh] w-full flex-col overflow-hidden rounded-[2rem] border border-gold-500/10 bg-[#070708] shadow-[0_0_80px_rgba(0,0,0,0.85)] md:min-h-[74svh] md:rounded-[3rem]">
+      <div className="relative flex min-h-[68svh] w-full flex-col overflow-hidden bg-[#0A1F3D] md:min-h-[74svh]">
         {/* Backdrop portrait */}
         {image && (
           <div className="absolute inset-0 z-0">
@@ -68,7 +68,7 @@ export default function PageHero({
               <br />
               <span className="italic text-gold-200">{titleAccent}</span>
             </h1>
-            <p className="mt-5 max-w-xl font-sans text-[0.95rem] leading-relaxed text-gold-100/90 md:text-lg">
+            <p className="mt-5 max-w-xl font-body text-[0.95rem] leading-relaxed text-gold-100/90 md:text-lg">
               {body}
             </p>
           </div>

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
-import { buildRingPrompt, sanitizeConfig } from "@/lib/ring-options";
+import { buildJewelPrompt, sanitizeConfig } from "@/lib/ring-options";
 
 /**
  * POST /api/generate-ring
- * Renders the configured ring as a photoreal product shot on a pure white
- * background using Gemini's image model ("Nano Banana").
+ * Renders the configured piece (ring, necklace or bracelet) as a photoreal
+ * product shot on a pure white background using Gemini's image model.
  * Body: RingConfig JSON · Response: { image: "data:image/png;base64,..." }
  */
 
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   }
 
   const config = sanitizeConfig(payload);
-  const prompt = buildRingPrompt(config);
+  const prompt = buildJewelPrompt(config);
 
   try {
     const ai = new GoogleGenAI({ apiKey });

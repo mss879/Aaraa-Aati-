@@ -1,28 +1,37 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0b0b0c;
-  --foreground: #f7f5f0;
+  --background: #e9e4d8;
+  --foreground: #13294b;
 }
 
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-serif: var(--font-serif);
-  --font-sans: var(--font-sans);
+  /* Brand font hierarchy: Trajan Pro (headings) with Cinzel fallback,
+     Garamond (body) via EB Garamond, Helvetica Neue (taglines/captions). */
+  --font-serif: "Trajan Pro", "Trajan", var(--font-trajan), serif;
+  --font-body: var(--font-garamond), Garamond, "Times New Roman", serif;
+  --font-sans: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
   
-  /* Luxury Gold Accents */
-  --color-gold-50: #faf6eb;
-  --color-gold-100: #f3e8cc;
-  --color-gold-200: #e7d199;
-  --color-gold-300: #dbae66;
-  --color-gold-400: #c98e3b;
-  --color-gold-500: #b8732a;
-  --color-gold-600: #9c5820;
-  --color-gold-700: #80411b;
-  --color-gold-800: #683318;
-  --color-gold-900: #552916;
-  --color-gold-950: #2f130a;
+  /* Brand accent scale — royal sapphire blue (rebrand: was gold; the
+     class names keep the gold- prefix so every accent recolors at once). */
+  --color-gold-50: #f0f4ff;
+  --color-gold-100: #dce7ff;
+  --color-gold-200: #b9cdfb;
+  --color-gold-300: #8fb0f8;
+  --color-gold-400: #4f7bee;
+  --color-gold-500: #2e5be0;
+  --color-gold-600: #1f46c4;
+  --color-gold-700: #1837a0;
+  --color-gold-800: #142c7e;
+  --color-gold-900: #102359;
+  --color-gold-950: #081536;
+
+  /* Light-section accents (previously amber) → royal blue equivalents */
+  --color-amber-500: #2e5be0;
+  --color-amber-600: #1f46c4;
+  --color-amber-700: #16339b;
   
   --color-obsidian-50: #f6f6f6;
   --color-obsidian-100: #e7e7e7;
@@ -40,15 +49,22 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-serif), Georgia, Cambria, serif;
+  font-family: var(--font-serif);
   font-kerning: normal;
   text-rendering: optimizeLegibility;
+}
+
+/* Trajan carries no true italic — accent lines inside headings and serif
+   pull-quotes fall back to Garamond italic, the classic pairing. */
+h1 .italic, h2 .italic, h3 .italic, h4 .italic,
+.font-serif .italic, .italic.font-serif {
+  font-family: var(--font-body);
 }
 
 /* Readability: keep paragraph rags tidy and selections on-brand */
@@ -57,24 +73,114 @@ p {
 }
 
 ::selection {
-  background: rgba(219, 174, 102, 0.35);
-  color: #f7f5f0;
+  background: rgba(46, 91, 224, 0.22);
+  color: #13294b;
 }
 
 /* Glassmorphism custom classes */
 .glass-panel {
-  background: rgba(18, 18, 20, 0.65);
+  background: rgba(13, 30, 58, 0.65);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(46, 91, 224, 0.12);
 }
 
 .glass-panel-glow {
-  background: rgba(18, 18, 20, 0.7);
+  background: rgba(13, 30, 58, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(212, 175, 55, 0.18);
-  box-shadow: 0 0 40px rgba(212, 175, 55, 0.05);
+  border: 1px solid rgba(46, 91, 224, 0.18);
+  box-shadow: 0 0 40px rgba(46, 91, 224, 0.05);
+}
+
+/* ---- Sapphire satin CTA pair: pill button + circular arrow orb ---- */
+.btn-luxe-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: 9999px;
+  background:
+    radial-gradient(120% 180% at 22% 0%, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 45%),
+    linear-gradient(135deg, #1b3fb4 0%, #2e5be0 40%, #5d84ee 58%, #16339b 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -2px 6px rgba(8, 21, 54, 0.45),
+    0 12px 30px rgba(24, 55, 160, 0.28);
+  color: #f7f4ec;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+}
+.btn-luxe-pill:hover,
+.group:hover .btn-luxe-pill {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -2px 6px rgba(8, 21, 54, 0.45),
+    0 16px 40px rgba(24, 55, 160, 0.42);
+}
+.btn-luxe-pill:active {
+  transform: translateY(0);
+}
+
+.btn-luxe-orb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border-radius: 9999px;
+  border: 1px solid rgba(19, 41, 75, 0.28);
+  color: #13294b;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+.btn-luxe-orb svg {
+  transition: transform 0.3s ease;
+}
+.btn-luxe-orb:hover,
+.group:hover .btn-luxe-orb {
+  background: #12305b;
+  border-color: #12305b;
+  color: #f7f4ec;
+}
+.btn-luxe-orb:hover svg,
+.group:hover .btn-luxe-orb svg {
+  transform: translate(1px, -1px);
+}
+.btn-luxe-orb--light {
+  border-color: rgba(247, 244, 236, 0.4);
+  color: #f7f4ec;
+}
+.btn-luxe-orb--light:hover,
+.group:hover .btn-luxe-orb--light {
+  background: #f7f4ec;
+  border-color: #f7f4ec;
+  color: #102359;
+}
+
+/* Ivory category chip pinned on imagery (reference-style product tag) */
+.chip-luxe {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  background: #f7f4ec;
+  color: #102349;
+  padding: 0.42rem 0.95rem;
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.22);
+}
+
+/* Deep-navy silk band, the dark-section canvas of the reference layout */
+.silk-navy {
+  background-color: #081936;
+  background-image:
+    radial-gradient(80% 60% at 15% 0%, rgba(46, 91, 224, 0.18) 0%, transparent 55%),
+    radial-gradient(70% 55% at 85% 100%, rgba(24, 55, 160, 0.24) 0%, transparent 60%),
+    radial-gradient(50% 40% at 70% 30%, rgba(143, 176, 248, 0.08) 0%, transparent 60%);
 }
 
 /* Custom transitions and scrollbars */
@@ -82,14 +188,14 @@ p {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0b0b0c;
+  background: #e9e4d8;
 }
 ::-webkit-scrollbar-thumb {
-  background: #373737;
+  background: #b4bfd4;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #c98e3b;
+  background: #2e5be0;
 }
 
 /* Horizontal marquee animation */
@@ -104,6 +210,39 @@ p {
 
 .animate-marquee {
   animation: marquee 30s linear infinite;
+}
+
+/* ---- Our Work: counter-drifting film strips ---- */
+@keyframes marqueeDrift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.marquee-left {
+  animation: marqueeDrift linear infinite;
+}
+
+.marquee-right {
+  animation: marqueeDrift linear infinite reverse;
+}
+
+.marquee-row:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-left,
+  .marquee-right {
+    animation: none;
+  }
+  .marquee-row {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* Hero scroll-hint line */
@@ -131,7 +270,7 @@ p {
   appearance: none;
   height: 2px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #b8732a, #dbae66);
+  background: linear-gradient(90deg, #1f46c4, #4f7bee);
   outline: none;
   cursor: pointer;
 }
@@ -141,25 +280,25 @@ p {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: radial-gradient(circle at 32% 30%, #f7e7b2, #dbae66 55%, #9c6c1e);
+  background: radial-gradient(circle at 32% 30%, #cfe0ff, #4f7bee 55%, #16339b);
   border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 0 0 5px rgba(219, 174, 102, 0.12), 0 4px 14px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 0 5px rgba(46, 91, 224, 0.12), 0 4px 14px rgba(0, 0, 0, 0.6);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .luxe-range::-webkit-slider-thumb:hover {
   transform: scale(1.15);
-  box-shadow: 0 0 0 8px rgba(219, 174, 102, 0.16), 0 4px 18px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 0 8px rgba(46, 91, 224, 0.16), 0 4px 18px rgba(0, 0, 0, 0.7);
 }
 .luxe-range::-moz-range-thumb {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: radial-gradient(circle at 32% 30%, #f7e7b2, #dbae66 55%, #9c6c1e);
+  background: radial-gradient(circle at 32% 30%, #cfe0ff, #4f7bee 55%, #16339b);
   border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 0 0 5px rgba(219, 174, 102, 0.12), 0 4px 14px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 0 5px rgba(46, 91, 224, 0.12), 0 4px 14px rgba(0, 0, 0, 0.6);
 }
 .luxe-range::-moz-range-track {
   height: 2px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #b8732a, #dbae66);
+  background: linear-gradient(90deg, #1f46c4, #4f7bee);
 }

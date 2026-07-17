@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "Contact & Private Appointments",
   description:
     "Reach the Ceylon Gem Maison concierge — enquiries, private viewings at the Colombo atelier, bespoke commissions, and lifetime care for your pieces.",
+  alternates: { canonical: "/contact" },
 };
 
 const CHANNELS = [
@@ -75,7 +76,7 @@ const FAQS = [
 
 export default function ContactPage() {
   return (
-    <main className="relative flex min-h-screen w-full select-none flex-col bg-[#070708] p-[10px]">
+    <main className="relative flex min-h-screen w-full select-none flex-col bg-[#F7F4EC]">
       <ScrollFX />
       <LuxeCursor />
 
@@ -88,7 +89,7 @@ export default function ContactPage() {
       />
 
       {/* White island */}
-      <div className="relative z-20 mt-[10px] flex w-full flex-col overflow-hidden rounded-[2rem] border border-zinc-200/80 bg-[#FAF9F6] shadow-[0_-20px_50px_rgba(0,0,0,0.35)] md:rounded-[3rem]">
+      <div className="relative z-20 flex w-full flex-col bg-[#F7F4EC]">
 
         {/* ---- Channels + form ---- */}
         <section className="w-full px-6 py-24 md:px-12 md:py-32">
@@ -102,12 +103,12 @@ export default function ContactPage() {
                   The Concierge
                 </span>
               </div>
-              <h2 className="font-serif text-4xl font-normal leading-[1.15] tracking-wide text-zinc-900 md:text-5xl">
+              <h2 className="font-serif text-4xl font-normal leading-[1.15] tracking-wide text-[#13294B] md:text-5xl">
                 Every Channel,
                 <br />
                 <span className="italic font-light text-amber-600">One Gemologist</span>
               </h2>
-              <p className="mt-6 max-w-lg font-sans text-sm leading-relaxed text-zinc-700 md:text-base">
+              <p className="mt-6 max-w-lg font-body text-sm leading-relaxed text-[#3A4E6B] md:text-base">
                 Whether you write, call, or walk in from Galle Face, you will
                 speak with someone who has held the stones — and who will stay
                 with you from first enquiry to final fitting.
@@ -120,7 +121,7 @@ export default function ContactPage() {
                       {channel.icon}
                     </div>
                     <div>
-                      <p className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.2em] text-zinc-500">
+                      <p className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.2em] text-[#5E7495]">
                         {channel.label}
                       </p>
                       {channel.lines.map((line) =>
@@ -128,12 +129,12 @@ export default function ContactPage() {
                           <a
                             key={line}
                             href={channel.href}
-                            className="mt-1 block font-sans text-sm text-zinc-800 transition-colors hover:text-amber-700 md:text-base"
+                            className="mt-1 block font-body text-sm text-[#2C405C] transition-colors hover:text-amber-700 md:text-base"
                           >
                             {line}
                           </a>
                         ) : (
-                          <p key={line} className="mt-1 font-sans text-sm text-zinc-800 md:text-base">
+                          <p key={line} className="mt-1 font-body text-sm text-[#2C405C] md:text-base">
                             {line}
                           </p>
                         ),
@@ -154,13 +155,13 @@ export default function ContactPage() {
         </section>
 
         {/* ---- FAQ ---- */}
-        <section className="w-full border-t border-zinc-200 bg-white px-6 py-24 md:px-12 md:py-32">
+        <section className="w-full border-t border-zinc-200 bg-[#F7F4EC] px-6 py-24 md:px-12 md:py-32">
           <div className="mx-auto max-w-4xl">
             <div data-reveal className="mb-12 text-center md:mb-16">
               <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.3em] text-amber-700">
                 Before You Write
               </span>
-              <h2 className="mt-4 font-serif text-4xl font-normal leading-[1.15] tracking-wide text-zinc-900 md:text-5xl">
+              <h2 className="mt-4 font-serif text-4xl font-normal leading-[1.15] tracking-wide text-[#13294B] md:text-5xl">
                 Often
                 <span className="italic font-light text-amber-600"> Asked</span>
               </h2>
@@ -169,15 +170,15 @@ export default function ContactPage() {
             <div data-reveal className="divide-y divide-zinc-200 border-y border-zinc-200">
               {FAQS.map((faq) => (
                 <details key={faq.q} className="group py-6">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-serif text-lg text-zinc-900 transition-colors group-open:text-amber-700 md:text-xl [&::-webkit-details-marker]:hidden">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-serif text-lg text-[#13294B] transition-colors group-open:text-amber-700 md:text-xl [&::-webkit-details-marker]:hidden">
                     {faq.q}
-                    <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 text-zinc-500 transition-all duration-300 group-open:rotate-45 group-open:border-amber-600 group-open:text-amber-700">
+                    <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 text-[#5E7495] transition-all duration-300 group-open:rotate-45 group-open:border-amber-600 group-open:text-amber-700">
                       <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                       </svg>
                     </span>
                   </summary>
-                  <p className="mt-4 max-w-2xl font-sans text-[0.85rem] leading-relaxed text-zinc-600 md:text-sm">
+                  <p className="mt-4 max-w-2xl font-body text-[0.85rem] leading-relaxed text-[#4A6285] md:text-sm">
                     {faq.a}
                   </p>
                 </details>
@@ -187,7 +188,7 @@ export default function ContactPage() {
         </section>
 
         {/* ---- Private appointment band (dark) ---- */}
-        <section className="w-full border-t border-zinc-900 bg-[#0b0b0c] px-6 py-24 text-center md:px-12 md:py-32">
+        <section className="w-full border-t border-[#1D3D6B] bg-[#0D2347] px-6 py-24 text-center md:px-12 md:py-32">
           <div data-reveal className="mx-auto max-w-2xl space-y-8">
             <span className="block font-sans text-[0.7rem] font-medium uppercase tracking-[0.3em] text-gold-300">
               By Private Appointment
@@ -197,7 +198,7 @@ export default function ContactPage() {
               <br />
               <span className="italic font-light text-gold-300">Awaits</span>
             </h2>
-            <p className="mx-auto max-w-xl font-sans text-sm leading-relaxed text-zinc-300 md:text-base">
+            <p className="mx-auto max-w-xl font-body text-sm leading-relaxed text-[#C9D4E6] md:text-base">
               Unmounted Ceylon sapphires, investment-grade stones, and the
               heritage archive are shown only in person. Appointments are held
               in complete privacy, with the atelier closed to other visitors.
@@ -205,7 +206,7 @@ export default function ContactPage() {
             <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
               <a
                 href="mailto:atelier@ceylongemmaison.com?subject=Private%20Vault%20Appointment"
-                className="w-full rounded-full bg-gold-400 px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-obsidian-950 shadow-[0_4px_25px_rgba(212,175,55,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-[0_4px_35px_rgba(212,175,55,0.45)] active:translate-y-0 sm:w-auto"
+                className="w-full rounded-full bg-gold-400 px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-[0_4px_25px_rgba(46,91,224,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-[0_4px_35px_rgba(46,91,224,0.45)] active:translate-y-0 sm:w-auto"
               >
                 Request an Appointment
               </a>

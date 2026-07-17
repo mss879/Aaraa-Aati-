@@ -14,7 +14,7 @@ import Navbar from "@/components/Navbar";
  */
 
 // Usable length of the film in seconds (the 10s source, trimmed a hair off the tail).
-const DURATION = 9.9;
+const DURATION = 9.95;
 
 // How many viewport heights of scroll the pinned hero occupies while scrubbing.
 const TRACK_VH = 440;
@@ -22,7 +22,6 @@ const TRACK_VH = 440;
 type Scene = {
   eyebrow: string;
   lines: [string, string];
-  body: string;
   // Progress window (0..1 of the scroll track), tuned to the film's cut points:
   //  in    -> starts fading in
   //  peak  -> fully visible
@@ -39,8 +38,7 @@ const SCENES: Scene[] = [
   {
     // Film 0.0–2.5s  ·  the pencil blueprint on paper
     eyebrow: "I · The Sketch",
-    lines: ["Every legend begins", "with a single line"],
-    body: "Before the gold, before the fire — there is only paper, a pencil, and an obsession with proportion.",
+    lines: ["A legend begins", "with a single line"],
     in: -0.05, // fully visible at the very top of the page
     peak: 0.0,
     fade: 0.19,
@@ -50,7 +48,6 @@ const SCENES: Scene[] = [
     // Film 2.5–4.65s  ·  the drawing becomes a glowing 3D form
     eyebrow: "II · The Craft",
     lines: ["Shaped to a", "flawless geometry"],
-    body: "Every curve is modelled to the micron, then coaxed into being by hands that have shaped brilliance for a century.",
     in: 0.275,
     peak: 0.32,
     fade: 0.43,
@@ -60,7 +57,6 @@ const SCENES: Scene[] = [
     // Film 4.65–7.1s  ·  the finished solitaire revealed on black silk
     eyebrow: "III · The Reveal",
     lines: ["Brilliance,", "fully realised"],
-    body: "A solitaire that gathers every light in the room and answers in fire — the moment paper becomes forever.",
     in: 0.505,
     peak: 0.55,
     fade: 0.67,
@@ -70,7 +66,6 @@ const SCENES: Scene[] = [
     // Film 7.1–10s  ·  worn on the hand it was made for
     eyebrow: "IV · Forever Yours",
     lines: ["Made to be", "yours, always"],
-    body: "Slipped onto the hand it was destined for. Begin your own Ceylon Gem Maison legacy — or design a piece the world has never seen.",
     in: 0.75,
     peak: 0.8,
     fade: 1.1, // stays visible through the end of the track
@@ -136,7 +131,7 @@ export default function ScrollHero() {
 
     // Pick the source weight by viewport.
     const isMobile = window.matchMedia("(max-width: 767px)").matches;
-    video.src = isMobile ? "/hero/ring-story-mobile.mp4" : "/hero/ring-story.mp4";
+    video.src = isMobile ? "/hero/ring-story-mobile-rebranded.mp4" : "/hero/ring-story-rebranded.mp4";
     video.load();
 
     let raf = 0;
@@ -266,7 +261,7 @@ export default function ScrollHero() {
     >
       <div
         ref={stageRef}
-        className="sticky top-[10px] h-[calc(100svh-20px)] w-full overflow-hidden rounded-[2rem] md:rounded-[3rem] border border-gold-500/10 bg-[#070708] shadow-[0_0_80px_rgba(0,0,0,0.85)]"
+        className="sticky top-0 h-svh w-full overflow-hidden bg-[#0A1F3D]"
       >
         {/* Scroll-scrubbed film */}
         <video
@@ -328,22 +323,33 @@ export default function ScrollHero() {
                   <br />
                   <span className="italic text-gold-200">{s.lines[1]}</span>
                 </Heading>
-                <p className="mt-5 max-w-md font-sans text-[0.95rem] leading-relaxed text-gold-100/90 md:text-lg">
-                  {s.body}
-                </p>
                 {s.cta && (
-                  <div className="flex flex-col gap-4 pt-8 sm:flex-row">
+                  <div className="flex flex-col gap-6 pt-8 sm:flex-row">
                     <a
                       href="#collection"
-                      className="rounded-full bg-gold-400 px-8 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-obsidian-950 shadow-[0_4px_20px_rgba(212,175,55,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-[0_4px_30px_rgba(212,175,55,0.45)] active:translate-y-0"
+                      className="group inline-flex items-center gap-3"
                     >
-                      Explore Collection
+                      <span className="btn-luxe-pill px-8 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.2em]">
+                        Explore Collection
+                      </span>
+                      <span className="btn-luxe-orb btn-luxe-orb--light h-12 w-12">
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 17L17 7m0 0H9m8 0v8" />
+                        </svg>
+                      </span>
                     </a>
                     <a
                       href="/atelier"
-                      className="rounded-full border border-gold-400/30 px-8 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-gold-200 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/60 hover:bg-gold-500/10 active:translate-y-0"
+                      className="group inline-flex items-center gap-3"
                     >
-                      Design Your Own
+                      <span className="rounded-full border border-gold-400/30 px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-gold-200 backdrop-blur-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-gold-300/60 group-hover:bg-gold-500/10 active:translate-y-0">
+                        Design Your Own
+                      </span>
+                      <span className="btn-luxe-orb btn-luxe-orb--light h-12 w-12">
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 17L17 7m0 0H9m8 0v8" />
+                        </svg>
+                      </span>
                     </a>
                   </div>
                 )}
@@ -368,7 +374,7 @@ export default function ScrollHero() {
 
         {/* Meta strip */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex items-center justify-between px-6 pb-4 font-sans text-[0.65rem] uppercase tracking-[0.25em] text-gold-100/75 md:px-16 md:text-[0.7rem]">
-          <span>Est. 1928 · Sri Lanka</span>
+          <span>Ceylon · Singapore</span>
           <span className="hidden sm:block">One Sketch · One Solitaire · One Forever</span>
           <span>Bespoke Atelier</span>
         </div>

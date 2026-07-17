@@ -1,31 +1,158 @@
 /**
- * Shared model for the Bespoke Atelier ring configurator.
+ * Shared model for the Bespoke Atelier jewellery configurator.
  * Used by the interactive form, the WebGL preview and the
  * /api/generate-ring route so every surface agrees on the options.
  */
 
+export type PieceId = "ring" | "necklace" | "bracelet";
 export type SettingId = "solitaire" | "halo" | "trinity" | "pave";
 export type MetalId = "yellow-gold" | "rose-gold" | "white-gold" | "platinum";
 export type GemId = "diamond" | "ruby" | "sapphire" | "emerald" | "amethyst" | "aquamarine";
 export type CutId = "round" | "princess" | "oval" | "emerald";
+export type BraceletStyleId = "cable" | "bangle" | "curb" | "rope";
+export type FitId = "slender" | "classic" | "generous";
 
 export interface RingConfig {
+  piece: PieceId;
   setting: SettingId;
   metal: MetalId;
   gem: GemId;
   cut: CutId;
   carat: number; // 0.5 – 3.0
   engraving: string;
+  /** Bracelets are pure metalwork — styled, not stone-set. */
+  braceletStyle: BraceletStyleId;
+  fit: FitId;
 }
 
 export const DEFAULT_CONFIG: RingConfig = {
+  piece: "ring",
   setting: "solitaire",
   metal: "yellow-gold",
   gem: "diamond",
   cut: "round",
   carat: 1.0,
   engraving: "",
+  braceletStyle: "cable",
+  fit: "classic",
 };
+
+export interface PieceOption {
+  id: PieceId;
+  label: string;
+  tagline: string;
+  description: string;
+  /** Lowercase noun for sentences ("your ring"). */
+  noun: string;
+  /** Where the hidden engraving lives — used in UI copy and the AI prompt. */
+  engravingSpot: string;
+  /** Extra metalwork relative to a ring (chain, bangle) scales the metal cost. */
+  metalFactor: number;
+  /** Settings translate differently per piece (a pavé chain ≠ a pavé band). */
+  settingFactor: number;
+  /** Flat crafting premium for the larger piece. */
+  craftBase: number;
+}
+
+export const PIECES: PieceOption[] = [
+  {
+    id: "ring",
+    label: "The Ring",
+    tagline: "Worn closest, forever",
+    description: "A crown for the hand — engagement, promise, or a gift to yourself.",
+    noun: "ring",
+    engravingSpot: "on the inner surface of the band",
+    metalFactor: 1,
+    settingFactor: 1,
+    craftBase: 0,
+  },
+  {
+    id: "necklace",
+    label: "The Necklace",
+    tagline: "Light at the collarbone",
+    description: "A pendant suspended on a fine chain — the stone rests at the heart.",
+    noun: "necklace",
+    engravingSpot: "on the small clasp tag of the chain",
+    metalFactor: 2.1,
+    settingFactor: 0.9,
+    craftBase: 450,
+  },
+  {
+    id: "bracelet",
+    label: "The Bracelet",
+    tagline: "A circle of presence",
+    description: "Pure precious metal for the wrist — chain, bangle or twisted rope.",
+    noun: "bracelet",
+    engravingSpot: "on the polished clasp tag",
+    metalFactor: 2.6,
+    settingFactor: 0, // bracelets carry no stone setting
+    craftBase: 650,
+  },
+];
+
+/* ---------- bracelet styles (pure metalwork — no stone) ---------- */
+
+export interface BraceletStyleOption {
+  id: BraceletStyleId;
+  label: string;
+  tagline: string;
+  description: string;
+  /** Prompt fragment describing the bracelet for the AI render. */
+  prompt: string;
+  /** Heavier metalwork costs more. */
+  priceFactor: number;
+}
+
+export const BRACELET_STYLES: BraceletStyleOption[] = [
+  {
+    id: "cable",
+    label: "Cable Chain",
+    tagline: "The eternal classic",
+    description: "Round interlocking links, hand-finished — supple, timeless, everyday luxury.",
+    prompt: "a classic cable-link chain bracelet of round interlocking hand-polished links",
+    priceFactor: 1.0,
+  },
+  {
+    id: "bangle",
+    label: "Bangle",
+    tagline: "One unbroken line",
+    description: "A single broad, mirror-polished band — sculptural and absolute.",
+    prompt: "a solid mirror-polished bangle bracelet with a broad rounded profile and clean unbroken lines",
+    priceFactor: 1.25,
+  },
+  {
+    id: "curb",
+    label: "Curb Chain",
+    tagline: "Flat-laid strength",
+    description: "Twisted, flattened links that lie flush on the wrist — quietly assertive.",
+    prompt: "a curb-link chain bracelet of flat twisted interlocking links lying flush",
+    priceFactor: 1.1,
+  },
+  {
+    id: "rope",
+    label: "Twisted Rope",
+    tagline: "Strands, entwined",
+    description: "Three strands of gold wound about each other — light moves along the spiral.",
+    prompt: "a twisted rope bangle bracelet of three intertwined polished metal strands",
+    priceFactor: 1.35,
+  },
+];
+
+/* ---------- wrist fits ---------- */
+
+export interface FitOption {
+  id: FitId;
+  label: string;
+  size: string;
+  /** Subtle scale applied to the 3D model. */
+  scale3d: number;
+}
+
+export const FITS: FitOption[] = [
+  { id: "slender", label: "Slender", size: "16 cm", scale3d: 0.94 },
+  { id: "classic", label: "Classic", size: "17.5 cm", scale3d: 1.0 },
+  { id: "generous", label: "Generous", size: "19 cm", scale3d: 1.06 },
+];
 
 export interface SettingOption {
   id: SettingId;
@@ -35,6 +162,9 @@ export interface SettingOption {
   /** Prompt fragment describing the setting for the AI render. */
   prompt: string;
   basePrice: number;
+  /** Copy overrides for when the piece is a necklace (band → chain framing). */
+  necklaceDescription?: string;
+  necklacePrompt?: string;
 }
 
 export const SETTINGS: SettingOption[] = [
@@ -64,6 +194,10 @@ export const SETTINGS: SettingOption[] = [
     prompt:
       "a three-stone trinity setting with the large center stone flanked by two smaller matching side stones",
     basePrice: 3200,
+    necklaceDescription:
+      "A grand center pendant flanked by two smaller companions set along the chain — a story told in light.",
+    necklacePrompt:
+      "a trinity design with the grand center pendant flanked by two smaller matching stones set along the chain",
   },
   {
     id: "pave",
@@ -73,8 +207,16 @@ export const SETTINGS: SettingOption[] = [
     prompt:
       "a pavé setting where the shoulders of the band are micro-set with tiny accent diamonds running along the band",
     basePrice: 2400,
+    necklaceDescription:
+      "The chain approaching the pendant is micro-set with accent diamonds that shimmer with every movement.",
+    necklacePrompt:
+      "a pavé design where the chain approaching the pendant is micro-set with tiny accent diamonds",
   },
 ];
+
+/** Setting copy adjusted to the piece (a pavé chain ≠ a pavé band). */
+export const settingDescriptionFor = (s: SettingOption, piece: PieceId) =>
+  piece === "necklace" ? s.necklaceDescription ?? s.description : s.description;
 
 export interface MetalOption {
   id: MetalId;
@@ -266,16 +408,26 @@ export const CARAT_STEP = 0.1;
 
 /* ---------- lookups & helpers ---------- */
 
+export const pieceById = (id: PieceId) => PIECES.find((p) => p.id === id) ?? PIECES[0];
 export const settingById = (id: SettingId) => SETTINGS.find((s) => s.id === id) ?? SETTINGS[0];
 export const metalById = (id: MetalId) => METALS.find((m) => m.id === id) ?? METALS[0];
 export const gemById = (id: GemId) => GEMS.find((g) => g.id === id) ?? GEMS[0];
 export const cutById = (id: CutId) => CUTS.find((c) => c.id === id) ?? CUTS[0];
+export const braceletStyleById = (id: BraceletStyleId) =>
+  BRACELET_STYLES.find((b) => b.id === id) ?? BRACELET_STYLES[0];
+export const fitById = (id: FitId) => FITS.find((f) => f.id === id) ?? FITS[1];
 
 export function estimatePrice(config: RingConfig): number {
+  const piece = pieceById(config.piece);
+  // Bracelets are pure metalwork — priced on metal weight and style, no stone.
   const raw =
-    settingById(config.setting).basePrice +
-    metalById(config.metal).price +
-    gemById(config.gem).pricePerCarat * config.carat;
+    config.piece === "bracelet"
+      ? piece.craftBase +
+        metalById(config.metal).price * piece.metalFactor * braceletStyleById(config.braceletStyle).priceFactor
+      : piece.craftBase +
+        settingById(config.setting).basePrice * piece.settingFactor +
+        metalById(config.metal).price * piece.metalFactor +
+        gemById(config.gem).pricePerCarat * config.carat;
   return Math.round(raw / 50) * 50;
 }
 
@@ -296,46 +448,91 @@ export function sanitizeConfig(input: unknown): RingConfig {
       : "";
 
   return {
+    piece: pick(PIECES, body.piece, "ring"),
     setting: pick(SETTINGS, body.setting, "solitaire"),
     metal: pick(METALS, body.metal, "yellow-gold"),
     gem: pick(GEMS, body.gem, "diamond"),
     cut: pick(CUTS, body.cut, "round"),
     carat,
     engraving,
+    braceletStyle: pick(BRACELET_STYLES, body.braceletStyle, "cable"),
+    fit: pick(FITS, body.fit, "classic"),
   };
 }
 
-/** Pre-filled WhatsApp enquiry text for the configured ring. */
+/** Pre-filled WhatsApp enquiry text for the configured piece. */
 export function buildWhatsAppMessage(config: RingConfig): string {
+  const piece = pieceById(config.piece);
   const lines = [
-    "Hello Ceylon Gem Maison! I just designed a bespoke ring on your site and would love to enquire:",
-    `• Setting: ${settingById(config.setting).label}`,
-    `• Metal: ${metalById(config.metal).karat} ${metalById(config.metal).label}`,
-    `• Stone: ${config.carat.toFixed(1)} ct ${cutById(config.cut).label} ${gemById(config.gem).label}`,
+    `Hello Ceylon Gem Maison! I just designed a bespoke ${piece.noun} on your site and would love to enquire:`,
+    `• Piece: ${piece.label.replace(/^The /, "")}`,
   ];
+  if (config.piece === "bracelet") {
+    const fit = fitById(config.fit);
+    lines.push(
+      `• Style: ${braceletStyleById(config.braceletStyle).label}`,
+      `• Metal: ${metalById(config.metal).karat} ${metalById(config.metal).label}`,
+      `• Fit: ${fit.label} (${fit.size})`,
+    );
+  } else {
+    lines.push(
+      `• Setting: ${settingById(config.setting).label}`,
+      `• Metal: ${metalById(config.metal).karat} ${metalById(config.metal).label}`,
+      `• Stone: ${config.carat.toFixed(1)} ct ${cutById(config.cut).label} ${gemById(config.gem).label}`,
+    );
+  }
   if (config.engraving) lines.push(`• Engraving: "${config.engraving}"`);
   lines.push(`• Estimated from: $${estimatePrice(config).toLocaleString("en-US")}`);
   return lines.join("\n");
 }
 
-/** Build the image-generation prompt for the configured ring. */
-export function buildRingPrompt(config: RingConfig): string {
+/** Build the image-generation prompt for the configured piece. */
+export function buildJewelPrompt(config: RingConfig): string {
+  const piece = pieceById(config.piece);
   const setting = settingById(config.setting);
   const metal = metalById(config.metal);
   const gem = gemById(config.gem);
   const cut = cutById(config.cut);
+  const settingPrompt =
+    config.piece === "necklace" ? setting.necklacePrompt ?? setting.prompt : setting.prompt;
+
+  const subject = {
+    ring: [
+      `a single engagement ring.`,
+      `The ring features ${settingPrompt}.`,
+      `The band is crafted from ${metal.prompt}.`,
+    ],
+    necklace: [
+      `a single pendant necklace on a fine cable chain.`,
+      `The pendant presents ${settingPrompt}, hanging from a delicate bail.`,
+      `The chain, bail and pendant are all crafted from ${metal.prompt}.`,
+    ],
+    bracelet: [
+      // bracelets are pure metalwork — no stone in the composition
+      `${braceletStyleById(config.braceletStyle).prompt}.`,
+      `The entire bracelet is crafted from ${metal.prompt}, with no gemstones.`,
+    ],
+  }[config.piece];
+
+  const focus =
+    config.piece === "bracelet"
+      ? [
+          `Photorealistic macro studio photography, razor-sharp focus on the metalwork, high-end jewelry catalog style,`,
+          `three-quarter hero angle showing the full sweep of the bracelet and the texture of its surface, delicate light along every polished edge.`,
+        ]
+      : [
+          `The center stone is a ${config.carat.toFixed(1)} carat ${cut.prompt} ${gem.prompt}.`,
+          `Photorealistic macro studio photography, razor-sharp focus on the center stone, high-end jewelry catalog style,`,
+          `three-quarter hero angle showing both the stone and the full sweep of the ${piece.noun}, delicate sparkle highlights on every facet.`,
+        ];
 
   return [
-    `Ultra-detailed professional luxury jewelry product photograph of a single engagement ring.`,
-    `The ring features ${setting.prompt}.`,
-    `The band is crafted from ${metal.prompt}.`,
-    `The center stone is a ${config.carat.toFixed(1)} carat ${cut.prompt} ${gem.prompt}.`,
+    `Ultra-detailed professional luxury jewelry product photograph of ${subject.join(" ")}`,
+    ...focus,
     config.engraving
-      ? `A subtle engraving reading "${config.engraving}" is faintly visible on the inner surface of the band.`
+      ? `A subtle engraving reading "${config.engraving}" is faintly visible ${piece.engravingSpot}.`
       : "",
-    `Photorealistic macro studio photography, razor-sharp focus on the center stone, high-end jewelry catalog style,`,
-    `three-quarter hero angle showing both the stone and the curve of the band, delicate sparkle highlights on every facet.`,
-    `The ring is completely isolated on a pure seamless solid white (#FFFFFF) background —`,
+    `The ${piece.noun} is completely isolated on a pure seamless solid white (#FFFFFF) background —`,
     `no props, no fabric, no shadows cast on visible surfaces, no reflections of an environment, no hands, no text, no watermark, nothing else in frame.`,
   ]
     .filter(Boolean)

@@ -16,10 +16,10 @@ const INTERESTS = [
 ];
 
 const inputClasses =
-  "w-full bg-transparent border-b border-zinc-300 py-2.5 font-sans text-sm md:text-base text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-amber-600 transition-colors";
+  "w-full bg-transparent border-b border-zinc-300 py-2.5 font-body text-sm md:text-base text-[#13294B] placeholder-zinc-400 focus:outline-none focus:border-amber-600 transition-colors";
 
 const labelClasses =
-  "block font-sans text-[0.68rem] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-1";
+  "block font-sans text-[0.68rem] font-medium uppercase tracking-[0.2em] text-[#5E7495] mb-1";
 
 function WhatsAppIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -72,10 +72,10 @@ export default function ContactForm() {
       onSubmit={handleSubmit}
       className="rounded-3xl border border-zinc-200 bg-white p-8 shadow-[0_20px_60px_rgba(0,0,0,0.06)] md:p-10"
     >
-      <h3 className="font-serif text-2xl font-normal tracking-wide text-zinc-900 md:text-3xl">
+      <h3 className="font-serif text-2xl font-normal tracking-wide text-[#13294B] md:text-3xl">
         Send an Enquiry
       </h3>
-      <p className="mt-2 font-sans text-[0.85rem] leading-relaxed text-zinc-600 md:text-sm">
+      <p className="mt-2 font-body text-[0.85rem] leading-relaxed text-[#4A6285] md:text-sm">
         Every message is read by a gemologist, never a bot. We reply within one
         business day.
       </p>
@@ -117,7 +117,7 @@ export default function ContactForm() {
         <div className="grid gap-6 sm:grid-cols-2">
           <div>
             <label htmlFor="contact-phone" className={labelClasses}>
-              Phone <span className="normal-case tracking-normal text-zinc-400">(optional)</span>
+              Phone <span className="normal-case tracking-normal text-[#A9B8D0]">(optional)</span>
             </label>
             <input
               id="contact-phone"
@@ -167,7 +167,7 @@ export default function ContactForm() {
       <div className="mt-10 flex flex-col gap-4 sm:flex-row">
         <button
           type="submit"
-          className="w-full cursor-pointer rounded-full bg-zinc-900 px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#FAF9F6] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700 active:translate-y-0 sm:w-auto"
+          className="w-full cursor-pointer rounded-full bg-[#12305B] px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700 active:translate-y-0 sm:w-auto"
         >
           Send Enquiry
         </button>
@@ -176,7 +176,7 @@ export default function ContactForm() {
             href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildBody())}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-zinc-300 px-8 py-3.5 font-sans text-xs font-medium uppercase tracking-[0.2em] text-zinc-800 transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-600 hover:text-emerald-700 active:translate-y-0 sm:w-auto"
+            className="inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-zinc-300 px-8 py-3.5 font-sans text-xs font-medium uppercase tracking-[0.2em] text-[#2C405C] transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-600 hover:text-emerald-700 active:translate-y-0 sm:w-auto"
           >
             <WhatsAppIcon />
             WhatsApp Us
@@ -185,7 +185,7 @@ export default function ContactForm() {
       </div>
 
       {sent && (
-        <p className="mt-6 font-sans text-[0.85rem] leading-relaxed text-emerald-700 md:text-sm" role="status">
+        <p className="mt-6 font-body text-[0.85rem] leading-relaxed text-emerald-700 md:text-sm" role="status">
           Your email client has opened with the enquiry — press send there and
           we will reply within one business day.
         </p>

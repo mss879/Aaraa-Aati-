@@ -38,7 +38,7 @@ export default function PremiumServices() {
   ];
 
   return (
-    <section className="relative w-full bg-[#0b0b0c] py-32 md:py-44 px-6 md:px-12 z-20 select-none border-t border-zinc-900">
+    <section className="relative w-full bg-[#0D2347] py-32 md:py-44 px-6 md:px-12 z-20 select-none border-t border-[#1D3D6B]">
       
       {/* Background Ambient Glows */}
       <div className="absolute top-1/4 left-1/3 w-96 h-96 rounded-full bg-gold-500/5 blur-[120px] pointer-events-none" />
@@ -60,7 +60,7 @@ export default function PremiumServices() {
             <span className="italic text-gold-300 font-serif font-light">for the Connoisseur</span>
           </h2>
           
-          <p className="text-sm md:text-base text-zinc-300 font-sans leading-relaxed">
+          <p className="text-sm md:text-base text-[#C9D4E6] font-body leading-relaxed">
             To ensure your acquisitions match the significance of your milestones, Ceylon Gem Maison offers bespoke private assistance that fits seamlessly around your lifestyle.
           </p>
         </div>
@@ -70,22 +70,22 @@ export default function PremiumServices() {
           {services.map((service, idx) => (
             <div
               key={idx}
-              className="group relative bg-[#0e0e10]/40 backdrop-blur-md border border-zinc-900/80 hover:border-gold-400/20 p-8 rounded-2xl flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 shadow-[0_10px_35px_rgba(0,0,0,0.5)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.7)] overflow-hidden"
+              className="group relative bg-[#10294F]/40 backdrop-blur-md border border-[#1D3D6B]/80 hover:border-gold-400/20 p-8 rounded-2xl flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 shadow-[0_10px_35px_rgba(0,0,0,0.5)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.7)] overflow-hidden"
             >
               {/* Expanding Top Gold Border */}
               <div className="absolute top-0 left-0 w-0 h-[2px] bg-gradient-to-r from-gold-300 to-gold-500 transition-all duration-500 group-hover:w-full" />
               
               {/* Subtle Radial Glow */}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(218,174,102,0.03),transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(46,91,224,0.03),transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
               {/* Number Indicator */}
-              <span className="absolute top-6 right-8 text-5xl md:text-6xl font-serif font-light text-zinc-900/60 transition-colors duration-500 group-hover:text-gold-500/10 pointer-events-none select-none">
+              <span className="absolute top-6 right-8 text-5xl md:text-6xl font-serif font-light text-[#13294B]/60 transition-colors duration-500 group-hover:text-gold-500/10 pointer-events-none select-none">
                 {service.number}
               </span>
 
               <div className="space-y-6 relative z-10">
                 {/* Icon Wrapper with glow effect */}
-                <div className="w-14 h-14 rounded-xl bg-gold-500/5 border border-gold-500/10 flex items-center justify-center transition-all duration-300 group-hover:bg-gold-500/10 group-hover:border-gold-400/30 group-hover:shadow-[0_0_20px_rgba(212,175,55,0.08)]">
+                <div className="w-14 h-14 rounded-xl bg-gold-500/5 border border-gold-500/10 flex items-center justify-center transition-all duration-300 group-hover:bg-gold-500/10 group-hover:border-gold-400/30 group-hover:shadow-[0_0_20px_rgba(46,91,224,0.08)]">
                   {service.icon}
                 </div>
 
@@ -102,13 +102,13 @@ export default function PremiumServices() {
                 </div>
 
                 {/* Service Description */}
-                <p className="text-[0.85rem] md:text-sm text-zinc-300 font-sans leading-relaxed max-w-sm">
+                <p className="text-[0.85rem] md:text-sm text-[#C9D4E6] font-body leading-relaxed max-w-sm">
                   {service.description}
                 </p>
               </div>
 
               {/* Action Link inside Card */}
-              <div className="pt-8 border-t border-zinc-900/60 mt-8 flex items-center gap-2 text-gold-300 group-hover:text-white transition-colors cursor-pointer self-start relative z-10">
+              <div className="pt-8 border-t border-[#1D3D6B]/60 mt-8 flex items-center gap-2 text-gold-300 group-hover:text-white transition-colors cursor-pointer self-start relative z-10">
                 <span className="text-[0.7rem] md:text-[0.72rem] tracking-[0.25em] uppercase font-sans font-semibold">
                   Inquire Now
                 </span>

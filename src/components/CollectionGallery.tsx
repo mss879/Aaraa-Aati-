@@ -41,7 +41,7 @@ export default function CollectionGallery() {
             <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.3em] text-amber-700">
               The Maison Collections
             </span>
-            <h2 className="mt-4 font-serif text-4xl font-normal leading-[1.15] tracking-wide text-zinc-900 md:text-5xl">
+            <h2 className="mt-4 font-serif text-4xl font-normal leading-[1.15] tracking-wide text-[#13294B] md:text-5xl">
               Browse the
               <span className="italic font-light text-amber-600"> House</span>
             </h2>
@@ -57,8 +57,8 @@ export default function CollectionGallery() {
                   aria-pressed={isActive}
                   className={`cursor-pointer rounded-full border px-5 py-2 font-sans text-[0.7rem] font-medium uppercase tracking-[0.2em] transition-all duration-300 ${
                     isActive
-                      ? "border-zinc-900 bg-zinc-900 text-[#FAF9F6]"
-                      : "border-zinc-300 text-zinc-600 hover:border-zinc-900 hover:text-zinc-900"
+                      ? "border-[#1D3D6B] bg-[#12305B] text-[#F7F4EC]"
+                      : "border-zinc-300 text-[#4A6285] hover:border-[#1D3D6B] hover:text-[#13294B]"
                   }`}
                 >
                   {filter}
@@ -68,21 +68,21 @@ export default function CollectionGallery() {
           </div>
         </div>
 
-        <p className="mx-auto mt-6 max-w-7xl font-sans text-[0.7rem] uppercase tracking-[0.25em] text-zinc-500">
+        <p className="mx-auto mt-6 max-w-7xl font-sans text-[0.7rem] uppercase tracking-[0.25em] text-[#5E7495]">
           {shown.length} {shown.length === 1 ? "piece" : "pieces"}
           {active !== "All" && ` · ${active}`}
         </p>
       </div>
 
       {/* Gallery grid — the home page's black-card language, full bleed */}
-      <div className="grid grid-cols-1 gap-[1px] border-y border-zinc-900 bg-zinc-900 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-[1px] border-y border-[#1D3D6B] bg-[#12305B] sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((piece) => (
           <div
             key={piece.slug}
             className="group relative flex aspect-[4/5] flex-col justify-between overflow-hidden bg-black p-6 md:p-7"
           >
             {/* Category label */}
-            <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.25em] text-zinc-400">
+            <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.25em] text-[#A9B8D0]">
               {piece.category}
             </span>
 
@@ -106,20 +106,20 @@ export default function CollectionGallery() {
                 <h3 className="font-serif text-lg tracking-wide text-white transition-colors group-hover:text-gold-300 md:text-xl">
                   {piece.name}
                 </h3>
-                <p className="mt-1 font-sans text-[0.72rem] uppercase tracking-[0.15em] text-zinc-500">
+                <p className="mt-1 font-sans text-[0.72rem] uppercase tracking-[0.15em] text-[#5E7495]">
                   {piece.notes}
                 </p>
               </div>
-              <p className="font-sans text-[0.82rem] leading-relaxed text-zinc-400 md:text-sm">
+              <p className="font-body text-[0.82rem] leading-relaxed text-[#A9B8D0] md:text-sm">
                 {piece.description}
               </p>
-              <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
+              <div className="flex items-center justify-between border-t border-[#1D3D6B] pt-4">
                 <span className="font-sans text-[0.7rem] uppercase tracking-[0.2em] text-gold-300/90">
                   Price upon request
                 </span>
                 <Link
                   href={`/contact?piece=${encodeURIComponent(piece.name)}`}
-                  className="inline-flex items-center gap-2 font-sans text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-zinc-400 transition-colors hover:text-white"
+                  className="inline-flex items-center gap-2 font-sans text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-[#A9B8D0] transition-colors hover:text-white"
                   aria-label={`Enquire about the ${piece.name}`}
                 >
                   Enquire

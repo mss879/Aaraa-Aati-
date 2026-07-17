@@ -46,7 +46,7 @@ export default function LuxeCursor() {
       );
       gsap.to(ring, {
         scale: interactive ? 1.9 : 1,
-        borderColor: interactive ? "rgba(219,174,102,0.9)" : "rgba(219,174,102,0.45)",
+        borderColor: interactive ? "rgba(46,91,224,0.9)" : "rgba(46,91,224,0.45)",
         duration: 0.35,
         ease: "power2.out",
       });
@@ -75,7 +75,7 @@ export default function LuxeCursor() {
       <div
         ref={dotRef}
         aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[100] h-1.5 w-1.5 rounded-full bg-gold-300 shadow-[0_0_10px_rgba(219,174,102,0.9)] mix-blend-screen"
+        className="pointer-events-none fixed left-0 top-0 z-[100] h-1.5 w-1.5 rounded-full bg-gold-300 shadow-[0_0_10px_rgba(46,91,224,0.9)] mix-blend-screen"
       />
     </>
   );

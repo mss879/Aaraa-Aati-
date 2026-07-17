@@ -2,25 +2,33 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import gsap from "gsap";
-import BespokeRing3D from "@/components/atelier/BespokeRing3D";
+import BespokeJewel3D from "@/components/atelier/BespokeJewel3D";
 import {
+  BRACELET_STYLES,
   CARAT_MAX,
   CARAT_MIN,
   CARAT_STEP,
   CUTS,
   DEFAULT_CONFIG,
+  FITS,
   GEMS,
   METALS,
+  PIECES,
   SETTINGS,
+  type BraceletStyleId,
+  type PieceId,
   type RingConfig,
+  braceletStyleById,
   buildWhatsAppMessage,
   cutById,
   estimatePrice,
+  fitById,
   gemById,
   metalById,
+  pieceById,
   settingById,
+  settingDescriptionFor,
 } from "@/lib/ring-options";
 
 /* Atelier WhatsApp line — set NEXT_PUBLIC_WHATSAPP_NUMBER in .env.local
@@ -66,16 +74,114 @@ function AnimatedNumber({ value, format }: { value: number; format: (n: number) 
 
 /* --------------------------------------------------------- step meta data */
 
-const STEPS = [
-  { key: "setting", short: "Setting", eyebrow: "I · The Setting", title: "Choose the architecture", body: "The setting is the soul of the ring — how the stone is held, presented, and lived with." },
-  { key: "metal", short: "Metal", eyebrow: "II · The Metal", title: "Select your precious metal", body: "Each alloy carries its own temperature of light. Watch the band transform as you choose." },
-  { key: "gem", short: "Stone", eyebrow: "III · The Gemstone", title: "Set the heart of the piece", body: "From glacial diamonds to pigeon-blood rubies — every stone is hand-selected and certified." },
-  { key: "cut", short: "Cut", eyebrow: "IV · The Cut", title: "Shape the light", body: "The cut decides how your stone breathes light. Four signatures, four temperaments." },
-  { key: "size", short: "Size", eyebrow: "V · The Presence", title: "Carat & inscription", body: "Scale the stone to the hand that will wear it, and hide a few words inside the band." },
-  { key: "review", short: "Reveal", eyebrow: "VI · The Reveal", title: "Your commission", body: "Review every choice — then let our AI atelier render your finished ring." },
-] as const;
+const SIZE_BODY: Record<PieceId, string> = {
+  ring: "Scale the stone to the hand that will wear it, and hide a few words inside the band.",
+  necklace: "Scale the stone to the neckline it will grace, and hide a few words on the clasp tag.",
+  bracelet: "Size the piece to the wrist that will wear it, and hide a few words on the clasp.",
+};
+
+const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII"];
+
+type StepDef = { key: string; short: string; eyebrow: string; title: string; body: string };
+
+/* Bracelets are pure metalwork, so their flow skips the stone steps entirely. */
+function stepsFor(pieceId: PieceId): StepDef[] {
+  const piece = pieceById(pieceId);
+  const pieceStep = { key: "piece", short: "Piece", name: "The Piece", title: "Choose your canvas", body: "Ring, necklace or bracelet — every commission begins with the form it will live in." };
+  const metalStep = { key: "metal", short: "Metal", name: "The Metal", title: "Select your precious metal", body: "Each alloy carries its own temperature of light. Watch the piece transform as you choose." };
+  const reviewStep = { key: "review", short: "Reveal", name: "The Reveal", title: "Your commission", body: `Review every choice — then let our AI atelier render your finished ${piece.noun}.` };
+
+  const steps =
+    pieceId === "bracelet"
+      ? [
+          pieceStep,
+          { key: "style", short: "Style", name: "The Style", title: "Choose the silhouette", body: "Cable, bangle, curb or rope — pure precious metal, four temperaments." },
+          metalStep,
+          { key: "size", short: "Fit", name: "The Presence", title: "Fit & inscription", body: SIZE_BODY.bracelet },
+          reviewStep,
+        ]
+      : [
+          pieceStep,
+          { key: "setting", short: "Setting", name: "The Setting", title: "Choose the architecture", body: `The setting is the soul of the ${piece.noun} — how the stone is held, presented, and lived with.` },
+          metalStep,
+          { key: "gem", short: "Stone", name: "The Gemstone", title: "Set the heart of the piece", body: "From glacial diamonds to pigeon-blood rubies — every stone is hand-selected and certified." },
+          { key: "cut", short: "Cut", name: "The Cut", title: "Shape the light", body: "The cut decides how your stone breathes light. Four signatures, four temperaments." },
+          { key: "size", short: "Size", name: "The Presence", title: "Carat & inscription", body: SIZE_BODY[pieceId] },
+          reviewStep,
+        ];
+
+  return steps.map(({ name, ...s }, i) => ({ ...s, eyebrow: `${ROMAN[i]} · ${name}` }));
+}
 
 /* ------------------------------------------------- inline SVG option icons */
+
+function PieceIcon({ id }: { id: PieceId }) {
+  const common = {
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.4,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+  return (
+    <svg viewBox="0 0 48 48" className="h-10 w-10">
+      {id === "ring" && (
+        <>
+          <circle cx="24" cy="29" r="11" {...common} />
+          <path d="M24 8l5.5 5.5L24 21l-5.5-7.5z" {...common} />
+          <path d="M18.5 13.5h11" {...common} />
+        </>
+      )}
+      {id === "necklace" && (
+        <>
+          <path d="M8 10c1.5 10 8 16 16 16s14.5-6 16-16" {...common} />
+          <path d="M24 26v4" {...common} />
+          <path d="M24 30l4.5 4.5L24 41l-4.5-6.5z" {...common} />
+        </>
+      )}
+      {id === "bracelet" && (
+        <>
+          <ellipse cx="24" cy="27" rx="15" ry="10" {...common} />
+          <ellipse cx="24" cy="27" rx="11" ry="6.8" {...common} opacity={0.55} />
+          <path d="M24 9.5l4 4-4 5.5-4-5.5z" {...common} />
+        </>
+      )}
+    </svg>
+  );
+}
+
+function BraceletStyleIcon({ id }: { id: BraceletStyleId }) {
+  const common = { fill: "none", stroke: "currentColor", strokeWidth: 1.4 };
+  return (
+    <svg viewBox="0 0 48 48" className="h-10 w-10">
+      {id === "cable" &&
+        Array.from({ length: 10 }).map((_, i) => {
+          const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
+          return <circle key={i} cx={24 + Math.cos(a) * 13} cy={24 + Math.sin(a) * 13} r="3.4" {...common} />;
+        })}
+      {id === "bangle" && (
+        <>
+          <circle cx="24" cy="24" r="14" {...common} />
+          <circle cx="24" cy="24" r="9.5" {...common} />
+        </>
+      )}
+      {id === "curb" &&
+        Array.from({ length: 8 }).map((_, i) => {
+          const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+          const cx = 24 + Math.cos(a) * 13;
+          const cy = 24 + Math.sin(a) * 13;
+          const deg = (a * 180) / Math.PI + 90;
+          return <ellipse key={i} cx={cx} cy={cy} rx="5" ry="2.6" transform={`rotate(${deg} ${cx} ${cy})`} {...common} />;
+        })}
+      {id === "rope" && (
+        <>
+          <circle cx="24" cy="24" r="13" {...common} strokeWidth={5} strokeDasharray="4.5 3.2" strokeLinecap="round" opacity={0.9} />
+          <circle cx="24" cy="24" r="13" {...common} strokeWidth={0.8} opacity={0.35} />
+        </>
+      )}
+    </svg>
+  );
+}
 
 function SettingIcon({ id }: { id: RingConfig["setting"] }) {
   const stroke = "currentColor";
@@ -178,14 +284,14 @@ function OptionCard({
       data-step-item
       className={`group relative rounded-2xl border p-5 text-left transition-colors duration-300 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-gold-300/60 ${
         selected
-          ? "border-gold-400/70 bg-gold-500/[0.07] shadow-[0_0_30px_rgba(212,175,55,0.12)]"
-          : "border-zinc-800/80 bg-white/[0.015] hover:border-gold-500/30 hover:bg-white/[0.03]"
+          ? "border-gold-400/70 bg-gold-500/[0.07] shadow-[0_0_30px_rgba(46,91,224,0.12)]"
+          : "border-[#27497A]/80 bg-white/[0.015] hover:border-gold-500/30 hover:bg-white/[0.03]"
       } ${className}`}
     >
       {/* selected check */}
       <span
         className={`absolute right-4 top-4 flex h-5 w-5 items-center justify-center rounded-full border transition-all duration-300 ${
-          selected ? "border-gold-300 bg-gold-400 text-obsidian-950" : "border-zinc-700 text-transparent"
+          selected ? "border-gold-300 bg-gold-400 text-white" : "border-zinc-700 text-transparent"
         }`}
       >
         <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -223,6 +329,10 @@ export default function AtelierConfigurator() {
   const abortRef = useRef<AbortController | null>(null);
 
   const price = estimatePrice(config);
+  const piece = pieceById(config.piece);
+  const STEPS = stepsFor(config.piece);
+  const stepInfo = STEPS[Math.min(step, STEPS.length - 1)];
+  const stepKey = stepInfo.key;
   const set = useCallback(<K extends keyof RingConfig>(key: K, value: RingConfig[K]) => {
     setConfig((c) => ({ ...c, [key]: value }));
   }, []);
@@ -285,26 +395,38 @@ export default function AtelierConfigurator() {
     setGen({ status: "idle" });
   };
 
-  const summary = [
-    { label: "Setting", value: settingById(config.setting).label, step: 0 },
-    { label: "Metal", value: `${metalById(config.metal).karat} ${metalById(config.metal).label}`, step: 1 },
-    { label: "Gemstone", value: gemById(config.gem).label, step: 2 },
-    { label: "Cut", value: cutById(config.cut).label, step: 3 },
-    { label: "Carat", value: `${config.carat.toFixed(1)} ct`, step: 4 },
-    { label: "Engraving", value: config.engraving || "—", step: 4 },
-  ];
+  const metalValue = `${metalById(config.metal).karat} ${metalById(config.metal).label}`;
+  const summary =
+    config.piece === "bracelet"
+      ? [
+          { label: "Piece", value: piece.label.replace(/^The /, ""), key: "piece" },
+          { label: "Style", value: braceletStyleById(config.braceletStyle).label, key: "style" },
+          { label: "Metal", value: metalValue, key: "metal" },
+          { label: "Fit", value: `${fitById(config.fit).label} · ${fitById(config.fit).size}`, key: "size" },
+          { label: "Engraving", value: config.engraving || "—", key: "size" },
+        ]
+      : [
+          { label: "Piece", value: piece.label.replace(/^The /, ""), key: "piece" },
+          { label: "Setting", value: settingById(config.setting).label, key: "setting" },
+          { label: "Metal", value: metalValue, key: "metal" },
+          { label: "Gemstone", value: gemById(config.gem).label, key: "gem" },
+          { label: "Cut", value: cutById(config.cut).label, key: "cut" },
+          { label: "Carat", value: `${config.carat.toFixed(1)} ct`, key: "size" },
+          { label: "Engraving", value: config.engraving || "—", key: "size" },
+        ];
+  const stepIndexOf = (key: string) => Math.max(0, STEPS.findIndex((s) => s.key === key));
 
   /* ------------------------------------------------------------ rendering */
 
   return (
-    <div className="relative flex min-h-svh w-full flex-col bg-[#070708] text-gold-50 lg:flex-row">
+    <div className="relative flex min-h-svh w-full flex-col bg-[#0A1F3D] text-gold-50 lg:flex-row">
       {/* ======================= LEFT · LIVE 3D STAGE ======================= */}
       <div className="sticky top-0 z-10 h-[44svh] w-full shrink-0 lg:h-svh lg:w-[52%] xl:w-[55%]">
         {/* ambient stage dressing */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(218,174,102,0.10)_0%,transparent_55%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(212,175,55,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(212,175,55,0.025)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(circle_at_center,black_30%,transparent_75%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(46,91,224,0.10)_0%,transparent_55%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(46,91,224,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(46,91,224,0.025)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(circle_at_center,black_30%,transparent_75%)]" />
 
-        <BespokeRing3D config={config} />
+        <BespokeJewel3D config={config} />
 
         {/* top bar */}
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5 md:p-7">
@@ -326,13 +448,26 @@ export default function AtelierConfigurator() {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 md:p-7">
           <div>
             <p className="font-sans text-[0.6rem] uppercase tracking-[0.3em] text-gold-100/50">Your composition</p>
-            <p className="mt-1.5 font-serif text-base font-light tracking-wide text-gold-100/90 md:text-lg">
-              {settingById(config.setting).label} · {metalById(config.metal).label} ·{" "}
-              {gemById(config.gem).label}
-            </p>
-            <p className="font-sans text-[0.65rem] tracking-[0.2em] text-gold-100/60">
-              {cutById(config.cut).label} · <AnimatedNumber value={config.carat} format={fmtCarat} /> ct
-            </p>
+            {config.piece === "bracelet" ? (
+              <>
+                <p className="mt-1.5 font-serif text-base font-light tracking-wide text-gold-100/90 md:text-lg">
+                  {braceletStyleById(config.braceletStyle).label} Bracelet · {metalById(config.metal).label}
+                </p>
+                <p className="font-body text-[0.65rem] tracking-[0.2em] text-gold-100/60">
+                  {fitById(config.fit).label} fit · {fitById(config.fit).size}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="mt-1.5 font-serif text-base font-light tracking-wide text-gold-100/90 md:text-lg">
+                  {settingById(config.setting).label} {piece.label.replace(/^The /, "")} ·{" "}
+                  {metalById(config.metal).label} · {gemById(config.gem).label}
+                </p>
+                <p className="font-body text-[0.65rem] tracking-[0.2em] text-gold-100/60">
+                  {cutById(config.cut).label} · <AnimatedNumber value={config.carat} format={fmtCarat} /> ct
+                </p>
+              </>
+            )}
           </div>
           <div className="text-right">
             <p className="font-sans text-[0.6rem] uppercase tracking-[0.3em] text-gold-100/50">Estimated from</p>
@@ -348,7 +483,7 @@ export default function AtelierConfigurator() {
       </div>
 
       {/* ======================= RIGHT · STEP PANEL ======================= */}
-      <div className="relative z-20 flex-1 border-t border-zinc-900 bg-[#0b0b0c] lg:border-l lg:border-t-0">
+      <div className="relative z-20 flex-1 border-t border-[#1D3D6B] bg-[#0D2347] lg:border-l lg:border-t-0">
         <div className="mx-auto flex min-h-full max-w-2xl flex-col px-6 py-10 md:px-12 md:py-14">
           {/* progress rail */}
           <nav aria-label="Design steps" className="mb-10">
@@ -363,12 +498,12 @@ export default function AtelierConfigurator() {
                 >
                   <span
                     className={`block h-[2px] w-full rounded-full transition-all duration-500 ${
-                      i < step ? "bg-gold-500/70" : i === step ? "bg-gold-300" : "bg-zinc-800"
+                      i < step ? "bg-gold-500/70" : i === step ? "bg-gold-300" : "bg-[#27497A]"
                     }`}
                   />
                   <span
                     className={`mt-2 hidden font-sans text-[0.55rem] uppercase tracking-[0.18em] transition-colors sm:block ${
-                      i === step ? "text-gold-300" : i < step ? "text-gold-100/50 group-hover:text-gold-200" : "text-zinc-700"
+                      i === step ? "text-gold-300" : i < step ? "text-gold-100/50 group-hover:text-gold-200" : "text-[#3A4E6B]"
                     }`}
                   >
                     {s.short}
@@ -381,34 +516,66 @@ export default function AtelierConfigurator() {
           {/* step content */}
           <div ref={panelRef} className="flex-1">
             <p data-step-item className="mb-3 font-sans text-[0.62rem] font-medium uppercase tracking-[0.4em] text-gold-400">
-              {STEPS[step].eyebrow}
+              {stepInfo.eyebrow}
             </p>
             <h1 data-step-item className="font-serif text-3xl font-light tracking-wide text-gold-50 md:text-[2.6rem] md:leading-[1.1]">
-              {STEPS[step].title}
+              {stepInfo.title}
             </h1>
-            <p data-step-item className="mt-3 max-w-md font-sans text-xs font-light leading-relaxed tracking-wide text-zinc-400 md:text-sm">
-              {STEPS[step].body}
+            <p data-step-item className="mt-3 max-w-md font-body text-xs font-light leading-relaxed tracking-wide text-[#A9B8D0] md:text-sm">
+              {stepInfo.body}
             </p>
 
             <div className="mt-8">
-              {/* --- Step 1 · Setting --- */}
-              {step === 0 && (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {SETTINGS.map((s) => (
-                    <OptionCard key={s.id} selected={config.setting === s.id} onSelect={() => set("setting", s.id)}>
-                      <span className={`${config.setting === s.id ? "text-gold-300" : "text-zinc-500 group-hover:text-gold-200/70"} transition-colors`}>
-                        <SettingIcon id={s.id} />
+              {/* --- Piece --- */}
+              {stepKey === "piece" && (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  {PIECES.map((p) => (
+                    <OptionCard key={p.id} selected={config.piece === p.id} onSelect={() => set("piece", p.id)}>
+                      <span className={`${config.piece === p.id ? "text-gold-300" : "text-[#5E7495] group-hover:text-gold-200/70"} transition-colors`}>
+                        <PieceIcon id={p.id} />
                       </span>
-                      <h3 className="mt-3 font-serif text-lg font-light tracking-wide text-gold-50">{s.label}</h3>
-                      <p className="mt-0.5 font-sans text-[0.62rem] uppercase tracking-[0.2em] text-gold-400/80">{s.tagline}</p>
-                      <p className="mt-2 font-sans text-[0.7rem] font-light leading-relaxed text-zinc-500">{s.description}</p>
+                      <h3 className="mt-3 font-serif text-lg font-light tracking-wide text-gold-50">{p.label}</h3>
+                      <p className="mt-0.5 font-sans text-[0.62rem] uppercase tracking-[0.2em] text-gold-400/80">{p.tagline}</p>
+                      <p className="mt-2 font-body text-[0.7rem] font-light leading-relaxed text-[#5E7495]">{p.description}</p>
                     </OptionCard>
                   ))}
                 </div>
               )}
 
-              {/* --- Step 2 · Metal --- */}
-              {step === 1 && (
+              {/* --- Bracelet style (pure metal — replaces the stone steps) --- */}
+              {stepKey === "style" && (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {BRACELET_STYLES.map((b) => (
+                    <OptionCard key={b.id} selected={config.braceletStyle === b.id} onSelect={() => set("braceletStyle", b.id)}>
+                      <span className={`${config.braceletStyle === b.id ? "text-gold-300" : "text-[#5E7495] group-hover:text-gold-200/70"} transition-colors`}>
+                        <BraceletStyleIcon id={b.id} />
+                      </span>
+                      <h3 className="mt-3 font-serif text-lg font-light tracking-wide text-gold-50">{b.label}</h3>
+                      <p className="mt-0.5 font-sans text-[0.62rem] uppercase tracking-[0.2em] text-gold-400/80">{b.tagline}</p>
+                      <p className="mt-2 font-body text-[0.7rem] font-light leading-relaxed text-[#5E7495]">{b.description}</p>
+                    </OptionCard>
+                  ))}
+                </div>
+              )}
+
+              {/* --- Setting --- */}
+              {stepKey === "setting" && (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {SETTINGS.map((s) => (
+                    <OptionCard key={s.id} selected={config.setting === s.id} onSelect={() => set("setting", s.id)}>
+                      <span className={`${config.setting === s.id ? "text-gold-300" : "text-[#5E7495] group-hover:text-gold-200/70"} transition-colors`}>
+                        <SettingIcon id={s.id} />
+                      </span>
+                      <h3 className="mt-3 font-serif text-lg font-light tracking-wide text-gold-50">{s.label}</h3>
+                      <p className="mt-0.5 font-sans text-[0.62rem] uppercase tracking-[0.2em] text-gold-400/80">{s.tagline}</p>
+                      <p className="mt-2 font-body text-[0.7rem] font-light leading-relaxed text-[#5E7495]">{settingDescriptionFor(s, config.piece)}</p>
+                    </OptionCard>
+                  ))}
+                </div>
+              )}
+
+              {/* --- Metal --- */}
+              {stepKey === "metal" && (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {METALS.map((m) => (
                     <OptionCard key={m.id} selected={config.metal === m.id} onSelect={() => set("metal", m.id)}>
@@ -423,14 +590,14 @@ export default function AtelierConfigurator() {
                           <p className="font-sans text-[0.62rem] uppercase tracking-[0.2em] text-gold-400/80">{m.karat}</p>
                         </span>
                       </span>
-                      <p className="mt-3 font-sans text-[0.7rem] font-light text-zinc-500">{m.description}</p>
+                      <p className="mt-3 font-body text-[0.7rem] font-light text-[#5E7495]">{m.description}</p>
                     </OptionCard>
                   ))}
                 </div>
               )}
 
-              {/* --- Step 3 · Gemstone --- */}
-              {step === 2 && (
+              {/* --- Gemstone --- */}
+              {stepKey === "gem" && (
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                   {GEMS.map((g) => (
                     <OptionCard key={g.id} selected={config.gem === g.id} onSelect={() => set("gem", g.id)} className="!p-4 text-center">
@@ -441,59 +608,77 @@ export default function AtelierConfigurator() {
                       />
                       <h3 className="mt-3 font-serif text-base font-light tracking-wide text-gold-50">{g.label}</h3>
                       <p className="font-sans text-[0.58rem] uppercase tracking-[0.18em] text-gold-400/80">{g.origin}</p>
-                      <p className="mt-1.5 font-sans text-[0.65rem] font-light leading-snug text-zinc-500">{g.description}</p>
+                      <p className="mt-1.5 font-body text-[0.65rem] font-light leading-snug text-[#5E7495]">{g.description}</p>
                     </OptionCard>
                   ))}
                 </div>
               )}
 
-              {/* --- Step 4 · Cut --- */}
-              {step === 3 && (
+              {/* --- Cut --- */}
+              {stepKey === "cut" && (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {CUTS.map((c) => (
                     <OptionCard key={c.id} selected={config.cut === c.id} onSelect={() => set("cut", c.id)}>
-                      <span className={`${config.cut === c.id ? "text-gold-300" : "text-zinc-500 group-hover:text-gold-200/70"} transition-colors`}>
+                      <span className={`${config.cut === c.id ? "text-gold-300" : "text-[#5E7495] group-hover:text-gold-200/70"} transition-colors`}>
                         <CutIcon id={c.id} />
                       </span>
                       <h3 className="mt-3 font-serif text-lg font-light tracking-wide text-gold-50">{c.label}</h3>
                       <p className="mt-0.5 font-sans text-[0.62rem] uppercase tracking-[0.2em] text-gold-400/80">{c.facets}</p>
-                      <p className="mt-2 font-sans text-[0.7rem] font-light leading-relaxed text-zinc-500">{c.description}</p>
+                      <p className="mt-2 font-body text-[0.7rem] font-light leading-relaxed text-[#5E7495]">{c.description}</p>
                     </OptionCard>
                   ))}
                 </div>
               )}
 
-              {/* --- Step 5 · Carat + Engraving --- */}
-              {step === 4 && (
+              {/* --- Size: carat for stone pieces, wrist fit for bracelets --- */}
+              {stepKey === "size" && (
                 <div className="space-y-10">
-                  <div data-step-item>
-                    <div className="flex items-end justify-between">
-                      <span className="font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-100/60">Carat weight</span>
-                      <span className="font-serif text-5xl font-light text-gold-200">
-                        <AnimatedNumber value={config.carat} format={fmtCarat} />
-                        <span className="ml-1 text-lg text-gold-100/50">ct</span>
-                      </span>
+                  {config.piece === "bracelet" ? (
+                    <div data-step-item>
+                      <span className="font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-100/60">Wrist fit</span>
+                      <div className="mt-4 grid grid-cols-3 gap-3">
+                        {FITS.map((f) => (
+                          <OptionCard key={f.id} selected={config.fit === f.id} onSelect={() => set("fit", f.id)} className="!p-4 text-center">
+                            <h3 className="font-serif text-base font-light tracking-wide text-gold-50">{f.label}</h3>
+                            <p className="mt-1 font-sans text-[0.62rem] uppercase tracking-[0.2em] text-gold-400/80">{f.size}</p>
+                          </OptionCard>
+                        ))}
+                      </div>
+                      <p className="mt-3 font-body text-[0.6rem] font-light tracking-[0.15em] text-[#4A6285]">
+                        Every bracelet is finished to measure at the atelier — this sets the starting fit.
+                      </p>
                     </div>
-                    <input
-                      type="range"
-                      min={CARAT_MIN}
-                      max={CARAT_MAX}
-                      step={CARAT_STEP}
-                      value={config.carat}
-                      onChange={(e) => set("carat", Number(e.target.value))}
-                      className="luxe-range mt-6 w-full"
-                      aria-label="Carat weight"
-                    />
-                    <div className="mt-2 flex justify-between font-sans text-[0.6rem] tracking-[0.15em] text-zinc-600">
-                      <span>0.5 · delicate</span>
-                      <span>1.5 · statement</span>
-                      <span>3.0 · monumental</span>
+                  ) : (
+                    <div data-step-item>
+                      <div className="flex items-end justify-between">
+                        <span className="font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-100/60">Carat weight</span>
+                        <span className="font-serif text-5xl font-light text-gold-200">
+                          <AnimatedNumber value={config.carat} format={fmtCarat} />
+                          <span className="ml-1 text-lg text-gold-100/50">ct</span>
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={CARAT_MIN}
+                        max={CARAT_MAX}
+                        step={CARAT_STEP}
+                        value={config.carat}
+                        onChange={(e) => set("carat", Number(e.target.value))}
+                        className="luxe-range mt-6 w-full"
+                        aria-label="Carat weight"
+                      />
+                      <div className="mt-2 flex justify-between font-body text-[0.6rem] tracking-[0.15em] text-[#4A6285]">
+                        <span>0.5 · delicate</span>
+                        <span>1.5 · statement</span>
+                        <span>3.0 · monumental</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div data-step-item>
                     <label htmlFor="engraving" className="font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-100/60">
-                      Inner-band engraving <span className="text-zinc-600">(optional)</span>
+                      {config.piece === "ring" ? "Inner-band engraving" : "Clasp-tag engraving"}{" "}
+                      <span className="text-[#4A6285]">(optional)</span>
                     </label>
                     <input
                       id="engraving"
@@ -502,9 +687,9 @@ export default function AtelierConfigurator() {
                       value={config.engraving}
                       onChange={(e) => set("engraving", e.target.value)}
                       placeholder="e.g. Always, A."
-                      className="mt-3 w-full border-b border-zinc-800 bg-transparent py-3 font-serif text-xl font-light italic tracking-wide text-gold-100 placeholder-zinc-700 outline-none transition-colors focus:border-gold-400"
+                      className="mt-3 w-full border-b border-[#27497A] bg-transparent py-3 font-serif text-xl font-light italic tracking-wide text-gold-100 placeholder-zinc-700 outline-none transition-colors focus:border-gold-400"
                     />
-                    <div className="mt-4 flex h-14 items-center justify-center overflow-hidden rounded-full border border-zinc-800/80 bg-black/40">
+                    <div className="mt-4 flex h-14 items-center justify-center overflow-hidden rounded-full border border-[#27497A]/80 bg-black/40">
                       <span className="font-serif text-sm font-light italic tracking-[0.3em] text-gold-300/80">
                         {config.engraving ? `“ ${config.engraving} ”` : "your words, hidden inside"}
                       </span>
@@ -513,18 +698,18 @@ export default function AtelierConfigurator() {
                 </div>
               )}
 
-              {/* --- Step 6 · Review + AI reveal --- */}
-              {step === 5 && (
+              {/* --- Review + AI reveal --- */}
+              {stepKey === "review" && (
                 <div className="space-y-8">
-                  <dl className="divide-y divide-zinc-900 rounded-2xl border border-zinc-800/80 bg-white/[0.015]">
+                  <dl className="divide-y divide-[#1D3D6B] rounded-2xl border border-[#27497A]/80 bg-white/[0.015]">
                     {summary.map((row) => (
                       <div key={row.label} data-step-item className="flex items-center justify-between px-5 py-3.5">
-                        <dt className="font-sans text-[0.62rem] uppercase tracking-[0.25em] text-zinc-500">{row.label}</dt>
+                        <dt className="font-sans text-[0.62rem] uppercase tracking-[0.25em] text-[#5E7495]">{row.label}</dt>
                         <dd className="flex items-center gap-3">
                           <span className="font-serif text-sm font-light tracking-wide text-gold-100">{row.value}</span>
                           <button
                             type="button"
-                            onClick={() => setStep(row.step)}
+                            onClick={() => setStep(stepIndexOf(row.key))}
                             className="font-sans text-[0.58rem] uppercase tracking-[0.2em] text-gold-500/70 transition-colors hover:text-gold-300 cursor-pointer"
                           >
                             Edit
@@ -544,20 +729,20 @@ export default function AtelierConfigurator() {
                     <button
                       type="button"
                       onClick={generate}
-                      className="group relative w-full overflow-hidden rounded-full bg-gold-400 px-8 py-4 font-sans text-xs font-semibold uppercase tracking-[0.25em] text-obsidian-950 shadow-[0_4px_30px_rgba(212,175,55,0.3)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-[0_6px_40px_rgba(212,175,55,0.5)] active:translate-y-0 cursor-pointer"
+                      className="group relative w-full overflow-hidden rounded-full bg-gold-400 px-8 py-4 font-sans text-xs font-semibold uppercase tracking-[0.25em] text-white shadow-[0_4px_30px_rgba(46,91,224,0.3)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-[0_6px_40px_rgba(46,91,224,0.5)] active:translate-y-0 cursor-pointer"
                     >
-                      <span className="relative z-10">✦ &nbsp;Reveal my ring with AI</span>
+                      <span className="relative z-10">✦ &nbsp;Reveal my {piece.noun} with AI</span>
                       <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                     </button>
-                    <p className="text-center font-sans text-[0.6rem] font-light tracking-[0.15em] text-zinc-600">
+                    <p className="text-center font-body text-[0.6rem] font-light tracking-[0.15em] text-[#4A6285]">
                       Our AI atelier will paint a photoreal portrait of your exact composition.
                     </p>
 
                     {/* — or — */}
                     <div className="flex items-center gap-4" aria-hidden>
-                      <span className="h-px flex-1 bg-zinc-800" />
-                      <span className="font-sans text-[0.6rem] uppercase tracking-[0.35em] text-zinc-600">or</span>
-                      <span className="h-px flex-1 bg-zinc-800" />
+                      <span className="h-px flex-1 bg-[#27497A]" />
+                      <span className="font-sans text-[0.6rem] uppercase tracking-[0.35em] text-[#4A6285]">or</span>
+                      <span className="h-px flex-1 bg-[#27497A]" />
                     </div>
 
                     <a
@@ -569,7 +754,7 @@ export default function AtelierConfigurator() {
                       <WhatsAppIcon />
                       Enquire on WhatsApp
                     </a>
-                    <p className="text-center font-sans text-[0.6rem] font-light tracking-[0.15em] text-zinc-600">
+                    <p className="text-center font-body text-[0.6rem] font-light tracking-[0.15em] text-[#4A6285]">
                       Sends your full composition to our atelier concierge — no obligation.
                     </p>
                   </div>
@@ -579,12 +764,12 @@ export default function AtelierConfigurator() {
           </div>
 
           {/* back / continue */}
-          <div className="mt-10 flex items-center justify-between border-t border-zinc-900 pt-6">
+          <div className="mt-10 flex items-center justify-between border-t border-[#1D3D6B] pt-6">
             <button
               type="button"
               onClick={() => setStep((s) => Math.max(0, s - 1))}
               disabled={step === 0}
-              className="rounded-full border border-zinc-800 px-6 py-3 font-sans text-[0.62rem] uppercase tracking-[0.25em] text-zinc-400 transition-all duration-300 hover:border-gold-500/40 hover:text-gold-200 disabled:pointer-events-none disabled:opacity-30 cursor-pointer"
+              className="rounded-full border border-[#27497A] px-6 py-3 font-sans text-[0.62rem] uppercase tracking-[0.25em] text-[#A9B8D0] transition-all duration-300 hover:border-gold-500/40 hover:text-gold-200 disabled:pointer-events-none disabled:opacity-30 cursor-pointer"
             >
               ← Back
             </button>
@@ -592,7 +777,7 @@ export default function AtelierConfigurator() {
               <button
                 type="button"
                 onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}
-                className="rounded-full bg-gold-400 px-8 py-3 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.25em] text-obsidian-950 shadow-[0_4px_20px_rgba(212,175,55,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 active:translate-y-0 cursor-pointer"
+                className="rounded-full bg-gold-400 px-8 py-3 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.25em] text-white shadow-[0_4px_20px_rgba(46,91,224,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 active:translate-y-0 cursor-pointer"
               >
                 Continue →
               </button>
@@ -621,13 +806,13 @@ export default function AtelierConfigurator() {
               <p className="mt-8 font-serif text-xl font-light italic tracking-wide text-gold-100" aria-live="polite">
                 {LOADING_LINES[loadingLine]}
               </p>
-              <p className="mt-2 font-sans text-[0.62rem] uppercase tracking-[0.3em] text-zinc-500">
+              <p className="mt-2 font-sans text-[0.62rem] uppercase tracking-[0.3em] text-[#5E7495]">
                 rendering your commission — up to ~20 seconds
               </p>
               <button
                 type="button"
                 onClick={closeOverlay}
-                className="mt-10 font-sans text-[0.62rem] uppercase tracking-[0.25em] text-zinc-500 underline-offset-4 transition-colors hover:text-gold-200 cursor-pointer"
+                className="mt-10 font-sans text-[0.62rem] uppercase tracking-[0.25em] text-[#5E7495] underline-offset-4 transition-colors hover:text-gold-200 cursor-pointer"
               >
                 Cancel
               </button>
@@ -635,21 +820,21 @@ export default function AtelierConfigurator() {
           )}
 
           {gen.status === "error" && (
-            <div className="max-w-md rounded-3xl border border-zinc-800 bg-[#0b0b0c] p-10 text-center">
+            <div className="max-w-md rounded-3xl border border-[#27497A] bg-[#0D2347] p-10 text-center">
               <p className="font-serif text-2xl font-light text-gold-100">The atelier paused</p>
-              <p className="mt-4 font-sans text-xs font-light leading-relaxed text-zinc-400">{gen.message}</p>
+              <p className="mt-4 font-body text-xs font-light leading-relaxed text-[#A9B8D0]">{gen.message}</p>
               <div className="mt-8 flex items-center justify-center gap-3">
                 <button
                   type="button"
                   onClick={generate}
-                  className="rounded-full bg-gold-400 px-7 py-3 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.25em] text-obsidian-950 transition-colors hover:bg-gold-300 cursor-pointer"
+                  className="rounded-full bg-gold-400 px-7 py-3 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.25em] text-white transition-colors hover:bg-gold-300 cursor-pointer"
                 >
                   Try again
                 </button>
                 <button
                   type="button"
                   onClick={closeOverlay}
-                  className="rounded-full border border-zinc-700 px-7 py-3 font-sans text-[0.62rem] uppercase tracking-[0.25em] text-zinc-300 transition-colors hover:border-gold-400/50 hover:text-gold-200 cursor-pointer"
+                  className="rounded-full border border-zinc-700 px-7 py-3 font-sans text-[0.62rem] uppercase tracking-[0.25em] text-[#C9D4E6] transition-colors hover:border-gold-400/50 hover:text-gold-200 cursor-pointer"
                 >
                   Close
                 </button>
@@ -658,8 +843,8 @@ export default function AtelierConfigurator() {
           )}
 
           {gen.status === "done" && (
-            <div className="flex max-h-full w-full max-w-3xl flex-col overflow-y-auto rounded-3xl border border-gold-500/20 bg-[#0b0b0c] shadow-[0_0_120px_rgba(212,175,55,0.15)]">
-              <div className="flex items-center justify-between border-b border-zinc-900 px-7 py-5">
+            <div className="flex max-h-full w-full max-w-3xl flex-col overflow-y-auto rounded-3xl border border-gold-500/20 bg-[#0D2347] shadow-[0_0_120px_rgba(46,91,224,0.15)]">
+              <div className="flex items-center justify-between border-b border-[#1D3D6B] px-7 py-5">
                 <div>
                   <p className="font-sans text-[0.6rem] uppercase tracking-[0.35em] text-gold-400">The Reveal</p>
                   <p className="mt-1 font-serif text-xl font-light tracking-wide text-gold-50">Your bespoke commission</p>
@@ -668,7 +853,7 @@ export default function AtelierConfigurator() {
                   type="button"
                   onClick={closeOverlay}
                   aria-label="Close"
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-800 text-zinc-400 transition-colors hover:border-gold-400/50 hover:text-gold-200 cursor-pointer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[#27497A] text-[#A9B8D0] transition-colors hover:border-gold-400/50 hover:text-gold-200 cursor-pointer"
                 >
                   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
@@ -678,20 +863,21 @@ export default function AtelierConfigurator() {
 
               <div className="relative mx-7 mt-7 overflow-hidden rounded-2xl bg-white">
                 {/* eslint-disable-next-line @next/next/no-img-element -- data: URL from the AI render */}
-                <img src={gen.image} alt="AI render of your configured ring" className="mx-auto max-h-[52svh] w-auto object-contain" />
+                <img src={gen.image} alt={`AI render of your configured ${piece.noun}`} className="mx-auto max-h-[52svh] w-auto object-contain" />
               </div>
 
               <p className="px-7 pt-4 text-center font-serif text-sm font-light italic tracking-wide text-gold-100/80">
-                {config.carat.toFixed(1)} ct {cutById(config.cut).label} {gemById(config.gem).label} ·{" "}
-                {metalById(config.metal).label} · {settingById(config.setting).label}
+                {config.piece === "bracelet"
+                  ? `${braceletStyleById(config.braceletStyle).label} Bracelet · ${metalById(config.metal).label} · ${fitById(config.fit).label} fit (${fitById(config.fit).size})`
+                  : `${config.carat.toFixed(1)} ct ${cutById(config.cut).label} ${gemById(config.gem).label} · ${metalById(config.metal).label} · ${settingById(config.setting).label} ${piece.label.replace(/^The /, "")}`}
                 {config.engraving ? ` · “${config.engraving}”` : ""}
               </p>
 
               <div className="flex flex-col items-center justify-center gap-3 px-7 py-6 sm:flex-row">
                 <a
                   href={gen.image}
-                  download="ceylon-gem-maison-bespoke-ring.png"
-                  className="w-full rounded-full bg-gold-400 px-7 py-3 text-center font-sans text-[0.62rem] font-semibold uppercase tracking-[0.25em] text-obsidian-950 transition-colors hover:bg-gold-300 sm:w-auto"
+                  download={`ceylon-gem-maison-bespoke-${config.piece}.png`}
+                  className="w-full rounded-full bg-gold-400 px-7 py-3 text-center font-sans text-[0.62rem] font-semibold uppercase tracking-[0.25em] text-white transition-colors hover:bg-gold-300 sm:w-auto"
                 >
                   Download portrait
                 </a>
@@ -712,7 +898,7 @@ export default function AtelierConfigurator() {
                   Continue on WhatsApp
                 </a>
               </div>
-              <p className="pb-6 text-center font-sans text-[0.55rem] font-light tracking-[0.2em] text-zinc-600">
+              <p className="pb-6 text-center font-body text-[0.55rem] font-light tracking-[0.2em] text-[#4A6285]">
                 AI visualization — your final piece is hand-crafted and photographed at our atelier.
               </p>
             </div>

@@ -1,335 +1,155 @@
 import Image from "next/image";
+import Link from "next/link";
+
+/**
+ * ProductGrid — "New Jewellery Collections" band.
+ * A deep-navy silk section: reference-style header (serif + italic accent,
+ * underlined View Collection link with arrow orb) above the original
+ * full-width 3×3 bento, cells flush and divided by hairlines. Category teaser
+ * portraits carry pill + arrow-orb CTAs; signature pieces carry ivory chips,
+ * serif names and "+" orbs.
+ */
+
+type Piece = {
+  name: string;
+  category: string;
+  image: string;
+};
+
+function ArrowUpRight({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 17L17 7m0 0H9m8 0v8" />
+    </svg>
+  );
+}
+
+function TeaserCard({
+  title,
+  image,
+  href,
+}: {
+  title: string;
+  image: string;
+  href: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group relative flex aspect-square flex-col justify-between overflow-hidden bg-[#0D2347]"
+    >
+      <div className="absolute inset-0 z-0">
+        <Image
+          src={image}
+          alt={`${title} category model`}
+          fill
+          className="object-cover"
+          sizes="(max-w-768px) 100vw, 33vw"
+          unoptimized
+        />
+        <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/45 via-transparent to-black/65" />
+      </div>
+
+      <div className="relative z-20 p-7 md:p-8">
+        <h3 className="font-serif text-4xl font-normal tracking-wide text-white md:text-5xl">
+          {title}
+        </h3>
+      </div>
+
+      <div className="relative z-20 flex items-center gap-3 p-7 md:p-8">
+        <span className="btn-luxe-pill px-7 py-3 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.25em]">
+          View All
+        </span>
+        <span className="btn-luxe-orb btn-luxe-orb--light h-11 w-11">
+          <ArrowUpRight className="h-4 w-4" />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+function ProductCard({ piece }: { piece: Piece }) {
+  return (
+    <div className="group relative aspect-square cursor-pointer overflow-hidden bg-[#081525]">
+      <Image
+        src={piece.image}
+        alt={piece.name}
+        fill
+        className="object-cover"
+        sizes="(max-w-768px) 100vw, 33vw"
+        unoptimized
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/75" />
+
+      <span className="chip-luxe absolute left-6 top-6 z-20">{piece.category}</span>
+
+      <div className="absolute inset-x-0 bottom-0 z-20 flex items-end justify-between gap-4 p-6 md:p-7">
+        <h4 className="font-serif text-lg tracking-wide text-white transition-colors duration-300 group-hover:text-gold-200 md:text-xl">
+          {piece.name}
+        </h4>
+        <span className="btn-luxe-orb btn-luxe-orb--light h-10 w-10">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 5v14m7-7H5" />
+          </svg>
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export default function ProductGrid() {
   return (
-    <section className="relative w-full bg-[#FAF9F6] py-24 md:py-36 z-20 select-none">
-      
-      {/* 3x3 Grid Wrapper with thin dividers */}
-      <div data-reveal-group className="grid grid-cols-1 md:grid-cols-3 gap-[1px] bg-zinc-900">
-        
-        {/* ROW 1: RINGS */}
-        {/* Card 1: Ring Teaser Portrait */}
-        <div className="group relative aspect-square bg-[#0c0c0d] flex flex-col justify-between overflow-hidden">
-          {/* Portrait Background */}
-          <div className="absolute inset-0 z-0">
-            <Image
-              src="/ring_model.png"
-              alt="Ring Category Model"
-              fill
-              className="object-cover transition-transform duration-[8000ms] group-hover:scale-105"
-              sizes="(max-w-768px) 100vw, 33vw"
-              unoptimized
-            />
-            {/* Soft dark overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/60 z-10" />
-          </div>
-
-          {/* Heading */}
-          <div className="relative z-20 p-8">
-            <h3 className="text-4xl md:text-5xl font-normal tracking-wide text-white font-serif">
-              Ring
-            </h3>
-          </div>
-
-          {/* View All Button */}
-          <div className="relative z-20 p-8">
-            <div className="inline-flex items-center gap-2 cursor-pointer group/btn">
-              <div className="w-10 h-10 bg-white flex items-center justify-center transition-transform duration-300 group-hover/btn:translate-x-1">
-                <svg
-                  className="w-4 h-4 text-black"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                  />
-                </svg>
-              </div>
-              <span className="px-5 py-2.5 text-[0.7rem] tracking-[0.25em] uppercase text-white bg-black/65 backdrop-blur-md border border-white/10 font-sans font-medium transition-colors hover:bg-black/80">
-                View all
+    <section className="silk-navy relative z-20 w-full select-none overflow-hidden pt-24 md:pt-32">
+      {/* Header — flush with the grid's left edge */}
+      <div className="w-full px-6 md:px-12">
+        <div
+          data-reveal
+          className="mb-12 flex flex-col items-start justify-between gap-8 md:mb-16 md:flex-row md:items-end"
+        >
+          <div>
+            {/* Ornament */}
+            <div className="mb-6 flex items-center gap-3">
+              <span className="h-px w-10 bg-gold-300/40" />
+              <span className="h-2 w-2 rotate-45 border border-gold-300/70 bg-gold-300/20" />
+              <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.3em] text-gold-200">
+                Signature Pieces
               </span>
             </div>
+            <h2 className="font-serif text-4xl font-normal leading-[1.15] tracking-wide text-[#F7F4EC] md:text-5xl">
+              New Jewellery
+              <br />
+              <span className="italic font-light text-gold-300">Collections</span>
+            </h2>
           </div>
+
+          <Link href="/collections" className="group flex items-center gap-4">
+            <span className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[#F7F4EC] underline decoration-gold-300/60 decoration-[1px] underline-offset-[10px] transition-colors duration-300 group-hover:text-gold-200">
+              View Collection
+            </span>
+            <span className="btn-luxe-orb btn-luxe-orb--light h-11 w-11">
+              <ArrowUpRight className="h-4 w-4" />
+            </span>
+          </Link>
         </div>
-
-        {/* Card 2: Celeste Diamond Ring */}
-        <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
-          <span className="text-[0.7rem] tracking-[0.25em] text-zinc-400 uppercase font-sans font-medium">
-            Ring
-          </span>
-          <div className="flex-1 flex items-center justify-center relative w-full h-full p-2 my-2 min-h-0">
-            <div className="w-full h-full relative transition-transform duration-500 group-hover:scale-105">
-              <Image
-                src="/ring_celeste.png"
-                alt="Celeste Diamond Ring"
-                fill
-                className="object-contain"
-                sizes="(max-w-768px) 100vw, 33vw"
-                unoptimized
-              />
-            </div>
-          </div>
-          <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
-            <h4 className="text-base md:text-lg tracking-wide text-white font-serif transition-colors group-hover:text-gold-300">
-              Celeste Diamond Ring
-            </h4>
-            <div className="text-zinc-500 transition-colors duration-300 group-hover:text-white pr-1 pb-1">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17l9-9m0 0H9m8 0v8" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3: Eternal Bloom Ring */}
-        <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
-          <span className="text-[0.7rem] tracking-[0.25em] text-zinc-400 uppercase font-sans font-medium">
-            Ring
-          </span>
-          <div className="flex-1 flex items-center justify-center relative w-full h-full p-2 my-2 min-h-0">
-            <div className="w-full h-full relative transition-transform duration-500 group-hover:scale-105">
-              <Image
-                src="/ring_eternal.png"
-                alt="Eternal Bloom Ring"
-                fill
-                className="object-contain"
-                sizes="(max-w-768px) 100vw, 33vw"
-                unoptimized
-              />
-            </div>
-          </div>
-          <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
-            <h4 className="text-base md:text-lg tracking-wide text-white font-serif transition-colors group-hover:text-gold-300">
-              Eternal Bloom Ring
-            </h4>
-            <div className="text-zinc-500 transition-colors duration-300 group-hover:text-white pr-1 pb-1">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17l9-9m0 0H9m8 0v8" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* ROW 2: EARRINGS */}
-        {/* Card 1: Aurea Diamond Drops */}
-        <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
-          <span className="text-[0.7rem] tracking-[0.25em] text-zinc-400 uppercase font-sans font-medium">
-            Earrings
-          </span>
-          <div className="flex-1 flex items-center justify-center relative w-full h-full p-2 my-2 min-h-0">
-            <div className="w-full h-full relative transition-transform duration-500 group-hover:scale-105">
-              <Image
-                src="/earring_aurea.png"
-                alt="Aurea Diamond Drops"
-                fill
-                className="object-contain"
-                sizes="(max-w-768px) 100vw, 33vw"
-                unoptimized
-              />
-            </div>
-          </div>
-          <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
-            <h4 className="text-base md:text-lg tracking-wide text-white font-serif transition-colors group-hover:text-gold-300">
-              Aurea Diamond Drops
-            </h4>
-            <div className="text-zinc-500 transition-colors duration-300 group-hover:text-white pr-1 pb-1">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17l9-9m0 0H9m8 0v8" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: Golden Drop Earrings */}
-        <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
-          <span className="text-[0.7rem] tracking-[0.25em] text-zinc-400 uppercase font-sans font-medium">
-            Earrings
-          </span>
-          <div className="flex-1 flex items-center justify-center relative w-full h-full p-2 my-2 min-h-0">
-            <div className="w-full h-full relative transition-transform duration-500 group-hover:scale-105">
-              <Image
-                src="/earring_golden.png"
-                alt="Golden Drop Earrings"
-                fill
-                className="object-contain"
-                sizes="(max-w-768px) 100vw, 33vw"
-                unoptimized
-              />
-            </div>
-          </div>
-          <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
-            <h4 className="text-base md:text-lg tracking-wide text-white font-serif transition-colors group-hover:text-gold-300">
-              Golden Drop Earrings
-            </h4>
-            <div className="text-zinc-500 transition-colors duration-300 group-hover:text-white pr-1 pb-1">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17l9-9m0 0H9m8 0v8" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3: Earrings Teaser Portrait (Aligned right in Row 2) */}
-        <div className="group relative aspect-square bg-[#0c0c0d] flex flex-col justify-between overflow-hidden">
-          {/* Portrait Background */}
-          <div className="absolute inset-0 z-0">
-            <Image
-              src="/earring_model.png"
-              alt="Earrings Category Model"
-              fill
-              className="object-cover transition-transform duration-[8000ms] group-hover:scale-105"
-              sizes="(max-w-768px) 100vw, 33vw"
-              unoptimized
-            />
-            {/* Soft dark overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/60 z-10" />
-          </div>
-
-          {/* Heading */}
-          <div className="relative z-20 p-8">
-            <h3 className="text-4xl md:text-5xl font-normal tracking-wide text-white font-serif">
-              Earrings
-            </h3>
-          </div>
-
-          {/* View All Button */}
-          <div className="relative z-20 p-8">
-            <div className="inline-flex items-center gap-2 cursor-pointer group/btn">
-              <div className="w-10 h-10 bg-white flex items-center justify-center transition-transform duration-300 group-hover/btn:translate-x-1">
-                <svg
-                  className="w-4 h-4 text-black"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                  />
-                </svg>
-              </div>
-              <span className="px-5 py-2.5 text-[0.7rem] tracking-[0.25em] uppercase text-white bg-black/65 backdrop-blur-md border border-white/10 font-sans font-medium transition-colors hover:bg-black/80">
-                View all
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* ROW 3: BRACELETS */}
-        {/* Card 1: Bracelet Teaser Portrait */}
-        <div className="group relative aspect-square bg-[#0c0c0d] flex flex-col justify-between overflow-hidden">
-          {/* Portrait Background */}
-          <div className="absolute inset-0 z-0">
-            <Image
-              src="/bracelet_model.png"
-              alt="Bracelet Category Model"
-              fill
-              className="object-cover transition-transform duration-[8000ms] group-hover:scale-105"
-              sizes="(max-w-768px) 100vw, 33vw"
-              unoptimized
-            />
-            {/* Soft dark overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/60 z-10" />
-          </div>
-
-          {/* Heading */}
-          <div className="relative z-20 p-8">
-            <h3 className="text-4xl md:text-5xl font-normal tracking-wide text-white font-serif">
-              Bracelet
-            </h3>
-          </div>
-
-          {/* View All Button */}
-          <div className="relative z-20 p-8">
-            <div className="inline-flex items-center gap-2 cursor-pointer group/btn">
-              <div className="w-10 h-10 bg-white flex items-center justify-center transition-transform duration-300 group-hover/btn:translate-x-1">
-                <svg
-                  className="w-4 h-4 text-black"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                  />
-                </svg>
-              </div>
-              <span className="px-5 py-2.5 text-[0.7rem] tracking-[0.25em] uppercase text-white bg-black/65 backdrop-blur-md border border-white/10 font-sans font-medium transition-colors hover:bg-black/80">
-                View all
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: Stellar Link Bracelet */}
-        <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
-          <span className="text-[0.7rem] tracking-[0.25em] text-zinc-400 uppercase font-sans font-medium">
-            Bracelet
-          </span>
-          <div className="flex-1 flex items-center justify-center relative w-full h-full p-2 my-2 min-h-0">
-            <div className="w-full h-full relative transition-transform duration-500 group-hover:scale-105">
-              <Image
-                src="/bracelet_stellar.png"
-                alt="Stellar Link Bracelet"
-                fill
-                className="object-contain"
-                sizes="(max-w-768px) 100vw, 33vw"
-                unoptimized
-              />
-            </div>
-          </div>
-          <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
-            <h4 className="text-base md:text-lg tracking-wide text-white font-serif transition-colors group-hover:text-gold-300">
-              Stellar Link Bracelet
-            </h4>
-            <div className="text-zinc-500 transition-colors duration-300 group-hover:text-white pr-1 pb-1">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17l9-9m0 0H9m8 0v8" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3: Golden Maison Band */}
-        <div data-tilt className="group relative aspect-square bg-black flex flex-col justify-between p-6 overflow-hidden cursor-pointer">
-          <span className="text-[0.7rem] tracking-[0.25em] text-zinc-400 uppercase font-sans font-medium">
-            Bracelet
-          </span>
-          <div className="flex-1 flex items-center justify-center relative w-full h-full p-2 my-2 min-h-0">
-            <div className="w-full h-full relative transition-transform duration-500 group-hover:scale-105">
-              <Image
-                src="/bracelet_aura.png"
-                alt="Golden Maison Band"
-                fill
-                className="object-contain"
-                sizes="(max-w-768px) 100vw, 33vw"
-                unoptimized
-              />
-            </div>
-          </div>
-          <div className="flex items-center justify-between border-t border-zinc-900 pt-4">
-            <h4 className="text-base md:text-lg tracking-wide text-white font-serif transition-colors group-hover:text-gold-300">
-              Golden Maison Band
-            </h4>
-            <div className="text-zinc-500 transition-colors duration-300 group-hover:text-white pr-1 pb-1">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17l9-9m0 0H9m8 0v8" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
       </div>
 
+      {/* Full-width 3×3 bento, cells flush with hairline dividers */}
+      <div data-reveal-group className="grid grid-cols-1 gap-[1px] border-t border-[#1D3D6B] bg-[#1D3D6B] md:grid-cols-3">
+        {/* Row 1 — Rings */}
+        <TeaserCard title="Ring" image="/ring_model.png" href="/collections?f=rings" />
+        <ProductCard piece={{ name: "Celeste Diamond Ring", category: "Ring", image: "/ring_celeste.png" }} />
+        <ProductCard piece={{ name: "Eternal Bloom Ring", category: "Ring", image: "/ring_eternal.png" }} />
+
+        {/* Row 2 — Earrings */}
+        <ProductCard piece={{ name: "Aurea Diamond Drops", category: "Earrings", image: "/earring_aurea.png" }} />
+        <ProductCard piece={{ name: "Golden Drop Earrings", category: "Earrings", image: "/earring_golden.png" }} />
+        <TeaserCard title="Earrings" image="/earring_model.png" href="/collections?f=earrings" />
+
+        {/* Row 3 — Bracelets */}
+        <TeaserCard title="Bracelet" image="/bracelet_model.png" href="/collections?f=bracelets" />
+        <ProductCard piece={{ name: "Stellar Link Bracelet", category: "Bracelet", image: "/bracelet_stellar.png" }} />
+        <ProductCard piece={{ name: "Golden Maison Band", category: "Bracelet", image: "/bracelet_aura.png" }} />
+      </div>
     </section>
   );
 }

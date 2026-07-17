@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title: "The Collections",
   description:
     "Rings, necklaces, earrings and bracelets from the Ceylon Gem Maison ateliers — hand-cut Ceylon stones in 18k gold, each piece signed in the house ledger.",
+  alternates: { canonical: "/collections" },
 };
 
 const CRAFT_MARKS = [
@@ -31,7 +32,7 @@ const CRAFT_MARKS = [
 
 export default function CollectionsPage() {
   return (
-    <main className="relative flex min-h-screen w-full select-none flex-col bg-[#070708] p-[10px]">
+    <main className="relative flex min-h-screen w-full select-none flex-col bg-[#F7F4EC]">
       <ScrollFX />
       <LuxeCursor />
 
@@ -44,7 +45,7 @@ export default function CollectionsPage() {
       />
 
       {/* White island */}
-      <div className="relative z-20 mt-[10px] flex w-full flex-col overflow-hidden rounded-[2rem] border border-zinc-200/80 bg-[#FAF9F6] shadow-[0_-20px_50px_rgba(0,0,0,0.35)] md:rounded-[3rem]">
+      <div className="relative z-20 flex w-full flex-col bg-[#F7F4EC]">
 
         {/* Filterable gallery (reads ?f= → needs Suspense for useSearchParams) */}
         <Suspense fallback={null}>
@@ -52,7 +53,7 @@ export default function CollectionsPage() {
         </Suspense>
 
         {/* ---- Craft assurances ---- */}
-        <section className="w-full bg-white px-6 py-20 md:px-12 md:py-28">
+        <section className="w-full bg-[#F7F4EC] px-6 py-20 md:px-12 md:py-28">
           <div data-reveal-group className="mx-auto grid max-w-7xl gap-10 md:grid-cols-3 md:gap-8">
             {CRAFT_MARKS.map((mark, idx) => (
               <div key={mark.title} className="flex items-start gap-5">
@@ -60,10 +61,10 @@ export default function CollectionsPage() {
                   0{idx + 1}
                 </span>
                 <div className="pt-1.5">
-                  <h3 className="font-sans text-xs font-semibold uppercase tracking-[0.2em] text-zinc-900 md:text-[0.8rem]">
+                  <h3 className="font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#13294B] md:text-[0.8rem]">
                     {mark.title}
                   </h3>
-                  <p className="mt-2 max-w-xs font-sans text-[0.85rem] leading-relaxed text-zinc-600 md:text-sm">
+                  <p className="mt-2 max-w-xs font-body text-[0.85rem] leading-relaxed text-[#4A6285] md:text-sm">
                     {mark.body}
                   </p>
                 </div>
@@ -73,7 +74,7 @@ export default function CollectionsPage() {
         </section>
 
         {/* ---- Editorial interlude ---- */}
-        <section className="relative w-full overflow-hidden border-y border-zinc-900 bg-[#0c0c0d]">
+        <section className="relative w-full overflow-hidden border-y border-[#1D3D6B] bg-[#0D2347]">
           <div className="relative mx-auto grid min-h-[420px] max-w-none md:grid-cols-2">
             <div data-reveal className="relative z-20 flex flex-col justify-center px-6 py-20 md:px-16 md:py-28">
               <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.3em] text-gold-300">
@@ -83,7 +84,7 @@ export default function CollectionsPage() {
                 Jewelry Meant for
                 <span className="italic font-light text-gold-300"> a Life</span>
               </h2>
-              <p className="mt-6 max-w-md font-sans text-sm leading-relaxed text-zinc-300 md:text-base">
+              <p className="mt-6 max-w-md font-body text-sm leading-relaxed text-[#C9D4E6] md:text-base">
                 These pieces are photographed on black velvet, but they are made
                 for warm skin, long evenings, and hands that talk. If a piece
                 speaks to you, ask to see it move in the light.
@@ -100,7 +101,7 @@ export default function CollectionsPage() {
                   unoptimized
                 />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#0c0c0d] via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#0D2347] via-transparent to-transparent" />
             </div>
           </div>
         </section>

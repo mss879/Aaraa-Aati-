@@ -9,14 +9,15 @@ import LuxeCursor from "@/components/fx/LuxeCursor";
 export const metadata: Metadata = {
   title: "Our Story — The Maison Behind the Stone",
   description:
-    "Nearly a century of Sri Lankan gem heritage: from a Ratnapura cutting workshop in 1928 to a bespoke Colombo atelier serving private clients worldwide.",
+    "From years of exporting world-class, ethically sourced Ceylon gemstones to the West, to a bespoke sapphire atelier serving Singapore — the story of Ceylon Gem Maison.",
+  alternates: { canonical: "/about" },
 };
 
 const STATS = [
-  { value: "1928", label: "House Founded" },
-  { value: "3", label: "Generations of Cutters" },
-  { value: "100%", label: "Traceable Stones" },
-  { value: "1,400+", label: "Bespoke Commissions" },
+  { value: "100%", label: "Traceable, Ethical Stones" },
+  { value: "4–6", label: "Weeks per Commission" },
+  { value: "24/7", label: "Concierge on WhatsApp" },
+  { value: "∞", label: "Lifetime Atelier Warranty" },
 ];
 
 const VALUES = [
@@ -61,43 +62,43 @@ const VALUES = [
 
 const TIMELINE = [
   {
-    year: "1928",
-    title: "The Ratnapura Workshop",
-    body: "Master cutter Don Bastian opens a two-bench workshop in the City of Gems, cutting sapphires for the great European houses.",
+    year: "I",
+    title: "The Export Years",
+    body: "The maison's foundation: years of professional experience exporting world-class, ethically sourced Ceylon gemstones to discerning buyers across the West — certification, traceability and international quality standards as daily discipline.",
   },
   {
-    year: "1962",
-    title: "The Colombo Atelier",
-    body: "The second generation opens the maison's first private salon on Galle Face, setting the house's own designs for the first time.",
+    year: "II",
+    title: "From Exporter to Atelier",
+    body: "The house turns its acumen to the bench: impeccably tailored wedding and engagement rings, and a specialisation in sapphires of every kind — cut and set for those who wish to treasure life-changing moments.",
   },
   {
-    year: "1998",
-    title: "A Global Clientele",
-    body: "The third generation carries the ledger abroad — private commissions for collectors across four continents, all still cut at home.",
+    year: "III",
+    title: "The New Normal",
+    body: "Tested by the pandemic, the maison adapted rather than paused — welcoming clients through online channels, refining designs over video and WhatsApp, and serving them in the comfort of their own homes. The service never left.",
   },
   {
     year: "2026",
-    title: "The Digital Atelier",
-    body: "Bespoke goes live: clients compose their own commission in a real-time 3D atelier, rendered by AI and finished by the same hands as always.",
+    title: "The Digital Atelier & Singapore",
+    body: "The online platform launches at ceylongemmaison.com: quotations calculated the moment specifications are entered, harmonising design and budget — now serving clients across Singapore and beyond.",
   },
 ];
 
 export default function AboutPage() {
   return (
-    <main className="relative flex min-h-screen w-full select-none flex-col bg-[#070708] p-[10px]">
+    <main className="relative flex min-h-screen w-full select-none flex-col bg-[#F7F4EC]">
       <ScrollFX />
       <LuxeCursor />
 
       <PageHero
-        eyebrow="Since 1928 · Ratnapura & Colombo"
+        eyebrow="Ratnapura · Colombo · Singapore"
         title="The Maison"
         titleAccent="Behind the Stone"
-        body="Three generations of Sri Lankan gem cutters, one unbroken ledger of commissions — this is the house that treats jewelry as memory made permanent."
+        body="Years of exporting world-class, ethically sourced gemstones to the West — refined into a maison dedicated to sapphires, and to the rings that mark life's defining moments."
         image={{ src: "/artisan_crafting.png", position: "center 30%" }}
       />
 
       {/* White island */}
-      <div className="relative z-20 mt-[10px] flex w-full flex-col overflow-hidden rounded-[2rem] border border-zinc-200/80 bg-[#FAF9F6] shadow-[0_-20px_50px_rgba(0,0,0,0.35)] md:rounded-[3rem]">
+      <div className="relative z-20 flex w-full flex-col bg-[#F7F4EC]">
 
         {/* ---- Story intro ---- */}
         <section className="w-full px-6 py-24 md:px-12 md:py-32">
@@ -109,33 +110,35 @@ export default function AboutPage() {
                   Our Story
                 </span>
               </div>
-              <p className="font-serif text-3xl font-light leading-[1.25] text-zinc-900 md:text-4xl lg:text-[2.75rem]">
-                &ldquo;A gem is not cut.
+              <p className="font-serif text-3xl font-light leading-[1.25] text-[#13294B] md:text-4xl lg:text-[2.75rem]">
+                &ldquo;Jewellery for those who wish to
                 <br />
-                <span className="italic text-amber-600">It is listened to.</span>&rdquo;
+                <span className="italic text-amber-600">treasure life-changing moments.</span>&rdquo;
               </p>
-              <p className="mt-6 font-sans text-xs uppercase tracking-[0.25em] text-zinc-500">
-                — Don Bastian, Founder
+              <p className="mt-6 font-sans text-xs uppercase tracking-[0.25em] text-[#5E7495]">
+                — The Maison Credo
               </p>
             </div>
 
             <div data-reveal className="flex flex-col justify-center space-y-6">
-              <p className="max-w-2xl font-sans text-sm leading-relaxed text-zinc-700 md:text-base">
-                Ceylon Gem Maison began in 1928 as a two-bench cutting workshop in
-                Ratnapura — the City of Gems — where our founder learned to read
-                the grain of a sapphire the way others read a page. The great
-                European houses bought his stones; his family kept his ledger.
+              <p className="max-w-2xl font-body text-sm leading-relaxed text-[#3A4E6B] md:text-base">
+                Ceylon Gem Maison holds years of professional experience
+                exporting world-class, ethically sourced gemstones from Sri
+                Lanka to the West. That exporter&apos;s discipline — certification,
+                traceability and uncompromising international quality standards
+                — remains the foundation on which every commission is built.
               </p>
-              <p className="max-w-2xl font-sans text-sm leading-relaxed text-zinc-700 md:text-base">
-                Nearly a century later, that ledger is still open. The maison now
-                spans a private Colombo salon, a working atelier, and clients on
-                four continents — yet every stone we set is still bought at
-                source, cut by hand, and signed by the cutter who shaped it.
+              <p className="max-w-2xl font-body text-sm leading-relaxed text-[#3A4E6B] md:text-base">
+                Today the maison is dedicated to impeccably tailored wedding and
+                engagement rings — a true epitome of elegance — and to the
+                enthralling experience of crafting your own jewellery alongside
+                our gemologists. Our specialisation lies in sapphires of every
+                kind, intricately tailored for the moments that change a life.
               </p>
-              <p className="max-w-2xl font-sans text-sm leading-relaxed text-zinc-700 md:text-base">
+              <p className="max-w-2xl font-body text-sm leading-relaxed text-[#3A4E6B] md:text-base">
                 We remain deliberately small. A handful of commissions leave the
-                house each month, each one built to be worn for a lifetime and
-                then inherited.
+                house each month, each bought at source, cut by hand, and built
+                to be worn for a lifetime — then inherited.
               </p>
             </div>
           </div>
@@ -144,7 +147,7 @@ export default function AboutPage() {
           <div data-reveal-group className="mx-auto mt-20 grid max-w-7xl grid-cols-2 gap-y-10 border-t border-zinc-200 pt-12 md:grid-cols-4">
             {STATS.map((stat) => (
               <div key={stat.label} className="text-center md:text-left">
-                <p className="font-serif text-4xl font-light text-zinc-900 md:text-5xl">
+                <p className="font-serif text-4xl font-light text-[#13294B] md:text-5xl">
                   {stat.value}
                 </p>
                 <p className="mt-2 font-sans text-[0.7rem] font-medium uppercase tracking-[0.2em] text-amber-700">
@@ -156,13 +159,13 @@ export default function AboutPage() {
         </section>
 
         {/* ---- Values ---- */}
-        <section id="values" className="w-full scroll-mt-6 border-t border-zinc-200 bg-white px-6 py-24 md:px-12 md:py-32">
+        <section id="values" className="w-full scroll-mt-6 border-t border-zinc-200 bg-[#F7F4EC] px-6 py-24 md:px-12 md:py-32">
           <div className="mx-auto max-w-7xl">
             <div data-reveal className="mb-14 max-w-2xl md:mb-20">
               <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.3em] text-amber-700">
                 The House Pledge
               </span>
-              <h2 className="mt-4 font-serif text-4xl font-normal leading-[1.15] tracking-wide text-zinc-900 md:text-5xl">
+              <h2 className="mt-4 font-serif text-4xl font-normal leading-[1.15] tracking-wide text-[#13294B] md:text-5xl">
                 What We Will
                 <br />
                 <span className="italic font-light text-amber-600">Never Compromise</span>
@@ -173,15 +176,15 @@ export default function AboutPage() {
               {VALUES.map((value) => (
                 <div
                   key={value.title}
-                  className="group rounded-2xl border border-zinc-200 bg-[#FAF9F6] p-8 transition-all duration-500 hover:-translate-y-1.5 hover:border-amber-500/40 hover:shadow-[0_20px_45px_rgba(0,0,0,0.08)]"
+                  className="group rounded-2xl border border-zinc-200 bg-[#F7F4EC] p-8 transition-all duration-500 hover:-translate-y-1.5 hover:border-amber-500/40 hover:shadow-[0_20px_45px_rgba(0,0,0,0.08)]"
                 >
                   <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl border border-amber-500/15 bg-amber-500/5 text-amber-700 transition-colors duration-300 group-hover:bg-amber-500/10">
                     {value.icon}
                   </div>
-                  <h3 className="font-serif text-xl font-normal tracking-wide text-zinc-900 md:text-2xl">
+                  <h3 className="font-serif text-xl font-normal tracking-wide text-[#13294B] md:text-2xl">
                     {value.title}
                   </h3>
-                  <p className="mt-3 font-sans text-[0.85rem] leading-relaxed text-zinc-600 md:text-sm">
+                  <p className="mt-3 font-body text-[0.85rem] leading-relaxed text-[#4A6285] md:text-sm">
                     {value.body}
                   </p>
                 </div>
@@ -213,12 +216,12 @@ export default function AboutPage() {
               <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.3em] text-amber-700">
                 Inside the Workshop
               </span>
-              <h2 className="font-serif text-4xl font-normal leading-[1.15] tracking-wide text-zinc-900 md:text-5xl">
+              <h2 className="font-serif text-4xl font-normal leading-[1.15] tracking-wide text-[#13294B] md:text-5xl">
                 Cut by Hand,
                 <br />
                 <span className="italic font-light text-amber-600">Set by Eye</span>
               </h2>
-              <p className="max-w-xl font-sans text-sm leading-relaxed text-zinc-700 md:text-base">
+              <p className="max-w-xl font-body text-sm leading-relaxed text-[#3A4E6B] md:text-base">
                 No machine decides where a facet falls. Our cutters study each
                 rough stone for days — sometimes weeks — before the first cut,
                 because a sapphire only reveals its colour once and never
@@ -232,7 +235,7 @@ export default function AboutPage() {
                 ].map((point) => (
                   <li key={point} className="flex items-start gap-3">
                     <span className="mt-1.5 h-2 w-2 flex-shrink-0 rotate-45 bg-amber-600" />
-                    <span className="font-sans text-[0.85rem] leading-relaxed text-zinc-600 md:text-sm">
+                    <span className="font-body text-[0.85rem] leading-relaxed text-[#4A6285] md:text-sm">
                       {point}
                     </span>
                   </li>
@@ -243,30 +246,30 @@ export default function AboutPage() {
         </section>
 
         {/* ---- Heritage timeline (dark band) ---- */}
-        <section className="w-full border-t border-zinc-900 bg-[#0b0b0c] px-6 py-24 md:px-12 md:py-32">
+        <section className="w-full border-t border-[#1D3D6B] bg-[#0D2347] px-6 py-24 md:px-12 md:py-32">
           <div className="mx-auto max-w-7xl">
             <div data-reveal className="mb-14 max-w-2xl md:mb-20">
               <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.3em] text-gold-300">
-                The House Timeline
+                The House Journey
               </span>
               <h2 className="mt-4 font-serif text-4xl font-normal leading-[1.15] tracking-wide text-white md:text-5xl">
-                A Century
+                From Export House
                 <br />
-                <span className="italic font-light text-gold-300">in the Making</span>
+                <span className="italic font-light text-gold-300">to Maison</span>
               </h2>
             </div>
 
             <ol data-reveal-group className="relative space-y-14 border-l border-gold-500/25 pl-8 md:space-y-16 md:pl-12">
               {TIMELINE.map((era) => (
                 <li key={era.year} className="relative">
-                  <span className="absolute -left-[37px] top-2.5 h-2.5 w-2.5 rounded-full bg-gold-400 shadow-[0_0_14px_rgba(219,174,102,0.8)] md:-left-[53px]" />
+                  <span className="absolute -left-[37px] top-2.5 h-2.5 w-2.5 rounded-full bg-gold-400 shadow-[0_0_14px_rgba(46,91,224,0.8)] md:-left-[53px]" />
                   <p className="font-serif text-3xl font-light text-gold-300 md:text-4xl">
                     {era.year}
                   </p>
                   <h3 className="mt-2 font-sans text-xs font-semibold uppercase tracking-[0.2em] text-white md:text-[0.8rem]">
                     {era.title}
                   </h3>
-                  <p className="mt-3 max-w-xl font-sans text-[0.85rem] leading-relaxed text-zinc-300 md:text-sm">
+                  <p className="mt-3 max-w-xl font-body text-[0.85rem] leading-relaxed text-[#C9D4E6] md:text-sm">
                     {era.body}
                   </p>
                 </li>
@@ -276,17 +279,17 @@ export default function AboutPage() {
         </section>
 
         {/* ---- Closing invite ---- */}
-        <section className="w-full border-t border-zinc-200 bg-white px-6 py-24 text-center md:px-12 md:py-32">
+        <section className="w-full border-t border-zinc-200 bg-[#F7F4EC] px-6 py-24 text-center md:px-12 md:py-32">
           <div data-reveal className="mx-auto max-w-2xl space-y-8">
             <span className="block font-sans text-[0.7rem] font-medium uppercase tracking-[0.3em] text-amber-700">
               The Next Chapter
             </span>
-            <h2 className="font-serif text-4xl font-normal leading-[1.15] tracking-wide text-zinc-900 md:text-5xl">
+            <h2 className="font-serif text-4xl font-normal leading-[1.15] tracking-wide text-[#13294B] md:text-5xl">
               Write Yours
               <br />
               <span className="italic font-light text-amber-600">With Us</span>
             </h2>
-            <p className="mx-auto max-w-xl font-sans text-sm leading-relaxed text-zinc-700 md:text-base">
+            <p className="mx-auto max-w-xl font-body text-sm leading-relaxed text-[#3A4E6B] md:text-base">
               Compose a commission in the digital atelier, or sit with our
               gemologist over a tray of loose Ceylon sapphires. Either way, the
               ledger is open.
@@ -294,13 +297,13 @@ export default function AboutPage() {
             <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
               <Link
                 href="/atelier"
-                className="w-full rounded-full bg-zinc-900 px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#FAF9F6] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700 sm:w-auto"
+                className="w-full rounded-full bg-[#12305B] px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700 sm:w-auto"
               >
                 Design in the Atelier
               </Link>
               <Link
                 href="/contact"
-                className="w-full rounded-full border border-zinc-300 px-8 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-zinc-800 transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-600 hover:text-amber-700 sm:w-auto"
+                className="w-full rounded-full border border-zinc-300 px-8 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-[#2C405C] transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-600 hover:text-amber-700 sm:w-auto"
               >
                 Arrange a Private Visit
               </Link>
