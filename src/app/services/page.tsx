@@ -73,7 +73,7 @@ export default function ServicesPage() {
               {/* Right: detail */}
               <div data-reveal className="flex flex-col justify-center space-y-6">
                 {service.paragraphs.map((para) => (
-                  <p key={para.slice(0, 32)} className="max-w-2xl font-body text-sm leading-relaxed text-[#3A4E6B] md:text-base">
+                  <p key={para.slice(0, 32)} className="max-w-2xl font-body text-base leading-relaxed text-[#3A4E6B] md:text-[1.1rem] md:leading-relaxed">
                     {para}
                   </p>
                 ))}
@@ -82,7 +82,7 @@ export default function ServicesPage() {
                     {service.points.map((point) => (
                       <li key={point} className="flex items-start gap-3">
                         <span className="mt-1.5 h-2 w-2 flex-shrink-0 rotate-45 bg-amber-600" />
-                        <span className="font-body text-[0.85rem] leading-relaxed text-[#4A6285] md:text-sm">
+                        <span className="font-body text-sm leading-relaxed text-[#4A6285] md:text-base">
                           {point}
                         </span>
                       </li>

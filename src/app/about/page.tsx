@@ -121,21 +121,21 @@ export default function AboutPage() {
             </div>
 
             <div data-reveal className="flex flex-col justify-center space-y-6">
-              <p className="max-w-2xl font-body text-sm leading-relaxed text-[#3A4E6B] md:text-base">
+              <p className="max-w-2xl font-body text-base leading-relaxed text-[#3A4E6B] md:text-[1.1rem] md:leading-relaxed">
                 Ceylon Gem Maison holds years of professional experience
                 exporting world-class, ethically sourced gemstones from Sri
                 Lanka to the West. That exporter&apos;s discipline — certification,
                 traceability and uncompromising international quality standards
                 — remains the foundation on which every commission is built.
               </p>
-              <p className="max-w-2xl font-body text-sm leading-relaxed text-[#3A4E6B] md:text-base">
+              <p className="max-w-2xl font-body text-base leading-relaxed text-[#3A4E6B] md:text-[1.1rem] md:leading-relaxed">
                 Today the maison is dedicated to impeccably tailored wedding and
                 engagement rings — a true epitome of elegance — and to the
                 enthralling experience of crafting your own jewellery alongside
                 our gemologists. Our specialisation lies in sapphires of every
                 kind, intricately tailored for the moments that change a life.
               </p>
-              <p className="max-w-2xl font-body text-sm leading-relaxed text-[#3A4E6B] md:text-base">
+              <p className="max-w-2xl font-body text-base leading-relaxed text-[#3A4E6B] md:text-[1.1rem] md:leading-relaxed">
                 We remain deliberately small. A handful of commissions leave the
                 house each month, each bought at source, cut by hand, and built
                 to be worn for a lifetime — then inherited.
@@ -184,7 +184,7 @@ export default function AboutPage() {
                   <h3 className="font-serif text-xl font-normal tracking-wide text-[#13294B] md:text-2xl">
                     {value.title}
                   </h3>
-                  <p className="mt-3 font-body text-[0.85rem] leading-relaxed text-[#4A6285] md:text-sm">
+                  <p className="mt-3 font-body text-sm leading-relaxed text-[#4A6285] md:text-base">
                     {value.body}
                   </p>
                 </div>
@@ -221,7 +221,7 @@ export default function AboutPage() {
                 <br />
                 <span className="italic font-light text-amber-600">Set by Eye</span>
               </h2>
-              <p className="max-w-xl font-body text-sm leading-relaxed text-[#3A4E6B] md:text-base">
+              <p className="max-w-xl font-body text-base leading-relaxed text-[#3A4E6B] md:text-[1.1rem] md:leading-relaxed">
                 No machine decides where a facet falls. Our cutters study each
                 rough stone for days — sometimes weeks — before the first cut,
                 because a sapphire only reveals its colour once and never
@@ -235,7 +235,7 @@ export default function AboutPage() {
                 ].map((point) => (
                   <li key={point} className="flex items-start gap-3">
                     <span className="mt-1.5 h-2 w-2 flex-shrink-0 rotate-45 bg-amber-600" />
-                    <span className="font-body text-[0.85rem] leading-relaxed text-[#4A6285] md:text-sm">
+                    <span className="font-body text-sm leading-relaxed text-[#4A6285] md:text-base">
                       {point}
                     </span>
                   </li>
@@ -269,7 +269,7 @@ export default function AboutPage() {
                   <h3 className="mt-2 font-sans text-xs font-semibold uppercase tracking-[0.2em] text-white md:text-[0.8rem]">
                     {era.title}
                   </h3>
-                  <p className="mt-3 max-w-xl font-body text-[0.85rem] leading-relaxed text-[#C9D4E6] md:text-sm">
+                  <p className="mt-3 max-w-xl font-body text-sm leading-relaxed text-[#C9D4E6] md:text-base">
                     {era.body}
                   </p>
                 </li>
@@ -289,7 +289,7 @@ export default function AboutPage() {
               <br />
               <span className="italic font-light text-amber-600">With Us</span>
             </h2>
-            <p className="mx-auto max-w-xl font-body text-sm leading-relaxed text-[#3A4E6B] md:text-base">
+            <p className="mx-auto max-w-xl font-body text-base leading-relaxed text-[#3A4E6B] md:text-[1.1rem] md:leading-relaxed">
               Compose a commission in the digital atelier, or sit with our
               gemologist over a tray of loose Ceylon sapphires. Either way, the
               ledger is open.
