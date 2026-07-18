@@ -156,9 +156,8 @@ export default function FeaturedProducts() {
                     alt={product.name}
                     fill
                     className="object-contain"
-                    sizes="(max-w-768px) 100vw, 33vw"
+                    sizes="(max-width: 768px) 100vw, 33vw"
                     priority={idx < 3}
-                    unoptimized
                   />
                 </div>
               </div>

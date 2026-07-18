@@ -5,10 +5,10 @@ import Navbar from "@/components/Navbar";
 
 /**
  * ScrollHero
- * A scroll-scrubbed cinematic hero. The luxury ring film (public/hero/ring-story.mp4,
- * re-encoded all-intra so every frame is instantly seekable) is pinned full-screen and
- * its playhead is driven by scroll position. Editorial copy for each act of the film
- * fades in and out at the exact scroll window where that scene is on screen.
+ * A scroll-scrubbed cinematic hero. The luxury ring film (public/hero/ring-story-rebranded.mp4,
+ * encoded with a dense keyframe cadence (~4/sec) + faststart so any point is quick to seek) is
+ * pinned full-screen and its playhead is driven by scroll position. Editorial copy for each act
+ * of the film fades in and out at the exact scroll window where that scene is on screen.
  *
  * The film runs Sketch -> 3D Craft -> Reveal on silk -> Worn on the hand.
  */
@@ -136,6 +136,7 @@ export default function ScrollHero() {
 
     let raf = 0;
     let running = false;
+    let lastSeekAt = 0;
 
     const progress = () => {
       const rect = section.getBoundingClientRect();
@@ -146,18 +147,34 @@ export default function ScrollHero() {
     const tick = () => {
       const p = progress();
 
-      // Drive the film's playhead toward the scroll target, lerped for silky scrubbing.
-      // Gate on !video.seeking: WebKit/iOS process seeks serially and drop a flood of
-      // per-frame currentTime writes, so only issue the next seek once the last finished.
-      if (!video.seeking && video.readyState >= 2 && Number.isFinite(video.duration)) {
+      if (Number.isFinite(video.duration)) {
         const cap = Math.min(DURATION, video.duration - 0.05);
         const target = p * cap;
-        const cur = video.currentTime;
-        const diff = target - cur;
-        if (Math.abs(diff) > 0.005) {
-          const next = Math.abs(diff) < 0.08 ? target : cur + diff * 0.22;
+
+        // Drive the film's playhead toward the scroll target, lerped for silky scrubbing.
+        // Gate on !video.seeking: WebKit/iOS process seeks serially and drop a flood of
+        // per-frame currentTime writes, so only issue the next seek once the last finished.
+        if (!video.seeking && video.readyState >= 2) {
+          const cur = video.currentTime;
+          const diff = target - cur;
+          if (Math.abs(diff) > 0.005) {
+            const next = Math.abs(diff) < 0.08 ? target : cur + diff * 0.22;
+            try {
+              video.currentTime = next;
+              lastSeekAt = performance.now();
+            } catch {
+              /* seek not ready */
+            }
+          }
+        } else if (video.seeking && performance.now() - lastSeekAt > 500) {
+          // Watchdog: a seek into a not-yet-buffered stretch can stall on a slow
+          // connection, and the gate above would then block every further seek —
+          // the film freezes while the page keeps scrolling. Writing currentTime
+          // aborts the stuck seek and starts a fresh one at the *latest* scroll
+          // target, so the scrub always recovers.
           try {
-            video.currentTime = next;
+            video.currentTime = target;
+            lastSeekAt = performance.now();
           } catch {
             /* seek not ready */
           }
@@ -229,6 +246,19 @@ export default function ScrollHero() {
       return () => video.removeEventListener("loadeddata", rest);
     }
 
+    // If the film dies outright (network drop, decode failure), rest the stage on
+    // the poster so the hero still reads as designed instead of a broken frame.
+    const onError = () => {
+      const stage = stageRef.current;
+      if (stage) {
+        stage.style.backgroundImage = "url(/hero/poster.jpg)";
+        stage.style.backgroundSize = "cover";
+        stage.style.backgroundPosition = "center";
+      }
+      video.style.opacity = "0";
+    };
+    video.addEventListener("error", onError);
+
     video.addEventListener("loadeddata", prime, { once: true });
     if (video.readyState >= 2) prime();
 
@@ -245,6 +275,7 @@ export default function ScrollHero() {
       stop();
       io.disconnect();
       video.removeEventListener("loadeddata", prime);
+      video.removeEventListener("error", onError);
       if (unlock) {
         window.removeEventListener("pointerdown", unlock);
         window.removeEventListener("touchstart", unlock);

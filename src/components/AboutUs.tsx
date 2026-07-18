@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import Ring3D from "@/components/Ring3D";
+import Ring3DLazy from "@/components/Ring3DLazy";
 
 /**
  * AboutUs — homepage preview only. The full story lives at /about; this band
@@ -15,7 +15,7 @@ export default function AboutUs() {
 
         {/* 3D Spinning Ring - Top Right of Content Area */}
         <div className="absolute top-4 right-4 md:top-8 md:right-8 w-32 h-32 md:w-56 md:h-56 z-10 pointer-events-none md:pointer-events-auto">
-          <Ring3D />
+          <Ring3DLazy />
         </div>
 
         {/* Tagline */}
@@ -78,10 +78,8 @@ export default function AboutUs() {
             src="/artisan_crafting.png"
             alt="Ceylon Gem Maison artisan crafting a bespoke ring at the bench"
             fill
-            sizes="(max-w-768px) 100vw, 45vw"
+            sizes="(max-width: 768px) 100vw, 45vw"
             className="object-cover"
-            priority
-            unoptimized
           />
         </div>
 

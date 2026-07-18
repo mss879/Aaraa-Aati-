@@ -44,8 +44,7 @@ function TeaserCard({
           alt={`${title} category model`}
           fill
           className="object-cover"
-          sizes="(max-w-768px) 100vw, 33vw"
-          unoptimized
+          sizes="(max-width: 768px) 100vw, 33vw"
         />
         <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/45 via-transparent to-black/65" />
       </div>
@@ -76,8 +75,7 @@ function ProductCard({ piece }: { piece: Piece }) {
         alt={piece.name}
         fill
         className="object-cover"
-        sizes="(max-w-768px) 100vw, 33vw"
-        unoptimized
+        sizes="(max-width: 768px) 100vw, 33vw"
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/75" />
 

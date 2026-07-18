@@ -31,7 +31,6 @@ export default function LuxuryShowcase() {
           className="object-cover"
           sizes="100vw"
           priority
-          unoptimized
         />
       </div>
 

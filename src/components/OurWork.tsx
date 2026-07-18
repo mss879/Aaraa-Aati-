@@ -108,7 +108,6 @@ function WorkCard({ item }: { item: WorkItem }) {
           fill
           sizes="(max-width: 768px) 60vw, 24rem"
           className="object-cover"
-          unoptimized
         />
       ) : (
         <video

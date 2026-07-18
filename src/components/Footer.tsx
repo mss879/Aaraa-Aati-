@@ -153,7 +153,6 @@ export default function Footer() {
               width={120}
               height={36}
               className="h-7 md:h-8 w-auto object-contain brightness-110 transition-transform hover:scale-105"
-              unoptimized
             />
           </a>
         </div>

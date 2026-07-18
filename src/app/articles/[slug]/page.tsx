@@ -74,7 +74,6 @@ export default async function ArticlePage({ params }: Props) {
               alt={article.heroAlt}
               fill
               priority
-              unoptimized
               sizes="100vw"
               className="object-cover"
             />
@@ -201,7 +200,6 @@ export default async function ArticlePage({ params }: Props) {
                       fill
                       sizes="8rem"
                       className="object-cover transition-transform duration-[1400ms] group-hover:scale-105"
-                      unoptimized
                     />
                   </div>
                   <div>

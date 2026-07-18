@@ -24,13 +24,12 @@ export default function Navbar() {
         >
           <div className="rounded-xl border border-white/40 bg-white px-3 py-1.5 shadow-[0_8px_30px_rgba(0,0,0,0.45)] ring-1 ring-black/5 transition-all duration-300 group-hover:border-gold-300/70 group-hover:shadow-[0_10px_36px_rgba(46,91,224,0.25)] md:rounded-2xl md:px-4 md:py-2 flex items-center justify-center">
             <Image
-              src="/main-logo.png?v=2"
+              src="/main-logo.png"
               alt="Ceylon Gem Maison — Luxury Jewellery"
               width={1565}
               height={444}
               className="h-9 w-auto object-contain md:h-12"
               priority
-              unoptimized
             />
           </div>
         </Link>

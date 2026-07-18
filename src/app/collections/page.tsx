@@ -98,7 +98,6 @@ export default function CollectionsPage() {
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
-                  unoptimized
                 />
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-[#0D2347] via-transparent to-transparent" />

@@ -205,7 +205,6 @@ export default function AboutPage() {
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
-                  unoptimized
                 />
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />

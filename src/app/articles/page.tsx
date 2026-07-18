@@ -47,7 +47,6 @@ export default function ArticlesPage() {
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover transition-transform duration-[1600ms] group-hover:scale-105"
-                  unoptimized
                 />
                 <span className="absolute left-5 top-5 rounded-full bg-black/60 px-3.5 py-1.5 font-sans text-[0.62rem] font-medium uppercase tracking-[0.2em] text-gold-200 backdrop-blur-sm">
                   Featured · {featured.category}
@@ -89,7 +88,6 @@ export default function ArticlesPage() {
                       fill
                       sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-cover transition-transform duration-[1600ms] group-hover:scale-105"
-                      unoptimized
                     />
                     <span className="absolute left-4 top-4 rounded-full bg-black/60 px-3.5 py-1.5 font-sans text-[0.62rem] font-medium uppercase tracking-[0.2em] text-gold-200 backdrop-blur-sm">
                       {article.category}

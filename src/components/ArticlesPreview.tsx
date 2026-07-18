@@ -51,7 +51,6 @@ export default function ArticlesPreview() {
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
                   className="object-cover transition-transform duration-[1600ms] group-hover:scale-105"
-                  unoptimized
                 />
                 <span className="chip-luxe absolute left-4 top-4">
                   {article.category}

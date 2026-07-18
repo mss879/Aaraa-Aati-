@@ -204,10 +204,36 @@ export default function Preloader() {
     });
     const after = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
+    // Hero-first-frame gate: on pages that carry the scroll-hero film, hold the
+    // veil until that <video>'s first frame is decodable (readyState >= 2) so it
+    // never lifts onto an unpainted hero. Pages with no hero video fall back to
+    // the window `load` event. Callers always race this against a hard cap so a
+    // slow or broken film can never keep the veil up indefinitely.
+    let heroPoll = 0;
+    const heroReady = new Promise<void>((resolve) => {
+      const attach = (attempt: number) => {
+        const v = document.querySelector("video");
+        if (v) {
+          if (v.readyState >= 2) return resolve();
+          v.addEventListener("loadeddata", () => resolve(), { once: true });
+          v.addEventListener("canplay", () => resolve(), { once: true });
+          return;
+        }
+        // No hero <video> mounted yet — retry briefly, then fall back to load.
+        if (attempt < 6) {
+          heroPoll = window.setTimeout(() => attach(attempt + 1), 100);
+        } else {
+          whenLoaded.then(() => resolve());
+        }
+      };
+      attach(0);
+    });
+
     const state = { progress: 0, textProgress: 0, flare: 0, expand: 0 };
 
     const cleanup = () => {
       cancelAnimationFrame(raf);
+      clearTimeout(heroPoll);
       if (onLoad) window.removeEventListener("load", onLoad);
       gsap.killTweensOf([state, overlay, canvas]);
       if (resizeHandler) window.removeEventListener("resize", resizeHandler);
@@ -249,7 +275,7 @@ export default function Preloader() {
 
       // ---- Fallback: plain silk veil, fades once the page is ready ----
       if (!gl) {
-        Promise.all([Promise.race([whenLoaded, after(6000)]), after(3400)]).then(() => {
+        Promise.all([Promise.race([heroReady, after(4000)]), after(1900)]).then(() => {
           if (disposed) return;
           unlockScroll();
           gsap.to(overlay, { autoAlpha: 0, duration: 0.5, ease: "power1.out", onComplete: finish });
@@ -258,7 +284,9 @@ export default function Preloader() {
       }
 
       // ---- Build the particle attributes (once) ----
-      const count = window.innerWidth < 768 ? 4500 : 9000;
+      // Kept lean so the load-time WebGL warm-up stays off the main-thread
+      // budget; the silhouette still reads as dense at these counts.
+      const count = window.innerWidth < 768 ? 3000 : 6000;
       const start = new Float32Array(count * 3);
       const target = new Float32Array(count * 3);
       const color = new Float32Array(count * 3);
@@ -325,7 +353,7 @@ export default function Preloader() {
       gl.linkProgram(program);
       if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
         // Shader failed somewhere exotic — degrade to the plain veil path.
-        Promise.all([Promise.race([whenLoaded, after(6000)]), after(3400)]).then(() => {
+        Promise.all([Promise.race([heroReady, after(4000)]), after(1900)]).then(() => {
           if (disposed) return;
           unlockScroll();
           gsap.to(overlay, { autoAlpha: 0, duration: 0.5, ease: "power1.out", onComplete: finish });
@@ -393,31 +421,32 @@ export default function Preloader() {
       };
       raf = requestAnimationFrame(tick);
 
-      // ---- Choreography ----
-      gsap.fromTo(canvas, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power1.out" });
-      
-      // Step 1: Converge from chaos to solitaire ring (1.2s)
-      gsap.to(state, { progress: 1.0, duration: 1.2, ease: "power2.out" });
-      
-      // Step 2: Hold ring for 0.4s (total 1.6s), then morph to "WELCOME" text (1.2s)
-      gsap.to(state, { textProgress: 1.0, duration: 1.2, ease: "power3.inOut", delay: 1.6 });
+      // ---- Choreography (tuned so the veil lives ~2.4s on screen) ----
+      gsap.fromTo(canvas, { opacity: 0 }, { opacity: 1, duration: 0.45, ease: "power1.out" });
 
-      // Step 3: Wait for page load and minimum duration (2.8s) before starting exit
-      Promise.all([Promise.race([whenLoaded, after(6000)]), after(2800)]).then(() => {
+      // Step 1: Converge from chaos to the solitaire ring (0.75s).
+      gsap.to(state, { progress: 1.0, duration: 0.75, ease: "power2.out" });
+
+      // Step 2: Brief ring hold, then morph to "WELCOME" — fully formed by ~1.25s.
+      gsap.to(state, { textProgress: 1.0, duration: 0.65, ease: "power3.inOut", delay: 0.6 });
+
+      // Step 3: Hold the veil for a ~1.5s minimum AND until the hero's first frame
+      // is ready (capped at 4s so a slow film can't stall the reveal), then blast.
+      Promise.all([Promise.race([heroReady, after(4000)]), after(1500)]).then(() => {
         if (disposed) return;
         unlockScroll();
-        
-        // Step 4: Hold "WELCOME" for 0.6s, then flare and expand blast
+
+        // Step 4: Short "WELCOME" beat, then flare and expand blast (~0.9s exit).
         gsap
           .timeline({ onComplete: finish })
-          .to(state, { flare: 1.0, duration: 0.35, ease: "power2.in", delay: 0.6 })
-          .to(state, { expand: 3.4, duration: 0.8, ease: "power3.in" }, "-=0.15")
-          .to(overlay, { autoAlpha: 0, duration: 0.5, ease: "power1.out" }, "-=0.4");
+          .to(state, { flare: 1.0, duration: 0.22, ease: "power2.in", delay: 0.12 })
+          .to(state, { expand: 3.4, duration: 0.55, ease: "power3.in" }, "-=0.1")
+          .to(overlay, { autoAlpha: 0, duration: 0.4, ease: "power1.out" }, "-=0.32");
       });
     };
 
     if (reduced) {
-      Promise.all([Promise.race([whenLoaded, after(5000)]), after(600)]).then(() => {
+      Promise.all([Promise.race([heroReady, after(4000)]), after(700)]).then(() => {
         if (disposed) return;
         unlockScroll();
         gsap.to(overlay, { autoAlpha: 0, duration: 0.5, ease: "power1.out", onComplete: finish });

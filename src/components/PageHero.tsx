@@ -37,7 +37,6 @@ export default function PageHero({
               alt=""
               fill
               priority
-              unoptimized
               sizes="100vw"
               className="object-cover"
               style={{ objectPosition: image.position ?? "center" }}
