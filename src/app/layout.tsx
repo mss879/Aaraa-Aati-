@@ -144,7 +144,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="en-SG"
       className={`${cinzel.variable} ${garamond.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#F7F4EC] text-[#13294B]">
