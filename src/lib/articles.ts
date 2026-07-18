@@ -23,10 +23,10 @@ export type Article = {
 export const ARTICLES: Article[] = [
   {
     slug: "ceylon-sapphire-engagement-ring-singapore",
-    title: "Choosing a Ceylon Sapphire Engagement Ring in Singapore",
-    seoTitle: "Ceylon Sapphire Engagement Rings in Singapore — A Buyer's Guide",
+    title: "How to Judge a Ceylon Sapphire Like a Gemologist",
+    seoTitle: "How to Judge a Ceylon Sapphire's Quality — A Gemologist's Method",
     description:
-      "A gemologist's guide for couples in Singapore: how to judge a Ceylon sapphire's colour and cut, choose a setting, and commission a bespoke engagement ring within your budget.",
+      "A gemologist's method for evaluating a Ceylon sapphire before you buy: judging hue, tone and saturation, spotting windows and zoning, and weighing colour against carat.",
     category: "Buying Guide",
     date: "2026-07-02",
     displayDate: "2 July 2026",

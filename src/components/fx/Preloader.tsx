@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import gsap from "gsap";
 
 /**
@@ -171,7 +172,18 @@ function sampleTextPoints(text: string, count: number, fontName: string = "Cinze
   return arr;
 }
 
+// The cinematic veil belongs to the homepage's hero experience only. Content
+// and SEO pages (guides, articles, collections…) must be served with nothing
+// overlaying them — crawlers and users alike get the page immediately.
+let playedThisSession = false;
+
 export default function Preloader() {
+  const pathname = usePathname();
+  if (pathname !== "/" || playedThisSession) return null;
+  return <PreloaderInner />;
+}
+
+function PreloaderInner() {
   const [done, setDone] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -180,6 +192,9 @@ export default function Preloader() {
     const overlay = overlayRef.current;
     const canvas = canvasRef.current;
     if (!overlay || !canvas) return;
+
+    // Mark as played so client-side navigation back to "/" never replays it.
+    playedThisSession = true;
 
     let disposed = false;
     let raf = 0;

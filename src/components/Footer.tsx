@@ -116,6 +116,55 @@ export default function Footer() {
 
         </div>
 
+        {/* Sapphire Guides — sitewide links to the SEO pillar guides */}
+        <div className="pt-10 pb-10 border-b border-[#1D3D6B]">
+          <h4 className="text-xs font-semibold tracking-[0.2em] text-white uppercase font-sans mb-5">
+            Sapphire Guides
+          </h4>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-3 text-[0.82rem] md:text-sm font-body">
+            <li>
+              <Link href="/ceylon-sapphire-engagement-ring-singapore" className="hover:text-gold-200 transition-colors">
+                Ceylon Sapphire Engagement Rings
+              </Link>
+            </li>
+            <li>
+              <Link href="/ceylon-sapphire-ring-singapore" className="hover:text-gold-200 transition-colors">
+                Ceylon Sapphire Rings
+              </Link>
+            </li>
+            <li>
+              <Link href="/bespoke-sapphire-engagement-ring-singapore" className="hover:text-gold-200 transition-colors">
+                Bespoke Sapphire Engagement Rings
+              </Link>
+            </li>
+            <li>
+              <Link href="/blue-sapphire-engagement-ring-singapore" className="hover:text-gold-200 transition-colors">
+                Blue Sapphire Engagement Rings
+              </Link>
+            </li>
+            <li>
+              <Link href="/sri-lankan-sapphire-ring-singapore" className="hover:text-gold-200 transition-colors">
+                Sri Lankan Sapphire Rings
+              </Link>
+            </li>
+            <li>
+              <Link href="/custom-sapphire-ring-singapore" className="hover:text-gold-200 transition-colors">
+                Custom Sapphire Rings
+              </Link>
+            </li>
+            <li>
+              <Link href="/design-your-own-sapphire-ring-singapore" className="hover:text-gold-200 transition-colors">
+                Design Your Own Sapphire Ring
+              </Link>
+            </li>
+            <li>
+              <Link href="/natural-blue-sapphire-ring-singapore" className="hover:text-gold-200 transition-colors">
+                Natural Blue Sapphire Rings
+              </Link>
+            </li>
+          </ul>
+        </div>
+
         {/* Bottom Bar */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6 pt-10 text-[0.7rem] md:text-[0.75rem] font-sans tracking-widest uppercase">
 
