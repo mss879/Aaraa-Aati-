@@ -104,7 +104,7 @@ export default function AboutPage() {
         <section className="w-full px-6 py-24 md:px-12 md:py-32">
           <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-20">
             <div data-reveal className="flex flex-col justify-center">
-              <div className="mb-6 inline-flex items-center gap-2.5 self-start rounded-full border border-amber-500/20 bg-amber-500/5 px-3.5 py-1.5">
+              <div className="mb-6 inline-flex items-center gap-2.5 self-start eyebrow-gem px-3.5 py-1.5">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
                 <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.3em] text-amber-700">
                   Our Story
@@ -296,13 +296,13 @@ export default function AboutPage() {
             <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
               <Link
                 href="/atelier"
-                className="w-full rounded-full bg-[#12305B] px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700 sm:w-auto"
+ className="w-full gem-btn bg-[#12305B] px-11 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700 sm:w-auto"
               >
                 Design in the Atelier
               </Link>
               <Link
                 href="/contact"
-                className="w-full rounded-full border border-zinc-300 px-8 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-[#2C405C] transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-600 hover:text-amber-700 sm:w-auto"
+ className="w-full gem-btn gem-btn--ring-cream px-11 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-[#2C405C] transition-all duration-300 hover:-translate-y-0.5 hover:text-amber-700 sm:w-auto"
               >
                 Arrange a Private Visit
               </Link>

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollFX from "@/components/fx/ScrollFX";
 import LuxeCursor from "@/components/fx/LuxeCursor";
@@ -81,9 +80,6 @@ export default async function ArticlePage({ params }: Props) {
           <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-black/70 via-black/35 to-black/85" />
           <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,transparent_35%,rgba(0,0,0,0.72)_100%)]" />
 
-          <div className="relative z-40">
-            <Navbar />
-          </div>
 
           <div className="relative z-30 flex flex-1 items-end px-6 pb-14 pt-44 md:px-16 md:pb-20">
             <div data-reveal className="max-w-3xl">
@@ -166,13 +162,13 @@ export default async function ArticlePage({ params }: Props) {
             <div data-reveal className="mt-14 flex flex-col items-start gap-4 border-t border-zinc-200 pt-10 sm:flex-row sm:items-center">
               <Link
                 href="/atelier"
-                className="rounded-full bg-[#12305B] px-8 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700"
+ className="gem-btn bg-[#12305B] px-11 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700"
               >
                 Design Your Own Ring
               </Link>
               <Link
                 href="/contact"
-                className="rounded-full border border-zinc-300 px-8 py-3.5 font-sans text-xs font-medium uppercase tracking-[0.2em] text-[#2C405C] transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-600 hover:text-amber-700"
+ className="gem-btn gem-btn--ring-cream px-11 py-3.5 font-sans text-xs font-medium uppercase tracking-[0.2em] text-[#2C405C] transition-all duration-300 hover:-translate-y-0.5 hover:text-amber-700"
               >
                 Ask a Gemologist
               </Link>

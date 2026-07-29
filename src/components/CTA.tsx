@@ -60,7 +60,7 @@ export default function CTA() {
             </Link>
             <a
               href="mailto:support@ceylongemmaison.com?subject=Private%20Consultation%20Request"
-              className="w-full rounded-full border border-[#F7F4EC]/30 px-8 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300 hover:text-gold-200 active:translate-y-0 sm:w-auto"
+ className="w-full gem-btn gem-btn--frost px-11 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:text-gold-200 active:translate-y-0 sm:w-auto"
             >
               Book Private Consultation
             </a>

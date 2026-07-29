@@ -97,7 +97,7 @@ export default function ContactPage() {
 
             {/* Ways to reach us */}
             <div data-reveal className="flex flex-col justify-center">
-              <div className="mb-6 inline-flex items-center gap-2.5 self-start rounded-full border border-amber-500/20 bg-amber-500/5 px-3.5 py-1.5">
+              <div className="mb-6 inline-flex items-center gap-2.5 self-start eyebrow-gem px-3.5 py-1.5">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
                 <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.3em] text-amber-700">
                   The Concierge
@@ -206,13 +206,13 @@ export default function ContactPage() {
             <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
               <a
                 href="mailto:support@ceylongemmaison.com?subject=Private%20Vault%20Appointment"
-                className="w-full rounded-full bg-gold-400 px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-[0_4px_25px_rgba(46,91,224,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-[0_4px_35px_rgba(46,91,224,0.45)] active:translate-y-0 sm:w-auto"
+ className="w-full gem-btn bg-gold-400 px-11 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-[0_4px_25px_rgba(46,91,224,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-[0_4px_35px_rgba(46,91,224,0.45)] active:translate-y-0 sm:w-auto"
               >
                 Request an Appointment
               </a>
               <a
                 href="tel:+6598423404"
-                className="w-full rounded-full border border-gold-400/25 px-8 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-gold-200 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/60 hover:bg-gold-500/10 active:translate-y-0 sm:w-auto"
+ className="w-full gem-btn gem-btn--frost px-11 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-gold-200 transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-500/10 active:translate-y-0 sm:w-auto"
               >
                 Call the Atelier
               </a>

@@ -11,6 +11,7 @@ import {
   gemById,
   pieceById,
 } from "@/lib/ring-options";
+import { CUT_SPEC, GIRDLE_Y, createHead, createStoneGeometry } from "@/lib/three/gem-head";
 
 /**
  * BespokeJewel3D
@@ -113,89 +114,54 @@ function createEnvMap(q: Quality): THREE.Texture {
   return texture;
 }
 
-/** Center-stone geometry per cut: a faceted crown + pavilion pair, plus an XZ footprint scale. */
+/** A bare centre stone — the trinity companions sit in a cup, without claws. */
 function makeStone(
   cut: RingConfig["cut"],
   material: THREE.Material,
   disposables: Disposable[],
-): { group: THREE.Group; girdle: number } {
+): THREE.Group {
   const group = new THREE.Group();
+  const spec = CUT_SPEC[cut];
+  const geo = createStoneGeometry(cut);
+  disposables.push(geo);
 
-  // radial segment count + squash define the silhouette of each cut
-  const spec = {
-    round: { seg: 16, sx: 1, sz: 1, rotate: 0 },
-    princess: { seg: 4, sx: 1.05, sz: 1.05, rotate: Math.PI / 4 },
-    oval: { seg: 16, sx: 1.28, sz: 0.82, rotate: 0 },
-    emerald: { seg: 8, sx: 1.24, sz: 0.78, rotate: Math.PI / 8 },
-  }[cut];
-
-  const crownGeo = new THREE.CylinderGeometry(0.22, 0.35, 0.14, spec.seg, 1);
-  const pavilionGeo = new THREE.ConeGeometry(0.35, 0.38, spec.seg, 1);
-  disposables.push(crownGeo, pavilionGeo);
-
-  const crown = new THREE.Mesh(crownGeo, material);
-  crown.position.y = 0.07;
-  const pavilion = new THREE.Mesh(pavilionGeo, material);
-  pavilion.position.y = -0.19;
-  pavilion.rotation.x = Math.PI;
-
-  group.add(crown, pavilion);
-  group.scale.set(spec.sx, 1, spec.sz);
-  group.rotation.y = spec.rotate;
-  return { group, girdle: 0.35 * Math.max(spec.sx, spec.sz) };
+  const stone = new THREE.Mesh(geo, material);
+  stone.scale.set(spec.sx, 1, spec.sz); // the turn per cut is baked in as phiStart
+  group.add(stone);
+  return group;
 }
 
-/** The crown assembly: seat, collar, prongs, center stone — and a halo when set. */
+/** The crown assembly: basket, claws, centre stone — and a halo when set. */
 function makeHead(state: ThreeState, config: RingConfig, disposables: Disposable[]): THREE.Group {
   const { metalMat, gemMat, accentMat, quality: q } = state;
-  const head = new THREE.Group();
 
-  const seatGeo = new THREE.CylinderGeometry(0.2, 0.15, 0.1, 16);
-  disposables.push(seatGeo);
-  const seat = new THREE.Mesh(seatGeo, metalMat);
-  seat.position.y = 0.02;
-  head.add(seat);
+  const { head, girdleX, girdleZ } = createHead({
+    cut: config.cut,
+    metalMat,
+    gemMat,
+    prongSeg: q.prongSeg,
+    disposables,
+  });
 
-  const collarGeo = new THREE.TorusGeometry(0.25, 0.025, 8, 24);
-  disposables.push(collarGeo);
-  const collar = new THREE.Mesh(collarGeo, metalMat);
-  collar.position.y = 0.12;
-  collar.rotation.x = Math.PI / 2;
-  head.add(collar);
-
-  // princess crowns look right with 4 corner prongs; everything else takes 6
-  const prongCount = config.cut === "princess" ? 4 : 6;
-  const prongGeo = new THREE.CylinderGeometry(0.03, 0.02, 0.52, q.prongSeg);
-  disposables.push(prongGeo);
-  for (let i = 0; i < prongCount; i++) {
-    const angle = (i / prongCount) * Math.PI * 2 + (prongCount === 4 ? Math.PI / 4 : 0);
-    const prong = new THREE.Mesh(prongGeo, metalMat);
-    prong.position.set(Math.cos(angle) * 0.28, 0.16, Math.sin(angle) * 0.28);
-    prong.rotation.z = -Math.cos(angle) * 0.16;
-    prong.rotation.x = Math.sin(angle) * 0.16;
-    head.add(prong);
-  }
-
-  const { group: stone, girdle } = makeStone(config.cut, gemMat, disposables);
-  stone.position.y = 0.26;
-  head.add(stone);
-
-  // --- halo: a circlet of micro-diamonds around the girdle of the center stone ---
+  // --- halo: a circlet of micro-diamonds around the girdle of the centre stone ---
   if (config.setting === "halo") {
+    const haloX = girdleX + 0.12;
+    const haloZ = girdleZ + 0.12;
     const haloGemGeo = new THREE.IcosahedronGeometry(0.06, 1);
-    const haloRailGeo = new THREE.TorusGeometry(girdle + 0.12, 0.028, 8, 40);
+    const haloRailGeo = new THREE.TorusGeometry(haloX, 0.028, 8, 40);
     disposables.push(haloGemGeo, haloRailGeo);
 
     const rail = new THREE.Mesh(haloRailGeo, metalMat);
     rail.position.y = 0.28;
     rail.rotation.x = Math.PI / 2;
+    rail.scale.set(1, haloZ / haloX, 1); // squash to the stone's footprint, pre-tilt
     head.add(rail);
 
     const haloCount = 14;
     for (let i = 0; i < haloCount; i++) {
       const a = (i / haloCount) * Math.PI * 2;
       const g = new THREE.Mesh(haloGemGeo, accentMat);
-      g.position.set(Math.cos(a) * (girdle + 0.12), 0.3, Math.sin(a) * (girdle + 0.12));
+      g.position.set(Math.cos(a) * haloX, 0.3, Math.sin(a) * haloZ);
       head.add(g);
     }
   }
@@ -237,9 +203,11 @@ function buildRing(state: ThreeState, config: RingConfig): THREE.Group {
       sideSeat.position.y = 0.03;
       sideGroup.add(sideSeat);
 
-      const { group: sideStone } = makeStone(config.cut, gemMat, disposables);
-      sideStone.scale.multiplyScalar(0.52);
-      sideStone.position.y = 0.16;
+      const sideScale = 0.52;
+      const sideStone = makeStone(config.cut, gemMat, disposables);
+      sideStone.scale.multiplyScalar(sideScale);
+      // the profile carries its own height now — back it off to leave the girdle where it sat
+      sideStone.position.y = 0.16 - sideScale * GIRDLE_Y;
       sideGroup.add(sideStone);
 
       model.add(sideGroup);
@@ -445,8 +413,8 @@ function buildNecklace(state: ThreeState, config: RingConfig): THREE.Group {
       const sideSeat = new THREE.Mesh(sideSeatGeo, metalMat);
       sideGroup.add(sideSeat);
 
-      const { group: sideStone } = makeStone(config.cut, gemMat, disposables);
-      sideStone.position.y = 0.1;
+      const sideStone = makeStone(config.cut, gemMat, disposables);
+      sideStone.position.y = 0.1 - GIRDLE_Y; // as above: keep the girdle at its old height
       sideGroup.add(sideStone);
 
       model.add(sideGroup);

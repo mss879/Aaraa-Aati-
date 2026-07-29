@@ -46,7 +46,10 @@ export default function ContactForm() {
   const [message, setMessage] = useState(
     piece ? `I would like to enquire about the ${piece}.` : "",
   );
+  const [company, setCompany] = useState(""); // honeypot — real users leave this empty
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const buildBody = () =>
     [
@@ -60,11 +63,43 @@ export default function ContactForm() {
       .filter(Boolean)
       .join("\n");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const subject = `${interest} — ${name || "Website enquiry"}`;
-    window.location.href = `mailto:${ATELIER_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(buildBody())}`;
-    setSent(true);
+    if (sending) return;
+    setSending(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          interest,
+          message,
+          sourcePiece: piece || undefined,
+          company,
+        }),
+      });
+      if (res.status === 503) {
+        // Backend not wired up yet — fall back to the visitor's mail client so
+        // the enquiry is never lost.
+        const subject = `${interest} — ${name || "Website enquiry"}`;
+        window.location.href = `mailto:${ATELIER_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(buildBody())}`;
+        setSent(true);
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Your message could not be sent. Please try again.");
+      }
+      setSent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -164,19 +199,33 @@ export default function ContactForm() {
         </div>
       </div>
 
+      {/* Honeypot — hidden from humans, catches naive bots. */}
+      <div aria-hidden className="absolute left-[-9999px] top-0 h-0 w-0 overflow-hidden">
+        <label htmlFor="contact-company">Company</label>
+        <input
+          id="contact-company"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={company}
+          onChange={(e) => setCompany(e.target.value)}
+        />
+      </div>
+
       <div className="mt-10 flex flex-col gap-4 sm:flex-row">
         <button
           type="submit"
-          className="w-full cursor-pointer rounded-full bg-[#12305B] px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700 active:translate-y-0 sm:w-auto"
+          disabled={sending || sent}
+ className="w-full cursor-pointer gem-btn bg-[#12305B] px-11 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
-          Send Enquiry
+          {sending ? "Sending…" : sent ? "Enquiry Sent ✓" : "Send Enquiry"}
         </button>
         {WHATSAPP_NUMBER && (
           <a
             href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildBody())}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-zinc-300 px-8 py-3.5 font-sans text-xs font-medium uppercase tracking-[0.2em] text-[#2C405C] transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-600 hover:text-emerald-700 active:translate-y-0 sm:w-auto"
+ className="inline-flex w-full items-center justify-center gap-2.5 gem-btn gem-btn--ring-cream px-11 py-3.5 font-sans text-xs font-medium uppercase tracking-[0.2em] text-[#2C405C] transition-all duration-300 hover:-translate-y-0.5 hover:text-emerald-700 active:translate-y-0 sm:w-auto"
           >
             <WhatsAppIcon />
             WhatsApp Us
@@ -186,8 +235,13 @@ export default function ContactForm() {
 
       {sent && (
         <p className="mt-6 font-body text-[0.85rem] leading-relaxed text-emerald-700 md:text-sm" role="status">
-          Your email client has opened with the enquiry — press send there and
-          we will reply within one business day.
+          Thank you — your enquiry has reached our concierge. A gemologist will
+          reply within one business day.
+        </p>
+      )}
+      {error && (
+        <p className="mt-6 font-body text-[0.85rem] leading-relaxed text-rose-600 md:text-sm" role="alert">
+          {error}
         </p>
       )}
     </form>

@@ -48,7 +48,7 @@ export default function PremiumServices() {
         
         {/* Section Header */}
         <div data-reveal className="max-w-2xl mb-16 md:mb-24">
-          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-gold-400/20 bg-gold-400/5 mb-6">
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 eyebrow-gem mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-gold-300 animate-pulse" />
             <span className="text-[0.7rem] tracking-[0.3em] uppercase text-gold-200 font-sans font-medium">
               Exclusive Concierge

@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Navbar from "@/components/Navbar";
 
 type PageHeroProps = {
   eyebrow: string;
@@ -51,10 +50,6 @@ export default function PageHero({
         {/* Ambient gold glow */}
         <div className="pointer-events-none absolute -bottom-32 left-1/2 z-10 h-[420px] w-[620px] -translate-x-1/2 rounded-full bg-gold-400/10 blur-[140px]" />
 
-        {/* Navigation */}
-        <div className="relative z-40">
-          <Navbar />
-        </div>
 
         {/* Copy — bottom-anchored like the home hero acts */}
         <div className="relative z-30 flex flex-1 items-end px-6 pb-14 pt-44 md:px-16 md:pb-20">

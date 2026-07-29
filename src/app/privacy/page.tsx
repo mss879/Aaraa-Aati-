@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
@@ -56,9 +55,6 @@ export default function PrivacyPage() {
       <section className="relative z-10 w-full">
         <div className="relative flex min-h-[42svh] w-full flex-col overflow-hidden bg-[#0A1F3D]">
           <div className="pointer-events-none absolute -bottom-24 left-1/2 h-[320px] w-[520px] -translate-x-1/2 rounded-full bg-gold-400/10 blur-[130px]" />
-          <div className="relative z-40">
-            <Navbar />
-          </div>
           <div className="relative z-30 flex flex-1 items-end px-6 pb-12 pt-40 md:px-16 md:pb-16">
             <div>
               <p className="mb-4 font-sans text-[0.72rem] font-medium uppercase tracking-[0.42em] text-gold-300">

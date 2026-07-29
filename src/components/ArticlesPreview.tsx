@@ -13,7 +13,7 @@ export default function ArticlesPreview() {
       <div className="mx-auto max-w-7xl">
         <div data-reveal className="mb-12 flex flex-col items-start justify-between gap-8 md:mb-16 md:flex-row md:items-end">
           <div>
-            <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-amber-500/20 bg-amber-500/5 px-3.5 py-1.5">
+            <div className="mb-6 inline-flex items-center gap-2.5 eyebrow-gem px-3.5 py-1.5">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
               <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.3em] text-amber-700">
                 The Journal

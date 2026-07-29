@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { createHead } from "@/lib/three/gem-head";
 
 export default function Ring3D() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -122,58 +123,17 @@ export default function Ring3D() {
     band.rotation.x = 0; // Standing vertically so setting connects perfectly at Y = 1.5
     ringGroup.add(band);
 
-    // 2. 6-Prong Tiffany Crown Basket (Clasps the center diamond)
-    const prongGeometry = new THREE.CylinderGeometry(0.03, 0.02, 0.52, 8);
-    const prongDistance = 0.28;
-    const prongCount = 6;
-    
-    // Position 6 elegant gold prongs around the center diamond
-    for (let i = 0; i < prongCount; i++) {
-      const angle = (i / prongCount) * Math.PI * 2;
-      const prong = new THREE.Mesh(prongGeometry, goldMaterial);
-      
-      // Position prongs around setting Y = 1.5
-      prong.position.set(
-        Math.cos(angle) * prongDistance,
-        1.5 + 0.16,
-        Math.sin(angle) * prongDistance
-      );
-      
-      // Angle prongs slightly outwards to cup the diamond base
-      prong.rotation.z = -Math.cos(angle) * 0.16;
-      prong.rotation.x = Math.sin(angle) * 0.16;
-      ringGroup.add(prong);
-    }
-
-    // Support under-bezel collar wire
-    const collarGeometry = new THREE.TorusGeometry(0.25, 0.025, 8, 24);
-    const collar = new THREE.Mesh(collarGeometry, goldMaterial);
-    collar.position.set(0, 1.5 + 0.12, 0);
-    collar.rotation.x = Math.PI / 2;
-    ringGroup.add(collar);
-
-    // Solid seat collar directly embedded on the band hoop
-    const baseSeatGeometry = new THREE.CylinderGeometry(0.2, 0.15, 0.1, 16);
-    const baseSeat = new THREE.Mesh(baseSeatGeometry, goldMaterial);
-    baseSeat.position.set(0, 1.5 + 0.02, 0);
-    ringGroup.add(baseSeat);
-
-    // 3. Centerpiece Diamond (Round Brilliant Cut: Crown + Pavilion)
-    const centerGem = new THREE.Group();
-    centerGem.position.set(0, 1.5 + 0.26, 0);
-
-    const crownGeometry = new THREE.CylinderGeometry(0.22, 0.35, 0.14, 16, 1);
-    const crown = new THREE.Mesh(crownGeometry, diamondMaterial);
-    crown.position.y = 0.07;
-    centerGem.add(crown);
-
-    const pavilionGeometry = new THREE.ConeGeometry(0.35, 0.38, 16, 1);
-    const pavilion = new THREE.Mesh(pavilionGeometry, diamondMaterial);
-    pavilion.position.y = -0.19;
-    pavilion.rotation.x = Math.PI; // point down
-    centerGem.add(pavilion);
-
-    ringGroup.add(centerGem);
+    // 2 + 3. Crown basket, six claws and the round brilliant, seated on the hoop
+    const headDisposables: { dispose: () => void }[] = [];
+    const { head } = createHead({
+      cut: "round",
+      metalMat: goldMaterial,
+      gemMat: diamondMaterial,
+      prongSeg: 8,
+      disposables: headDisposables,
+    });
+    head.position.y = 1.5;
+    ringGroup.add(head);
 
     // 4. Pave Diamond Band (12 accent gems embedded along the upper curve of the band)
     const paveCount = 12;
@@ -355,13 +315,9 @@ export default function Ring3D() {
       }
 
       bandGeometry.dispose();
-      prongGeometry.dispose();
-      collarGeometry.dispose();
-      baseSeatGeometry.dispose();
-      crownGeometry.dispose();
-      pavilionGeometry.dispose();
       paveGemGeometry.dispose();
       paveCollarGeometry.dispose();
+      headDisposables.forEach((d) => d.dispose());
       
       goldMaterial.dispose();
       diamondMaterial.dispose();

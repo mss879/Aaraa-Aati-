@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import Ring3DLazy from "@/components/Ring3DLazy";
 
 /**
  * AboutUs — homepage preview only. The full story lives at /about; this band
@@ -13,13 +12,8 @@ export default function AboutUs() {
       {/* Left side: Copy & Values */}
       <div className="w-full md:w-[55%] p-10 md:p-20 flex flex-col justify-center space-y-6 md:space-y-8 relative z-20">
 
-        {/* 3D Spinning Ring - Top Right of Content Area */}
-        <div className="absolute top-4 right-4 md:top-8 md:right-8 w-32 h-32 md:w-56 md:h-56 z-10 pointer-events-none md:pointer-events-auto">
-          <Ring3DLazy />
-        </div>
-
         {/* Tagline */}
-        <div data-reveal className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-amber-500/20 bg-amber-500/5 self-start">
+        <div data-reveal className="inline-flex items-center gap-2.5 px-3.5 py-1.5 eyebrow-gem self-start">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
           <span className="text-[0.7rem] tracking-[0.3em] uppercase text-amber-700 font-sans font-medium">
             Our Atelier &amp; Heritage
@@ -75,8 +69,8 @@ export default function AboutUs() {
         {/* Background Image (slightly oversized so the parallax drift never exposes edges) */}
         <div data-parallax="-0.08" className="absolute inset-0 scale-110">
           <Image
-            src="/artisan_crafting.png"
-            alt="Ceylon Gem Maison artisan crafting a bespoke ring at the bench"
+            src="/why.png"
+            alt="A Ceylon Gem Maison gemmologist inspecting a sapphire solitaire with tweezers, a tray of loose ruby, emerald and sapphire beside him"
             fill
             sizes="(max-width: 768px) 100vw, 45vw"
             className="object-cover"

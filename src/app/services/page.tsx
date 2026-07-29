@@ -93,7 +93,7 @@ export default function ServicesPage() {
                   <div className="pt-2">
                     <Link
                       href={service.cta.href}
-                      className="inline-block rounded-full bg-[#12305B] px-8 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700"
+ className="inline-block gem-btn bg-[#12305B] px-11 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700"
                     >
                       {service.cta.label}
                     </Link>
@@ -122,13 +122,13 @@ export default function ServicesPage() {
             <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
               <Link
                 href="/contact"
-                className="w-full rounded-full bg-gold-400 px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-[0_4px_25px_rgba(46,91,224,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 sm:w-auto"
+ className="w-full gem-btn bg-gold-400 px-11 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-[0_4px_25px_rgba(46,91,224,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 sm:w-auto"
               >
                 Contact the Concierge
               </Link>
               <Link
                 href="/atelier"
-                className="w-full rounded-full border border-gold-400/25 px-8 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-gold-200 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/50 hover:bg-gold-500/10 sm:w-auto"
+ className="w-full gem-btn gem-btn--frost px-11 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-gold-200 transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-500/10 sm:w-auto"
               >
                 Try the Digital Atelier
               </Link>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Navbar from "@/components/Navbar";
 
 /**
  * ScrollHero
@@ -311,10 +310,6 @@ export default function ScrollHero() {
         <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,transparent_38%,rgba(0,0,0,0.72)_100%)]" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-1/2 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
 
-        {/* Navigation */}
-        <div className="relative z-40">
-          <Navbar />
-        </div>
 
         {/* Chapter markers */}
         <div className="absolute right-5 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-center gap-2.5 md:flex">
@@ -373,7 +368,7 @@ export default function ScrollHero() {
                       href="/atelier"
                       className="group inline-flex items-center gap-3"
                     >
-                      <span className="rounded-full border border-gold-400/30 px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-gold-200 backdrop-blur-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-gold-300/60 group-hover:bg-gold-500/10 active:translate-y-0">
+                      <span className="gem-btn gem-btn--frost px-11 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-gold-200 transition-all duration-300 group-hover:-translate-y-0.5 active:translate-y-0">
                         Design Your Own
                       </span>
                       <span className="btn-luxe-orb btn-luxe-orb--light h-12 w-12">
@@ -405,7 +400,7 @@ export default function ScrollHero() {
 
         {/* Meta strip */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex items-center justify-between px-6 pb-4 font-sans text-[0.65rem] uppercase tracking-[0.25em] text-gold-100/75 md:px-16 md:text-[0.7rem]">
-          <span>Ceylon · Singapore</span>
+          <span>Sri Lanka · Singapore</span>
           <span className="hidden sm:block">One Sketch · One Solitaire · One Forever</span>
           <span>Bespoke Atelier</span>
         </div>

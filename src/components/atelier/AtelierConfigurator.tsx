@@ -319,14 +319,208 @@ const LOADING_LINES = [
   "Polishing under the atelier lamp…",
 ];
 
+const LEAD_ID_KEY = "cgm_lead_id";
+const LEAD_ENTERED_KEY = "cgm_atelier_entered";
+
+/* ------------------------------------------------- lead-capture intro gate */
+
+/**
+ * Shown once before the configurator. Captures name + phone + email so every
+ * visitor who designs becomes a CRM lead (source='atelier'). Fails open: if the
+ * backend is unconfigured or the save fails, the visitor still enters — we never
+ * block the design experience on lead persistence.
+ */
+function AtelierGate({ onEnter }: { onEnter: (leadId: string | null) => void }) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState(""); // honeypot
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (sending) return;
+    setSending(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, phone, email, company }),
+      });
+      if (res.status === 503) {
+        // Backend not wired up yet — let them design anyway.
+        onEnter(null);
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Could not start your commission. Please try again.");
+      }
+      onEnter(typeof data.leadId === "string" ? data.leadId : null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setSending(false);
+    }
+  };
+
+  const field =
+    "mt-2 w-full border-b border-[#27497A] bg-transparent py-3 font-serif text-lg font-light tracking-wide text-gold-100 placeholder-zinc-700 outline-none transition-colors focus:border-gold-400";
+  const label =
+    "font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-100/60";
+
+  return (
+    <div className="relative flex min-h-svh w-full items-center justify-center overflow-hidden bg-[#0A1F3D] px-6 py-16 text-gold-50">
+      {/* ambient dressing, matching the configurator stage */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(46,91,224,0.12)_0%,transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(46,91,224,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(46,91,224,0.025)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(circle_at_center,black_25%,transparent_72%)]" />
+
+      <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5 md:p-7">
+        <Link
+          href="/"
+          className="group flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-4 py-2 font-sans text-[0.62rem] uppercase tracking-[0.25em] text-gold-100/80 backdrop-blur-md transition-colors hover:border-gold-400/40 hover:text-gold-200"
+        >
+          <svg viewBox="0 0 24 24" className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Maison Home
+        </Link>
+        <span className="hidden rounded-full border border-gold-400/20 bg-black/40 px-4 py-2 font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-300 backdrop-blur-md sm:block">
+          Bespoke Atelier
+        </span>
+      </div>
+
+      <form onSubmit={submit} className="relative w-full max-w-md">
+        <p className="font-sans text-[0.62rem] font-medium uppercase tracking-[0.4em] text-gold-400">
+          Begin your commission
+        </p>
+        <h1 className="mt-3 font-serif text-3xl font-light leading-[1.1] tracking-wide text-gold-50 md:text-[2.6rem]">
+          Who are we <span className="italic text-gold-200">designing for?</span>
+        </h1>
+        <p className="mt-4 font-body text-xs font-light leading-relaxed tracking-wide text-[#A9B8D0] md:text-sm">
+          A few details so our atelier concierge can follow up with your quote and
+          certification — then your private design studio opens.
+        </p>
+
+        <div className="mt-9 space-y-7">
+          <div>
+            <label htmlFor="lead-name" className={label}>Full name</label>
+            <input
+              id="lead-name"
+              type="text"
+              required
+              autoComplete="name"
+              placeholder="Amara Perera"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={field}
+            />
+          </div>
+          <div>
+            <label htmlFor="lead-phone" className={label}>Phone / WhatsApp</label>
+            <input
+              id="lead-phone"
+              type="tel"
+              required
+              autoComplete="tel"
+              placeholder="+65 9123 4567"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className={field}
+            />
+          </div>
+          <div>
+            <label htmlFor="lead-email" className={label}>Email</label>
+            <input
+              id="lead-email"
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={field}
+            />
+          </div>
+        </div>
+
+        {/* Honeypot */}
+        <div aria-hidden className="absolute left-[-9999px] top-0 h-0 w-0 overflow-hidden">
+          <label htmlFor="lead-company">Company</label>
+          <input
+            id="lead-company"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={sending}
+          className="group relative mt-10 w-full overflow-hidden rounded-full bg-gold-400 px-8 py-4 font-sans text-xs font-semibold uppercase tracking-[0.25em] text-white shadow-[0_4px_30px_rgba(46,91,224,0.3)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-[0_6px_40px_rgba(46,91,224,0.5)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
+        >
+          <span className="relative z-10">{sending ? "Opening the atelier…" : "Enter the atelier →"}</span>
+          <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+        </button>
+
+        {error && (
+          <p className="mt-4 text-center font-body text-[0.72rem] font-light tracking-wide text-rose-300" role="alert">
+            {error}
+          </p>
+        )}
+        <p className="mt-4 text-center font-body text-[0.6rem] font-light tracking-[0.15em] text-[#4A6285]">
+          Your details stay private to the Maison — never shared, never sold.
+        </p>
+      </form>
+    </div>
+  );
+}
+
 export default function AtelierConfigurator() {
   const [step, setStep] = useState(0);
   const [config, setConfig] = useState<RingConfig>(DEFAULT_CONFIG);
   const [gen, setGen] = useState<GenState>({ status: "idle" });
   const [loadingLine, setLoadingLine] = useState(0);
+  // Lead gate: `entered` unlocks the configurator; `leadId` links renders to the
+  // CRM lead created at the gate. `null` before hydration so we don't flash the
+  // gate for a returning visitor whose session already entered.
+  const [entered, setEntered] = useState<boolean | null>(null);
+  const [leadId, setLeadId] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Restore gate state so a reload mid-design doesn't re-prompt. This must run
+  // after mount (not a lazy useState initializer): the server has no
+  // sessionStorage and always renders the neutral `entered === null` branch, so
+  // reading storage here and reconciling on the client avoids a hydration
+  // mismatch. The one extra render is intended.
+  /* eslint-disable react-hooks/set-state-in-effect -- mount-time read from an external system (sessionStorage) */
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(LEAD_ID_KEY);
+      if (saved) setLeadId(saved);
+      setEntered(sessionStorage.getItem(LEAD_ENTERED_KEY) === "1");
+    } catch {
+      setEntered(false);
+    }
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const enterAtelier = useCallback((id: string | null) => {
+    setLeadId(id);
+    setEntered(true);
+    try {
+      if (id) sessionStorage.setItem(LEAD_ID_KEY, id);
+      sessionStorage.setItem(LEAD_ENTERED_KEY, "1");
+    } catch {
+      /* sessionStorage unavailable — fine, just won't persist across reloads */
+    }
+  }, []);
 
   const price = estimatePrice(config);
   const piece = pieceById(config.piece);
@@ -363,6 +557,17 @@ export default function AtelierConfigurator() {
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
+  // Enrich the lead with the finished design when they reach the review step, so
+  // the CRM reflects what they configured even if they never render.
+  useEffect(() => {
+    if (!entered || !leadId || stepKey !== "review") return;
+    fetch(`/api/leads/${leadId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ config }),
+    }).catch(() => {});
+  }, [entered, leadId, stepKey, config]);
+
   const generate = async () => {
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -373,7 +578,7 @@ export default function AtelierConfigurator() {
       const res = await fetch("/api/generate-ring", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config),
+        body: JSON.stringify({ ...config, leadId }),
         signal: controller.signal,
       });
       const data = await res.json().catch(() => ({}));
@@ -417,6 +622,16 @@ export default function AtelierConfigurator() {
   const stepIndexOf = (key: string) => Math.max(0, STEPS.findIndex((s) => s.key === key));
 
   /* ------------------------------------------------------------ rendering */
+
+  // Pre-hydration: hold a plain navy field so the gate never flashes for a
+  // returning visitor whose session already entered.
+  if (entered === null) {
+    return <div className="min-h-svh w-full bg-[#0A1F3D]" />;
+  }
+  // Lead-capture gate — contact details before any design happens.
+  if (!entered) {
+    return <AtelierGate onEnter={enterAtelier} />;
+  }
 
   return (
     <div className="relative flex min-h-svh w-full flex-col bg-[#0A1F3D] text-gold-50 lg:flex-row">

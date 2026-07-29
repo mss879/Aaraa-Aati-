@@ -3,7 +3,6 @@ import type React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { PILLARS, getPillar, type PillarSection } from "@/lib/pillars";
 
@@ -183,9 +182,6 @@ export default async function PillarPage({ params }: Props) {
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(46,91,224,0.28),transparent_55%),radial-gradient(ellipse_at_bottom_left,rgba(191,155,67,0.16),transparent_50%)]"
           />
-          <div className="relative z-40">
-            <Navbar />
-          </div>
 
           <div className="relative z-30 mx-auto w-full max-w-5xl px-6 pb-16 pt-40 md:px-10 md:pb-24 md:pt-48">
             {/* Breadcrumb */}
@@ -215,7 +211,7 @@ export default async function PillarPage({ params }: Props) {
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center rounded-full border border-gold-400/30 px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-gold-200 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/60 hover:bg-gold-500/10"
+ className="inline-flex items-center justify-center gem-btn gem-btn--frost px-11 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-gold-200 transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-500/10"
               >
                 Book a Consultation
               </Link>
@@ -368,7 +364,7 @@ export default async function PillarPage({ params }: Props) {
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center rounded-full border border-gold-400/30 px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-gold-200 transition-all duration-300 hover:border-gold-300/60 hover:bg-gold-500/10"
+ className="inline-flex items-center justify-center gem-btn gem-btn--frost px-11 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-gold-200 transition-all duration-300 hover:bg-gold-500/10"
               >
                 Speak With Us
               </Link>

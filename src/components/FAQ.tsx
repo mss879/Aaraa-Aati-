@@ -21,7 +21,7 @@ export default function FAQ() {
       <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1fr_1.6fr] lg:gap-20">
         {/* Left rail */}
         <div data-reveal className="lg:sticky lg:top-24 lg:self-start">
-          <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-amber-500/20 bg-amber-500/5 px-3.5 py-1.5">
+          <div className="mb-6 inline-flex items-center gap-2.5 eyebrow-gem px-3.5 py-1.5">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
             <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.3em] text-amber-700">
               Questions, Answered

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cinzel, EB_Garamond } from "next/font/google";
 import Preloader from "@/components/fx/Preloader";
+import Navbar from "@/components/Navbar";
 import "./globals.css";
 
 // Headings: Trajan Pro where installed, with Cinzel (the classic Trajan-style
@@ -149,6 +150,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-[#F7F4EC] text-[#13294B]">
         <Preloader />
+        <Navbar />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

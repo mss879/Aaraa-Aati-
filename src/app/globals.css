@@ -93,48 +93,52 @@ p {
   box-shadow: 0 0 40px rgba(46, 91, 224, 0.05);
 }
 
-/* ---- Sapphire satin CTA pair: pill button + circular arrow orb ---- */
+/* ---- Sapphire satin CTA pair: gem button + diamond arrow orb ----
+   The pill carries the same elongated-hexagon silhouette as .gem-btn (the shape
+   itself is declared once, further down, for both selectors).
+
+   Note the outer glow moved from box-shadow to a drop-shadow filter: clip-path
+   crops box-shadow to the clipped region, so the old glow would vanish. The
+   inset shadows are unaffected and stay put. */
 .btn-luxe-pill {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   gap: 0.75rem;
-  border-radius: 9999px;
   background:
     radial-gradient(120% 180% at 22% 0%, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 45%),
     linear-gradient(135deg, #1b3fb4 0%, #2e5be0 40%, #5d84ee 58%, #16339b 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -2px 6px rgba(8, 21, 54, 0.45),
-    0 12px 30px rgba(24, 55, 160, 0.28);
+    inset 0 -2px 6px rgba(8, 21, 54, 0.45);
+  filter: drop-shadow(0 10px 20px rgba(24, 55, 160, 0.28));
   color: #f7f4ec;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+  transition: transform 0.3s ease, filter 0.3s ease;
 }
 .btn-luxe-pill:hover,
 .group:hover .btn-luxe-pill {
   transform: translateY(-2px);
-  filter: brightness(1.08);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    inset 0 -2px 6px rgba(8, 21, 54, 0.45),
-    0 16px 40px rgba(24, 55, 160, 0.42);
+  filter: brightness(1.08) drop-shadow(0 14px 28px rgba(24, 55, 160, 0.42));
 }
 .btn-luxe-pill:active {
   transform: translateY(0);
 }
 
+/* The arrow orb becomes a true diamond: a square turned 45°, which keeps a real
+   1px border and a transparent interior — neither of which survives clip-path.
+   scale(0.72) pulls the rotated bounding box (side x root-2) back inside the
+   element's original footprint so it never collides with the button beside it. */
 .btn-luxe-orb {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: none;
-  border-radius: 9999px;
+  border-radius: 5px;
   border: 1px solid rgba(19, 41, 75, 0.28);
   color: #13294b;
+  transform: rotate(45deg) scale(0.72);
   transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
 }
+/* counter-rotate so the arrow itself stays upright */
 .btn-luxe-orb svg {
+  transform: rotate(-45deg);
   transition: transform 0.3s ease;
 }
 .btn-luxe-orb:hover,
@@ -145,7 +149,7 @@ p {
 }
 .btn-luxe-orb:hover svg,
 .group:hover .btn-luxe-orb svg {
-  transform: translate(1px, -1px);
+  transform: rotate(-45deg) translate(1px, -1px);
 }
 .btn-luxe-orb--light {
   border-color: rgba(247, 244, 236, 0.4);
@@ -162,16 +166,28 @@ p {
 .chip-luxe {
   display: inline-flex;
   align-items: center;
-  border-radius: 9999px;
+  /* Same silhouette as the CTAs, on a shallower point — these sit at ~26px tall
+     and a full 16px point would swallow the first and last letter. */
+  --gem-point: 9px;
+  clip-path: polygon(
+    var(--gem-point) 0%,
+    calc(100% - var(--gem-point)) 0%,
+    100% 50%,
+    calc(100% - var(--gem-point)) 100%,
+    var(--gem-point) 100%,
+    0% 50%
+  );
   background: #f7f4ec;
   color: #102349;
-  padding: 0.42rem 0.95rem;
+  /* wider inline padding so the points clear the text */
+  padding: 0.42rem 1.45rem;
   font-family: var(--font-sans);
   font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.22);
+  /* clip-path crops box-shadow, so the lift has to be a filter */
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.28));
 }
 
 /* Deep-navy silk band, the dark-section canvas of the reference layout */
@@ -181,6 +197,115 @@ p {
     radial-gradient(80% 60% at 15% 0%, rgba(46, 91, 224, 0.18) 0%, transparent 55%),
     radial-gradient(70% 55% at 85% 100%, rgba(24, 55, 160, 0.24) 0%, transparent 60%),
     radial-gradient(50% 40% at 70% 30%, rgba(143, 176, 248, 0.08) 0%, transparent 60%);
+}
+
+/* ---------------------------------------------------------------------------
+   Gem button — the maison's CTA silhouette: an elongated hexagon whose left and
+   right ends come to a point, echoing a cut stone in profile.
+
+   clip-path crops a real CSS border away along the diagonals, so an outlined
+   button cannot simply carry `border`. Instead the element's own background is
+   the stroke and an inset ::before paints the fill, leaving a hairline visible
+   around the whole silhouette — diagonals included.
+
+   Solid buttons just set a background and leave --gem-stroke at 0, which makes
+   ::before collapse to nothing.
+
+   Tune per button with arbitrary properties, e.g. [--gem-point:22px].
+--------------------------------------------------------------------------- */
+/* The silhouette itself, shared by every CTA and label system. */
+.gem-btn,
+.btn-luxe-pill,
+.eyebrow-gem {
+  --gem-point: 16px;
+  --gem-clip: polygon(
+    var(--gem-point) 0%,
+    calc(100% - var(--gem-point)) 0%,
+    100% 50%,
+    calc(100% - var(--gem-point)) 100%,
+    var(--gem-point) 100%,
+    0% 50%
+  );
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+  clip-path: var(--gem-clip);
+}
+
+.gem-btn {
+  --gem-stroke: 0px;
+  --gem-fill: transparent;
+}
+
+/* The fill, inset by the stroke width. z-index -1 puts it above the element's
+   own background (the stroke) but below the label, so plain text children need
+   no wrapper; `isolation: isolate` above keeps the -1 from escaping the button. */
+.gem-btn::before,
+.eyebrow-gem::before {
+  content: "";
+  position: absolute;
+  inset: var(--gem-stroke);
+  z-index: -1;
+  background: var(--gem-fill);
+  clip-path: var(--gem-clip);
+  transition: background-color 300ms ease;
+}
+
+/* Section eyebrow labels — the dotted "· THE MAISON PORTFOLIO" chips. Same
+   silhouette on a shallower point, since these are only ~26px tall. The fill is
+   the cream ground pre-blended with the 5% sapphire wash these used to carry,
+   because an inset fill has to be opaque. */
+.eyebrow-gem {
+  --gem-point: 10px;
+  --gem-stroke: 1px;
+  --gem-fill: #edeceb;
+  background-color: rgba(46, 91, 224, 0.2);
+  padding-inline: 1.15rem;
+}
+
+/* Hairline-outlined variants. The element's own background is the stroke and
+   ::before paints the ground colour back inside it, so the fill MUST be opaque
+   and MUST match the surface behind — hence one variant per ground. */
+.gem-btn--ring-white {
+  --gem-stroke: 1px;
+  --gem-fill: #ffffff;
+  background-color: rgba(19, 41, 75, 0.22);
+}
+.gem-btn--ring-white:hover {
+  background-color: #2e5be0;
+}
+
+.gem-btn--ring-cream {
+  --gem-stroke: 1px;
+  --gem-fill: #f7f4ec;
+  background-color: #d4d4d8; /* zinc-300, matching the pills these replace */
+}
+.gem-btn--ring-cream:hover {
+  background-color: #2e5be0;
+}
+
+/* Frosted variant, for buttons sitting on the hero film or a gradient ground.
+   An opaque inset fill would read as a flat patch over moving or graded art, so
+   these carry a translucent wash instead of a hairline and let the ground show
+   through the whole silhouette. */
+.gem-btn--frost {
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background-color 300ms ease;
+}
+.gem-btn--frost:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Points get shallower on small screens so short labels keep their room. */
+@media (max-width: 640px) {
+  .gem-btn,
+  .btn-luxe-pill {
+    --gem-point: 12px;
+  }
 }
 
 /* Custom transitions and scrollbars */
