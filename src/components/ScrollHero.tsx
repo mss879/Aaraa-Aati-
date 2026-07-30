@@ -355,7 +355,7 @@ export default function ScrollHero() {
                       href="#collection"
                       className="group inline-flex items-center gap-3"
                     >
-                      <span className="btn-luxe-pill px-8 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.2em]">
+                      <span className="btn-luxe-pill">
                         Explore Collection
                       </span>
                       <span className="btn-luxe-orb btn-luxe-orb--light h-12 w-12">
@@ -368,7 +368,7 @@ export default function ScrollHero() {
                       href="/atelier"
                       className="group inline-flex items-center gap-3"
                     >
-                      <span className="gem-btn gem-btn--frost px-11 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-gold-200 transition-all duration-300 group-hover:-translate-y-0.5 active:translate-y-0">
+                      <span className="btn-platinum">
                         Design Your Own
                       </span>
                       <span className="btn-luxe-orb btn-luxe-orb--light h-12 w-12">

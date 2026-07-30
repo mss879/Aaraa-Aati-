@@ -296,13 +296,13 @@ export default function AboutPage() {
             <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
               <Link
                 href="/atelier"
- className="w-full gem-btn bg-[#12305B] px-11 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700 sm:w-auto"
+ className="w-full btn-luxe-pill sm:w-auto"
               >
                 Design in the Atelier
               </Link>
               <Link
                 href="/contact"
- className="w-full gem-btn gem-btn--ring-cream px-11 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-[#2C405C] transition-all duration-300 hover:-translate-y-0.5 hover:text-amber-700 sm:w-auto"
+ className="w-full btn-platinum sm:w-auto"
               >
                 Arrange a Private Visit
               </Link>

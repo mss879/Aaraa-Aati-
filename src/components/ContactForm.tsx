@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-/* Same concierge lines as the atelier — set NEXT_PUBLIC_WHATSAPP_NUMBER in .env.local. */
-const WHATSAPP_NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "").replace(/\D/g, "");
+import { WHATSAPP_NUMBER } from "@/lib/contact";
+
 const ATELIER_EMAIL = "support@ceylongemmaison.com";
 
 const INTERESTS = [
@@ -216,7 +216,7 @@ export default function ContactForm() {
         <button
           type="submit"
           disabled={sending || sent}
- className="w-full cursor-pointer gem-btn bg-[#12305B] px-11 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+ className="w-full cursor-pointer btn-luxe-pill disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
           {sending ? "Sending…" : sent ? "Enquiry Sent ✓" : "Send Enquiry"}
         </button>
@@ -225,7 +225,7 @@ export default function ContactForm() {
             href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildBody())}`}
             target="_blank"
             rel="noopener noreferrer"
- className="inline-flex w-full items-center justify-center gap-2.5 gem-btn gem-btn--ring-cream px-11 py-3.5 font-sans text-xs font-medium uppercase tracking-[0.2em] text-[#2C405C] transition-all duration-300 hover:-translate-y-0.5 hover:text-emerald-700 active:translate-y-0 sm:w-auto"
+ className="w-full gap-2.5 btn-platinum sm:w-auto"
           >
             <WhatsAppIcon />
             WhatsApp Us

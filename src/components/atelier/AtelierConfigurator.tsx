@@ -31,9 +31,7 @@ import {
   settingDescriptionFor,
 } from "@/lib/ring-options";
 
-/* Atelier WhatsApp line — set NEXT_PUBLIC_WHATSAPP_NUMBER in .env.local
-   (country code + number, digits only, e.g. 94771234567). */
-const WHATSAPP_NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "").replace(/\D/g, "");
+import { WHATSAPP_NUMBER } from "@/lib/contact";
 
 function WhatsAppIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (

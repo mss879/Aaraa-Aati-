@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import GemLineArt from "@/components/GemLineArt";
 
 /**
  * ProductGrid — "New Jewellery Collections" band.
@@ -56,7 +57,7 @@ function TeaserCard({
       </div>
 
       <div className="relative z-20 flex items-center gap-3 p-7 md:p-8">
-        <span className="btn-luxe-pill px-7 py-3 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.25em]">
+        <span className="btn-luxe-pill">
           View All
         </span>
         <span className="btn-luxe-orb btn-luxe-orb--light h-11 w-11">
@@ -120,14 +121,22 @@ export default function ProductGrid() {
             </h2>
           </div>
 
-          <Link href="/collections" className="group flex items-center gap-4">
-            <span className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[#F7F4EC] underline decoration-gold-300/60 decoration-[1px] underline-offset-[10px] transition-colors duration-300 group-hover:text-gold-200">
-              View Collection
-            </span>
-            <span className="btn-luxe-orb btn-luxe-orb--light h-11 w-11">
-              <ArrowUpRight className="h-4 w-4" />
-            </span>
-          </Link>
+          {/* The cut diagrams fill the navy above the link, and are anchored to
+              the link itself rather than to the section: bottom-full pins them to
+              its top edge, so however the heading wraps or the type scales they
+              stop just short of it instead of running through it. Absolute, so
+              they never push the header taller. */}
+          <div className="relative">
+            <GemLineArt className="pointer-events-none absolute bottom-[calc(100%+1.5rem)] right-0 hidden h-auto w-[25rem] text-gold-300/45 lg:block" />
+            <Link href="/collections" className="group flex items-center gap-4">
+              <span className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[#F7F4EC] underline decoration-gold-300/60 decoration-[1px] underline-offset-[10px] transition-colors duration-300 group-hover:text-gold-200">
+                View Collection
+              </span>
+              <span className="btn-luxe-orb btn-luxe-orb--light h-11 w-11">
+                <ArrowUpRight className="h-4 w-4" />
+              </span>
+            </Link>
+          </div>
         </div>
       </div>
 

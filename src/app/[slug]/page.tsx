@@ -205,13 +205,13 @@ export default async function PillarPage({ params }: Props) {
             <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
               <Link
                 href="/atelier"
-                className="btn-luxe-pill inline-flex items-center justify-center px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em]"
+                className="btn-luxe-pill"
               >
                 Design Yours — Instant Quote
               </Link>
               <Link
                 href="/contact"
- className="inline-flex items-center justify-center gem-btn gem-btn--frost px-11 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-gold-200 transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-500/10"
+ className="btn-platinum"
               >
                 Book a Consultation
               </Link>
@@ -358,13 +358,13 @@ export default async function PillarPage({ params }: Props) {
             <div className="flex shrink-0 flex-col gap-4 sm:flex-row">
               <Link
                 href="/atelier"
-                className="btn-luxe-pill inline-flex items-center justify-center px-8 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em]"
+                className="btn-luxe-pill"
               >
                 Open the Atelier
               </Link>
               <Link
                 href="/contact"
- className="inline-flex items-center justify-center gem-btn gem-btn--frost px-11 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-gold-200 transition-all duration-300 hover:bg-gold-500/10"
+ className="btn-platinum"
               >
                 Speak With Us
               </Link>

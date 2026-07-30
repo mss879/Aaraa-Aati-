@@ -206,13 +206,13 @@ export default function ContactPage() {
             <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
               <a
                 href="mailto:support@ceylongemmaison.com?subject=Private%20Vault%20Appointment"
- className="w-full gem-btn bg-gold-400 px-11 py-3.5 text-center font-sans text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-[0_4px_25px_rgba(46,91,224,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-[0_4px_35px_rgba(46,91,224,0.45)] active:translate-y-0 sm:w-auto"
+ className="w-full btn-luxe-pill sm:w-auto"
               >
                 Request an Appointment
               </a>
               <a
                 href="tel:+6598423404"
- className="w-full gem-btn gem-btn--frost px-11 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-gold-200 transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-500/10 active:translate-y-0 sm:w-auto"
+ className="w-full btn-platinum sm:w-auto"
               >
                 Call the Atelier
               </a>

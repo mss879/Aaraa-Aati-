@@ -93,29 +93,98 @@ p {
   box-shadow: 0 0 40px rgba(46, 91, 224, 0.05);
 }
 
-/* ---- Sapphire satin CTA pair: gem button + diamond arrow orb ----
-   The pill carries the same elongated-hexagon silhouette as .gem-btn (the shape
-   itself is declared once, further down, for both selectors).
+/* ---- Sapphire emerald-cut CTA pair: stepped gem tab + diamond arrow orb ----
+   The tab carries the shared elongated-hexagon silhouette (declared once further
+   down, for this and .btn-platinum alike) and stacks three
+   concentric layers inside it so it reads as a cut stone set in metal:
 
-   Note the outer glow moved from box-shadow to a drop-shadow filter: clip-path
-   crops box-shadow to the clipped region, so the old glow would vanish. The
-   inset shadows are unaffected and stay put. */
+     element background → the setting: a cream hairline, the tab's outer edge
+     ::before           → the crown, blue bevelled metal lit along the top
+     ::after            → the table, the dark inner fill the label sits on
+
+   clip-path crops away both real borders and box-shadow, so neither can draw
+   that edge; the inner layers are inset copies of the silhouette instead. An
+   inset copy has to be pulled in further horizontally than vertically or its
+   diagonals splay away from the outer ones — for a band of b on a tab of height
+   H with a point of P:
+
+     vertical inset   = b
+     horizontal inset = 2·b·√(P² + (H/2)²) / H
+     inner point      = P·(1 − 2b/H)
+
+   The literals below are those formulas solved for H = 34px (--gem-h) and
+   P = 18px (--gem-point), with a 1px cream edge and a 5px crown. Both are why
+   the tab runs on a fixed height: change either and the insets have to be
+   re-solved. The point is deliberately deep — a little over half the height — so
+   each end reads as a struck arrowhead rather than a clipped corner. */
 .btn-luxe-pill {
   gap: 0.75rem;
-  background:
-    radial-gradient(120% 180% at 22% 0%, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 45%),
-    linear-gradient(135deg, #1b3fb4 0%, #2e5be0 40%, #5d84ee 58%, #16339b 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -2px 6px rgba(8, 21, 54, 0.45);
-  filter: drop-shadow(0 10px 20px rgba(24, 55, 160, 0.28));
-  color: #f7f4ec;
+  /* the setting — only ~1px of this shows, as the hairline around everything */
+  background: linear-gradient(180deg, #fbf7ec 0%, #e7dfcc 55%, #cdc4ae 100%);
+  /* No tight edge shadow: the cream hairline is the edge now. What is left is
+     the stone's glow, a filter rather than box-shadow because clip-path would
+     crop the latter to the clipped region. */
+  filter: drop-shadow(0 4px 16px rgba(35, 78, 200, 0.42));
+  color: #ffffff;
+  text-shadow: 0 0 9px rgba(150, 186, 255, 0.45);
   transition: transform 0.3s ease, filter 0.3s ease;
 }
+
+.btn-luxe-pill::before,
+.btn-luxe-pill::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  /* --gem-inner-point is declared on the pseudo-elements themselves: a custom
+     property is substituted where it is used, so an inherited --gem-clip has the
+     outer point already baked in and cannot be re-pointed from here. */
+  clip-path: polygon(
+    var(--gem-inner-point) 0%,
+    calc(100% - var(--gem-inner-point)) 0%,
+    100% 50%,
+    calc(100% - var(--gem-inner-point)) 100%,
+    var(--gem-inner-point) 100%,
+    0% 50%
+  );
+}
+
+/* the crown — polished blue metal, so the gradient is specular rather than a
+   smooth ramp: a near-white crest on the top edge, vivid sapphire across the
+   face, deeper blue where it turns away from the light, and a lit rim
+   underneath. That light/dark structure is what lifts the tab off the page. */
+.btn-luxe-pill::before {
+  --gem-inner-point: 16.9px;
+  inset: 1px 1.5px;
+  /* The crown spans the whole tab, but the table covers all except a band top
+     and bottom — so it is the 0–15% and 85–100% stops that are actually seen,
+     and they carry the crest, the saturated face and the lit under-rim. */
+  background: linear-gradient(
+    180deg,
+    #f2f6ff 0%,
+    #b9d0fd 4%,
+    #5e8cf2 9%,
+    #3563de 14%,
+    #2350c9 50%,
+    #1b3ca8 86%,
+    #3f6fe4 93%,
+    #8fb4f8 100%
+  );
+}
+
+/* the table — near-black at the tips, with a sapphire bloom under the label */
+.btn-luxe-pill::after {
+  --gem-inner-point: 11.6px;
+  inset: 6px 8.7px;
+  background:
+    radial-gradient(60% 210% at 50% 106%, rgba(46, 91, 224, 0.55) 0%, rgba(46, 91, 224, 0) 70%),
+    linear-gradient(180deg, #050f2a 0%, #0b1e47 55%, #03091d 100%);
+}
+
 .btn-luxe-pill:hover,
 .group:hover .btn-luxe-pill {
   transform: translateY(-2px);
-  filter: brightness(1.08) drop-shadow(0 14px 28px rgba(24, 55, 160, 0.42));
+  filter: brightness(1.1) drop-shadow(0 8px 24px rgba(46, 91, 224, 0.55));
 }
 .btn-luxe-pill:active {
   transform: translateY(0);
@@ -200,24 +269,20 @@ p {
 }
 
 /* ---------------------------------------------------------------------------
-   Gem button — the maison's CTA silhouette: an elongated hexagon whose left and
-   right ends come to a point, echoing a cut stone in profile.
+   The maison's CTA silhouette: an elongated hexagon whose left and right ends
+   come to a point, echoing a cut stone in profile.
 
-   clip-path crops a real CSS border away along the diagonals, so an outlined
-   button cannot simply carry `border`. Instead the element's own background is
-   the stroke and an inset ::before paints the fill, leaving a hairline visible
-   around the whole silhouette — diagonals included.
-
-   Solid buttons just set a background and leave --gem-stroke at 0, which makes
-   ::before collapse to nothing.
-
-   Tune per button with arbitrary properties, e.g. [--gem-point:22px].
+   Two materials share it — .btn-luxe-pill in sapphire for primary actions and
+   .btn-platinum in metal for secondary ones — plus .eyebrow-gem for the small
+   section labels. clip-path crops a real CSS border away along the diagonals, so
+   none of these can carry `border`; each builds its frame from inset copies of
+   the silhouette instead, on the geometry solved above .btn-luxe-pill.
 --------------------------------------------------------------------------- */
 /* The silhouette itself, shared by every CTA and label system. */
-.gem-btn,
 .btn-luxe-pill,
+.btn-platinum,
 .eyebrow-gem {
-  --gem-point: 16px;
+  --gem-point: 18px;
   --gem-clip: polygon(
     var(--gem-point) 0%,
     calc(100% - var(--gem-point)) 0%,
@@ -234,15 +299,35 @@ p {
   clip-path: var(--gem-clip);
 }
 
-.gem-btn {
-  --gem-stroke: 0px;
-  --gem-fill: transparent;
+/* Shared CTA metrics. Both tabs are one thin bar of Trajan capitals, so a
+   primary and a secondary CTA standing side by side always line up.
+
+   The height is fixed rather than derived from padding: each tab's stepped frame
+   is cut from geometry that depends on it. min-height, not height, so a label
+   that wraps on a narrow phone grows the bar instead of spilling out of it.
+
+   Trailing letter-spacing hangs off the last capital, which drags a centred
+   label a half-step left of the silhouette's axis — the shorter end padding
+   pays it back. */
+.btn-luxe-pill,
+.btn-platinum {
+  --gem-h: 2.125rem;
+  --gem-tracking: 0.26em;
+  min-height: var(--gem-h);
+  padding-block: 0;
+  padding-inline: 2.4rem calc(2.4rem - var(--gem-tracking));
+  font-family: var(--font-serif);
+  font-size: 0.7rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: var(--gem-tracking);
+  text-transform: uppercase;
 }
 
-/* The fill, inset by the stroke width. z-index -1 puts it above the element's
-   own background (the stroke) but below the label, so plain text children need
-   no wrapper; `isolation: isolate` above keeps the -1 from escaping the button. */
-.gem-btn::before,
+/* The eyebrow's fill, inset by its stroke width. z-index -1 puts it above the
+   element's own background (the stroke) but below the label, so plain text
+   children need no wrapper; `isolation: isolate` above keeps the -1 from
+   escaping the chip. */
 .eyebrow-gem::before {
   content: "";
   position: absolute;
@@ -250,7 +335,6 @@ p {
   z-index: -1;
   background: var(--gem-fill);
   clip-path: var(--gem-clip);
-  transition: background-color 300ms ease;
 }
 
 /* Section eyebrow labels — the dotted "· THE MAISON PORTFOLIO" chips. Same
@@ -265,46 +349,121 @@ p {
   padding-inline: 1.15rem;
 }
 
-/* Hairline-outlined variants. The element's own background is the stroke and
-   ::before paints the ground colour back inside it, so the fill MUST be opaque
-   and MUST match the surface behind — hence one variant per ground. */
-.gem-btn--ring-white {
-  --gem-stroke: 1px;
-  --gem-fill: #ffffff;
-  background-color: rgba(19, 41, 75, 0.22);
-}
-.gem-btn--ring-white:hover {
-  background-color: #2e5be0;
+/* The --ring-white / --ring-cream / --frost variants are gone: each existed only
+   because a translucent or ground-matched fill had to be picked per surface, and
+   .btn-platinum is opaque metal that reads the same on any of them. */
+
+/* ---------------------------------------------------------------------------
+   Platinum tab — the colourless counterpart to the sapphire one, for secondary
+   CTAs. Same silhouette, same solved insets, same 1px edge / 5px crown / table
+   construction; only the material changes, which is what makes the two read as
+   siblings rather than as two different buttons.
+
+   The stone here is polished platinum over faceted crystal, so the table is
+   broken into angular planes. Those facets are hard-stopped gradients rather
+   than an image: a texture bitmap at this size either bands or blurs, while
+   hard stops give clean facet edges at any width and cost nothing to serve.
+   Two crossing directions make the shards, and a conic fan at each point does
+   what light does leaving a cut tip.
+--------------------------------------------------------------------------- */
+.btn-platinum {
+  /* the outer rim — only ~1px of this shows, around the whole silhouette */
+  background: linear-gradient(180deg, #ffffff 0%, #e8eef6 45%, #b6c2d2 78%, #f7fafd 100%);
+  color: #13294b;
+  /* the label is incised into the metal, so it carries a lit lower edge */
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  filter:
+    drop-shadow(0 0 7px rgba(190, 214, 250, 0.3))
+    drop-shadow(0 5px 14px rgba(10, 24, 60, 0.28));
+  transition: transform 0.3s ease, filter 0.3s ease;
 }
 
-.gem-btn--ring-cream {
-  --gem-stroke: 1px;
-  --gem-fill: #f7f4ec;
-  background-color: #d4d4d8; /* zinc-300, matching the pills these replace */
-}
-.gem-btn--ring-cream:hover {
-  background-color: #2e5be0;
-}
-
-/* Frosted variant, for buttons sitting on the hero film or a gradient ground.
-   An opaque inset fill would read as a flat patch over moving or graded art, so
-   these carry a translucent wash instead of a hairline and let the ground show
-   through the whole silhouette. */
-.gem-btn--frost {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  transition: background-color 300ms ease;
-}
-.gem-btn--frost:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+.btn-platinum::before,
+.btn-platinum::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  clip-path: polygon(
+    var(--gem-inner-point) 0%,
+    calc(100% - var(--gem-inner-point)) 0%,
+    100% 50%,
+    calc(100% - var(--gem-inner-point)) 100%,
+    var(--gem-inner-point) 100%,
+    0% 50%
+  );
 }
 
-/* Points get shallower on small screens so short labels keep their room. */
+/* the crown — a bevel turning from a white crest down into shadow and back up */
+.btn-platinum::before {
+  --gem-inner-point: 16.9px;
+  inset: 1px 1.5px;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #e1e8f2 6%,
+    #b0bdcf 14%,
+    #8a98ad 50%,
+    #7e8ca1 86%,
+    #c5d0df 93%,
+    #f3f7fc 100%
+  );
+}
+
+/* the table — platinum broken into facets, with a lighter band across the
+   middle for the label to read against */
+.btn-platinum::after {
+  --gem-inner-point: 11.6px;
+  inset: 6px 8.7px;
+  /* Clear glass, not cut facets. Two earlier attempts drew the stone's facets
+     here — first as hard-stopped gradients, then as an SVG polygon mesh — and at
+     a 22px-tall face both collapsed into a mess of slanted lines. Polished glass
+     carries ONE broad specular sweep and a soft shadow under it, so that is all
+     this is: no hard stops, no angular shapes, nothing to read as a line. */
+  background:
+    /* the specular sweep, thrown from above the top-left corner */
+    radial-gradient(
+      125% 190% at 28% -55%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.42) 36%,
+      rgba(255, 255, 255, 0) 64%
+    ),
+    /* the glass settling into shadow along its lower edge, which is what gives
+       the face depth instead of reading as a flat panel */
+    linear-gradient(180deg, rgba(255, 255, 255, 0) 52%, rgba(103, 121, 148, 0.3) 100%),
+    linear-gradient(180deg, #fbfdff 0%, #e7edf5 42%, #ccd6e3 74%, #eff4f9 100%);
+}
+
+.btn-platinum:hover,
+.group:hover .btn-platinum {
+  transform: translateY(-2px);
+  filter:
+    brightness(1.06)
+    drop-shadow(0 0 10px rgba(200, 222, 255, 0.45))
+    drop-shadow(0 9px 20px rgba(10, 24, 60, 0.38));
+}
+.btn-platinum:active {
+  transform: translateY(0);
+}
+
+/* Points get shallower on small screens so short labels keep their room, and
+   both tabs' inner layers are re-solved for P = 15px. */
 @media (max-width: 640px) {
-  .gem-btn,
-  .btn-luxe-pill {
-    --gem-point: 12px;
+  .btn-luxe-pill,
+  .btn-platinum {
+    --gem-point: 15px;
+    --gem-tracking: 0.22em;
+    padding-inline: 1.95rem calc(1.95rem - var(--gem-tracking));
+  }
+  .btn-luxe-pill::before,
+  .btn-platinum::before {
+    --gem-inner-point: 14.1px;
+    inset: 1px 1.3px;
+  }
+  .btn-luxe-pill::after,
+  .btn-platinum::after {
+    --gem-inner-point: 9.7px;
+    inset: 6px 8px;
   }
 }
 

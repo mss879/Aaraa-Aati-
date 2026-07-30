@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 /**
  * CTA — "Begin Your Bespoke Journey" band.
@@ -11,10 +12,32 @@ export default function CTA() {
   return (
     <section className="silk-navy relative z-20 w-full select-none overflow-hidden px-6 py-28 md:px-12 md:py-40">
 
+      {/* The maison's silk-and-loose-stones ground. object-bottom on purpose: the
+          artwork puts its gemstone row along the bottom edge and leaves plain silk
+          above it, and this band is far wider than the 2:1 art, so cover crops
+          vertically — anchoring to the bottom keeps the stones and spends the crop
+          on empty silk. .silk-navy stays on the section underneath as the loading
+          colour, so the band never flashes pale before the art arrives. */}
+      <Image
+        src="/bespoke.webp"
+        alt=""
+        fill
+        sizes="100vw"
+        className="object-cover object-bottom"
+      />
+
+      {/* Scrim. The silk carries broad highlights and the stones are bright, so
+          the type needs a floor under it — weighted to the top, where the copy
+          sits, and lifting toward the bottom so the stones still read. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-b from-[#061027]/75 via-[#061027]/55 to-[#061027]/25"
+      />
+
       {/* Sapphire hairline along the top edge */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[2px] w-56 bg-gradient-to-r from-transparent via-gold-300 to-transparent" />
 
-      <div data-reveal className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.3fr_auto_1fr] lg:gap-16">
+      <div data-reveal className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.3fr_auto_1fr] lg:gap-16">
 
         {/* Headline */}
         <div className="space-y-8">
@@ -49,7 +72,7 @@ export default function CTA() {
 
           <div className="flex flex-col items-start gap-4">
             <Link href="/atelier" className="group inline-flex w-full items-center justify-center gap-3 sm:w-auto sm:justify-start">
-              <span className="btn-luxe-pill w-full px-8 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.2em] sm:w-auto">
+              <span className="btn-luxe-pill w-full sm:w-auto">
                 Design Your Piece Now
               </span>
               <span className="btn-luxe-orb btn-luxe-orb--light hidden h-12 w-12 sm:inline-flex">
@@ -60,7 +83,7 @@ export default function CTA() {
             </Link>
             <a
               href="mailto:support@ceylongemmaison.com?subject=Private%20Consultation%20Request"
- className="w-full gem-btn gem-btn--frost px-11 py-3.5 text-center font-sans text-xs font-medium uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:text-gold-200 active:translate-y-0 sm:w-auto"
+ className="w-full btn-platinum sm:w-auto"
             >
               Book Private Consultation
             </a>

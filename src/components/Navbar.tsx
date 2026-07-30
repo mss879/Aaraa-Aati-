@@ -61,13 +61,13 @@ export default function Navbar() {
         <div className="hidden items-center space-x-3 md:flex">
           <Link
             href="/contact"
-            className="gem-btn gem-btn--ring-white px-9 py-2.5 font-sans text-xs font-medium uppercase tracking-[0.15em] text-[#13294B] transition-colors duration-300 hover:text-gold-600"
+            className="btn-platinum"
           >
             <span>Contact</span>
           </Link>
           <Link
             href="/atelier"
-            className="gem-btn bg-gold-500 px-9 py-2.5 font-sans text-xs font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-gold-600"
+            className="btn-luxe-pill"
           >
             <span>Craft Yours</span>
           </Link>
@@ -118,14 +118,14 @@ export default function Navbar() {
             <Link
               href="/contact"
               onClick={() => setIsOpen(false)}
-              className="gem-btn gem-btn--ring-white w-full py-3 text-center font-sans text-xs font-medium uppercase tracking-[0.15em] text-[#13294B] transition-colors duration-300 hover:text-gold-600"
+              className="btn-platinum w-full"
             >
               <span>Contact</span>
             </Link>
             <Link
               href="/atelier"
               onClick={() => setIsOpen(false)}
-              className="gem-btn w-full bg-gold-500 py-3 text-center font-sans text-xs font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-gold-600"
+              className="btn-luxe-pill w-full"
             >
               <span>Craft Yours</span>
             </Link>

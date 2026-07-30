@@ -26,7 +26,7 @@ export default function ArticlesPreview() {
             </h2>
           </div>
           <Link href="/articles" className="group inline-flex items-center gap-3">
-            <span className="btn-luxe-pill px-8 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.2em]">
+            <span className="btn-luxe-pill">
               Read the Journal
             </span>
             <span className="btn-luxe-orb h-12 w-12">

@@ -162,13 +162,13 @@ export default async function ArticlePage({ params }: Props) {
             <div data-reveal className="mt-14 flex flex-col items-start gap-4 border-t border-zinc-200 pt-10 sm:flex-row sm:items-center">
               <Link
                 href="/atelier"
- className="gem-btn bg-[#12305B] px-11 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#F7F4EC] transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-700"
+ className="btn-luxe-pill"
               >
                 Design Your Own Ring
               </Link>
               <Link
                 href="/contact"
- className="gem-btn gem-btn--ring-cream px-11 py-3.5 font-sans text-xs font-medium uppercase tracking-[0.2em] text-[#2C405C] transition-all duration-300 hover:-translate-y-0.5 hover:text-amber-700"
+ className="btn-platinum"
               >
                 Ask a Gemologist
               </Link>

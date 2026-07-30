@@ -6,10 +6,13 @@ import gsap from "gsap";
 
 /**
  * Preloader — "Particle Lockup".
- * Ink particles swirl out of chaos and settle into the Ceylon Gem Maison
- * lockup — the pear sapphire and the wordmark, sampled pixel-for-pixel from
- * the real artwork — hold, morph into "WELCOME", then scatter as the veil
- * dissolves into the hero.
+ * Ink particles swirl out of chaos and settle into ONE slide — the Ceylon Gem
+ * Maison lockup, sampled pixel-for-pixel from the real artwork, set above the
+ * word WELCOME — hold it still, then dissolve as the veil hands off to the hero.
+ *
+ * Choreography is fixed at 1s appear / 0.5s still / 1.5s dissolve (APPEAR,
+ * STILL, DISAPPEAR below). There is deliberately no second composition and no
+ * morph between them: the lockup and the word arrive together, as one image.
  *
  * Palette notes:
  *  - The veil is white and every particle is the one theme blue (#2e5be0). Only
@@ -35,20 +38,17 @@ import gsap from "gsap";
 
 const VERT = `
 attribute vec3 aStart;
-attribute vec3 aTarget; // logo lockup, normalised so max|x| = 1
-attribute vec3 aText;   // "WELCOME", normalised the same way
+attribute vec3 aTarget; // the slide: lockup over WELCOME, normalised so max|x| = 1
 attribute vec3 aData;   // x: size(px)  y: phase  z: shimmer speed
-attribute vec4 aArt;    // rgb: this facet's sapphire tone   a: 1 on the gem, 0 on the wordmark
+attribute vec4 aArt;    // rgb: this facet's sapphire tone   a: 1 on the gem, 0 elsewhere
 uniform float uProgress;
-uniform float uTextProgress;
 uniform float uTime;
 uniform float uExpand;
-uniform float uFlare;
+uniform float uFade;
 uniform float uAspect;
 uniform float uFit;
 uniform float uDpr;
-uniform float uLogoScale;
-uniform float uTextScale;
+uniform float uMarkScale;
 uniform float uGemReveal;
 uniform vec3 uInk;
 varying vec3 vColor;
@@ -57,8 +57,8 @@ varying float vAlpha;
 void main() {
   float ph = aData.y;
 
-  // Staggered convergence to the lockup: each particle locks in at its own moment.
-  float t = clamp((uProgress - ph * 0.4) / 0.6, 0.0, 1.0);
+  // Staggered convergence to the slide: each particle locks in at its own moment.
+  float t = clamp((uProgress - ph * 0.35) / 0.65, 0.0, 1.0);
   t = t * t * (3.0 - 2.0 * t);
 
   // Chaos cloud slowly swirls; its influence dies as the particle converges.
@@ -67,48 +67,41 @@ void main() {
   float s = sin(ang);
   vec2 sp = mat2(c, -s, s, c) * aStart.xy;
 
-  // The formed lockup breathes very slightly so it never looks frozen.
-  vec2 tp = aTarget.xy * uLogoScale
-          + 0.005 * vec2(sin(uTime * 1.7 + ph * 40.0), cos(uTime * 1.3 + ph * 36.0));
+  // The formed slide breathes only just enough not to look frozen. This used to
+  // be nearly 3x wider; at that amplitude the sampled edges smear, which is the
+  // opposite of sharp.
+  vec2 tp = aTarget.xy * uMarkScale
+          + 0.0018 * vec2(sin(uTime * 1.7 + ph * 40.0), cos(uTime * 1.3 + ph * 36.0));
 
-  vec2 posLogo = mix(sp, tp, t);
+  vec2 pos = mix(sp, tp, t);
 
-  vec2 textTarget = aText.xy * uTextScale
-          + 0.004 * vec2(sin(uTime * 1.5 + ph * 30.0), cos(uTime * 1.2 + ph * 26.0));
-
-  // Staggered convergence to the word, out of the lockup.
-  float tText = clamp((uTextProgress - ph * 0.4) / 0.6, 0.0, 1.0);
-  tText = tText * tText * (3.0 - 2.0 * tText);
-
-  vec2 pos = mix(posLogo, textTarget, tText);
-
-  // Exit: scatter radially outward past the viewport edges.
+  // Exit: dissipate outward — a drift, not the blast this used to be, because
+  // the brief calls for the slide to fade away rather than be thrown off screen.
   vec2 dir = normalize(pos + vec2(0.0001));
-  pos += dir * uExpand * (0.8 + fract(ph * 5.7) * 1.6);
-  pos *= 1.0 + uExpand * 0.6;
+  pos += dir * uExpand * (0.5 + fract(ph * 5.7) * 1.1);
+  pos *= 1.0 + uExpand * 0.35;
 
   gl_Position = vec4(pos.x * uFit / uAspect, pos.y * uFit, 0.0, 1.0);
 
   // On a white ground shimmer has to live in opacity and size — a brightness
   // pulse would read as nothing at all. Kept shallow so the ink stays dense.
-  float tw = 0.88 + 0.12 * sin(uTime * aData.z + ph * 50.0);
+  float tw = 0.9 + 0.1 * sin(uTime * aData.z + ph * 50.0);
   // The floor is high on purpose: the incoming swarm has to be clearly visible
-  // on white, otherwise the lockup simply appears instead of forming.
+  // on white, otherwise the slide simply appears instead of forming.
   float a = (0.42 + 0.58 * t) * tw;
-  a *= smoothstep(0.0, 0.10, uProgress);           // gentle global fade-in
-  a *= 1.0 - clamp(uExpand * 0.55 - 0.25, 0.0, 1.0); // dim through the scatter
+  a *= smoothstep(0.0, 0.10, uProgress); // gentle global fade-in
+  a *= 1.0 - uFade;                      // the dissolve, driven on its own beat
   vAlpha = a;
 
-  // The wordmark stays one flat brand blue. The gem, once it has landed, takes
-  // on its own facet tones so the stone reads as cut glass rather than a blot —
-  // and gives them back on the way into "WELCOME".
-  float gem = aArt.a * uGemReveal * (1.0 - tText);
+  // The wordmark and the word stay one flat brand blue. The gem, once it has
+  // landed, takes on its own facet tones so the stone reads as cut glass rather
+  // than a blot, and keeps them for the whole hold.
+  float gem = aArt.a * uGemReveal;
 
   // A highlight travels across the stone on a diagonal, the way a light source
-  // crosses a real gem as it turns. The rate is set by the choreography, not by
-  // taste: the stone is only cut glass for about 0.9s, so the sweep has to make
-  // a full pass inside that window or the highlight never crosses at all.
-  float sweep = sin((tp.x * 2.6 - tp.y * 1.7) / max(uLogoScale, 0.001) - uTime * 5.0);
+  // crosses a real gem as it turns. Slower than it was: the stone is now cut
+  // glass for the whole still and dissolve, so the sweep has room to cross once.
+  float sweep = sin((tp.x * 2.6 - tp.y * 1.7) / max(uMarkScale, 0.001) - uTime * 3.2);
   float glint = smoothstep(0.72, 1.0, sweep) * gem;
   // a handful of facets catch the light far harder than the rest
   float spark = step(0.972, fract(ph * 91.7 + uTime * 0.7)) * gem;
@@ -117,8 +110,8 @@ void main() {
   vColor = mix(uInk, facet, gem);
 
   gl_PointSize = aData.x * uDpr
-    * (0.75 + 0.45 * t + uFlare * 0.8 + aTarget.z + spark * 0.9)
-    * (0.92 + 0.08 * tw);
+    * (0.72 + 0.38 * t + aTarget.z + spark * 0.8)
+    * (0.94 + 0.06 * tw);
 }
 `;
 
@@ -129,9 +122,10 @@ varying float vAlpha;
 
 void main() {
   float d = length(gl_PointCoord - 0.5);
-  // Solid core out to 0.36 with only a thin anti-aliased rim. A wider falloff
-  // makes every dot a pale blob and the whole lockup reads washed out.
-  float a = smoothstep(0.5, 0.36, d);
+  // Solid core out to 0.42 with only a hairline anti-aliased rim. The wider
+  // falloff this replaces turned every dot into a pale blob, which is most of
+  // what read as "soft" in the artwork.
+  float a = smoothstep(0.5, 0.42, d);
   gl_FragColor = vec4(vColor, a * vAlpha);
 }
 `;
@@ -152,9 +146,19 @@ const FACET_DARK: [number, number, number] = [0.04, 0.11, 0.31];
 const FACET_MID: [number, number, number] = [0.18, 0.36, 0.88];
 const FACET_LIGHT: [number, number, number] = [0.51, 0.76, 0.98];
 
-/** How much of the viewport each cloud is allowed to fill (fraction of w / h). */
-const LOGO_FILL = { w: 0.42, h: 0.34 };
-const TEXT_FILL = { w: 0.4, h: 0.22 };
+/**
+ * The slide's beats, in seconds: gather into the slide, hold it still, dissolve.
+ * These are the brief, not taste — keep the sum in mind when touching either the
+ * hero-readiness race or the exit timeline.
+ */
+const APPEAR = 1.0;
+const STILL = 0.5;
+const DISAPPEAR = 1.5;
+
+/** How much of the viewport the slide is allowed to fill (fraction of w / h). */
+const MARK_FILL = { w: 0.44, h: 0.46 };
+
+const WELCOME = "WELCOME";
 
 /**
  * Where the gem ends and the wordmark begins, as a fraction of artwork width.
@@ -279,10 +283,12 @@ function sampleCanvas(
   const art = new Float32Array(count * 4);
   for (let i = 0; i < count; i++) {
     const p = (Math.random() * xs.length) | 0;
-    // a touch of jitter so the sampling grid never shows through
-    pos[i * 3] = xs[p] / maxX + (Math.random() - 0.5) * 0.004;
-    pos[i * 3 + 1] = ys[p] / maxX + (Math.random() - 0.5) * 0.004;
-    pos[i * 3 + 2] = Math.random() < 0.03 ? Math.random() * 0.4 : 0;
+    // A touch of jitter so the sampling grid never shows through. Half what it
+    // was: every source pixel is sampled now, so there is no grid to hide, and
+    // the jitter was softening the edges it was meant to protect.
+    pos[i * 3] = xs[p] / maxX + (Math.random() - 0.5) * 0.0022;
+    pos[i * 3 + 1] = ys[p] / maxX + (Math.random() - 0.5) * 0.0022;
+    pos[i * 3 + 2] = Math.random() < 0.03 ? Math.random() * 0.35 : 0;
 
     facetTone(lums[p], art, i * 4);
     art[i * 4 + 3] = gems[p];
@@ -291,76 +297,117 @@ function sampleCanvas(
   return { pos, ky: maxY / maxX, art };
 }
 
-/**
- * The brand lockup, sampled pixel-for-pixel from the artwork. Narrow viewports
- * get the gem stacked over the wordmark — the wide lockup is 3.5:1 and would
- * shrink to nothing in portrait.
- */
-function sampleLockup(
-  art: HTMLCanvasElement,
-  count: number,
-  stacked: boolean,
-): (Cloud & { art: Float32Array }) | null {
-  const w = 1400;
-  const h = stacked ? 1100 : 420;
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  if (!ctx) return null;
+/** Canvas 2D grew `letterSpacing` after the DOM lib types this project builds against. */
+type SpacedCtx = CanvasRenderingContext2D & { letterSpacing?: string };
 
+/**
+ * The brand lockup on its own transparent canvas, at artwork resolution, plus
+ * where the stone sits inside it. Narrow viewports get the gem stacked over the
+ * wordmark — the wide lockup is 3.5:1 and would shrink to nothing in portrait.
+ */
+function composeLockup(
+  art: HTMLCanvasElement,
+  stacked: boolean,
+): { canvas: HTMLCanvasElement; gem: { x: number; y: number; w: number; h: number } } | null {
   const iw = art.width;
   const ih = art.height;
   if (!iw || !ih) return null;
 
-  // where the stone lands on this canvas, so the sampler can flag its particles
-  let gemRect: { x: number; y: number; w: number; h: number };
-
-  if (stacked) {
-    // the gem occupies the left ~21.5% of the artwork; the wordmark starts ~26.5%
-    const gemW = iw * 0.215;
-    const txtX = iw * 0.265;
-    const txtW = iw - txtX;
-
-    const gs = (h * 0.5) / ih;
-    const gx = (w - gemW * gs) / 2;
-    ctx.drawImage(art, 0, 0, gemW, ih, gx, h * 0.02, gemW * gs, ih * gs);
-    gemRect = { x: gx, y: h * 0.02, w: gemW * gs, h: ih * gs };
-
-    const ws = Math.min((w * 0.94) / txtW, (h * 0.34) / ih);
-    ctx.drawImage(art, txtX, 0, txtW, ih, (w - txtW * ws) / 2, h * 0.6, txtW * ws, ih * ws);
-  } else {
-    const s = Math.min((w * 0.96) / iw, (h * 0.9) / ih);
-    const dx = (w - iw * s) / 2;
-    const dy = (h - ih * s) / 2;
-    ctx.drawImage(art, dx, dy, iw * s, ih * s);
-    gemRect = { x: dx, y: dy, w: iw * GEM_SPLIT * s, h: ih * s };
+  if (!stacked) {
+    return { canvas: art, gem: { x: 0, y: 0, w: iw * GEM_SPLIT, h: ih } };
   }
 
-  // Every source pixel counts on the wide layout; the taller stacked canvas
-  // halves the step so phones aren't scanning 1.5M pixels.
-  return sampleCanvas(ctx, w, h, count, stacked ? 2 : 1, gemRect);
-}
+  // the gem occupies the left ~21.5% of the artwork; the wordmark starts ~26.5%
+  const gemW = iw * 0.215;
+  const txtX = iw * 0.265;
+  const txtW = iw - txtX;
 
-/** "WELCOME", set in the brand serif. */
-function sampleText(text: string, count: number, font: string): Cloud | null {
-  const w = 1200;
-  const h = 300;
+  // The stone leads the stack, so it is drawn up from its share of the artwork.
+  const gs = 1.55;
+  const gw = gemW * gs;
+  const gh = ih * gs;
+  const gap = ih * 0.3;
+  const w = Math.round(Math.max(gw, txtW));
+  const h = Math.round(gh + gap + ih);
+
   const canvas = document.createElement("canvas");
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) return null;
 
+  const gx = (w - gw) / 2;
+  ctx.drawImage(art, 0, 0, gemW, ih, gx, 0, gw, gh);
+  ctx.drawImage(art, txtX, 0, txtW, ih, (w - txtW) / 2, gh + gap, txtW, ih);
+  return { canvas, gem: { x: gx, y: 0, w: gw, h: gh } };
+}
+
+/**
+ * The slide, as one cloud: the lockup above, WELCOME below, composed on a single
+ * canvas so the particles form both at once.
+ *
+ * The canvas is rasterised well above the size the slide occupies on screen, and
+ * sampled at step 1, so the wordmark's serifs survive into the point cloud — the
+ * sharpness of the result is set here, not in the shader.
+ */
+function sampleMark(
+  art: HTMLCanvasElement,
+  count: number,
+  stacked: boolean,
+  font: string,
+): (Cloud & { art: Float32Array }) | null {
+  const lock = composeLockup(art, stacked);
+  if (!lock) return null;
+  const lw = lock.canvas.width;
+  const lh = lock.canvas.height;
+  if (!lw || !lh) return null;
+
+  const w = stacked ? 1100 : 2000;
+
+  // The lockup now reads as a mark ABOVE the word rather than the whole slide,
+  // so it takes well under the full width — this is what "smaller" comes from.
+  const logoW = Math.round(w * (stacked ? 0.62 : 0.64));
+  const s = logoW / lw;
+  const logoH = Math.round(lh * s);
+
+  const fs = Math.round(w * (stacked ? 0.1 : 0.105));
+  const spacing = "0.16em";
+  const probe = document.createElement("canvas").getContext("2d") as SpacedCtx | null;
+  if (!probe) return null;
+  probe.font = `600 ${fs}px ${font}`;
+  probe.letterSpacing = spacing;
+  // Letter-spacing hangs off the last capital, so the drawn width is a shade
+  // narrower than measured; only the overflow guard cares, so measured is safe.
+  const textW = probe.measureText(WELCOME).width;
+  const scale = textW > w * 0.9 ? (w * 0.9) / textW : 1;
+
+  const gap = Math.round(fs * 0.9);
+  const textH = Math.round(fs * 1.1);
+  const pad = Math.round(fs * 0.2);
+  const h = pad * 2 + logoH + gap + textH;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true }) as SpacedCtx | null;
+  if (!ctx) return null;
+
+  const lx = (w - logoW) / 2;
+  ctx.drawImage(lock.canvas, lx, pad, logoW, logoH);
+
   ctx.fillStyle = "#000000";
-  ctx.font = `bold 140px ${font}`;
+  ctx.font = `600 ${Math.round(fs * scale)}px ${font}`;
+  ctx.letterSpacing = spacing;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(text, w / 2, h / 2);
+  ctx.fillText(WELCOME, w / 2, pad + logoH + gap + textH / 2);
 
-  // Step 1: the glyph strokes are thin, and at the current count a coarser step
-  // would have every source point duplicated many times over.
-  return sampleCanvas(ctx, w, h, count, 1);
+  return sampleCanvas(ctx, w, h, count, 1, {
+    x: lx + lock.gem.x * s,
+    y: pad + lock.gem.y * s,
+    w: lock.gem.w * s,
+    h: lock.gem.h * s,
+  });
 }
 
 function loadLogo(timeoutMs: number): Promise<HTMLImageElement | null> {
@@ -400,7 +447,7 @@ function PreloaderInner() {
   const [done, setDone] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const stillRef = useRef<HTMLImageElement>(null);
+  const stillRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const overlay = overlayRef.current;
@@ -458,7 +505,7 @@ function PreloaderInner() {
       attach(0);
     });
 
-    const state = { progress: 0, textProgress: 0, flare: 0, expand: 0, gemReveal: 0 };
+    const state = { progress: 0, fade: 0, expand: 0, gemReveal: 0 };
 
     const cleanup = () => {
       cancelAnimationFrame(raf);
@@ -477,18 +524,36 @@ function PreloaderInner() {
       setDone(true);
     };
 
-    /** No WebGL, no artwork, or reduced motion: hold the static logo, then lift. */
-    const plainVeil = (hold: number) => {
+    /**
+     * The still is held until the hero's first frame is decodable so the veil
+     * never lifts onto an unpainted hero — raced against a cap, because a slow
+     * or broken film must not be able to stretch the slide indefinitely. In the
+     * ordinary case the film is ready well inside the still and the beats land
+     * exactly as briefed.
+     */
+    const heldStill = () =>
+      Promise.all([after((APPEAR + STILL) * 1000), Promise.race([heroReady, after(2600)])]);
+
+    /** No WebGL, no artwork, or reduced motion: the same beats on a static logo. */
+    const plainVeil = () => {
       const still = stillRef.current;
-      if (still) gsap.to(still, { opacity: 1, duration: 0.5, ease: "power1.out" });
-      Promise.all([Promise.race([heroReady, after(4000)]), after(hold)]).then(() => {
+      if (still) gsap.to(still, { opacity: 1, duration: APPEAR, ease: "power2.out" });
+      heldStill().then(() => {
         if (disposed) return;
         unlockScroll();
         gsap
           .timeline({ onComplete: finish })
-          .to(still ?? {}, { opacity: 0, duration: 0.3, ease: "power1.in" }, 0)
-          .to(overlay, { backgroundColor: HERO_NAVY, duration: 0.35, ease: "power2.in" }, 0.1)
-          .to(overlay, { autoAlpha: 0, duration: 0.35, ease: "power1.out" }, 0.3);
+          .to(still ?? {}, { opacity: 0, duration: DISAPPEAR * 0.8, ease: "power1.inOut" }, 0)
+          .to(
+            overlay,
+            { backgroundColor: HERO_NAVY, duration: DISAPPEAR * 0.4, ease: "power2.inOut" },
+            DISAPPEAR * 0.34,
+          )
+          .to(
+            overlay,
+            { autoAlpha: 0, duration: DISAPPEAR * 0.3, ease: "power1.out" },
+            DISAPPEAR * 0.7,
+          );
       });
     };
 
@@ -500,7 +565,7 @@ function PreloaderInner() {
       const [logo] = await Promise.all([
         loadLogo(1600),
         Promise.race([
-          document.fonts.load("bold 140px Cinzel"),
+          document.fonts.load("600 200px Cinzel"),
           document.fonts.ready,
           after(600),
         ]).catch(() => undefined),
@@ -517,19 +582,21 @@ function PreloaderInner() {
         preserveDrawingBuffer: false,
       });
 
-      if (!gl) return plainVeil(2100);
+      if (!gl) return plainVeil();
 
       // ---- Build the particle attributes (once) ----
-      // Dense: the lockup only fills ~42% of the viewport, so it needs the
-      // count to read as solid ink rather than a scatter of dots. Still a
-      // single gl.POINTS draw call, so the count is close to free.
-      const count = window.innerWidth < 768 ? 20000 : 42000;
+      // Dense: the slide fills under half the viewport, so it needs the count to
+      // read as solid ink rather than a scatter of dots. Dropping the second
+      // cloud freed a whole attribute buffer, which pays for the higher count —
+      // and it is still one gl.POINTS draw call.
+      const count = window.innerWidth < 768 ? 22000 : 52000;
       const stacked = window.innerWidth < 700 || window.innerWidth < window.innerHeight;
 
       const artwork = logo ? cleanArtwork(logo) : null;
-      const lockup = artwork ? sampleLockup(artwork, count, stacked) : null;
-      const word = sampleText("WELCOME", count, "'Cinzel', 'Times New Roman', serif");
-      if (!lockup || !word) return plainVeil(2100);
+      const mark = artwork
+        ? sampleMark(artwork, count, stacked, "'Trajan Pro', 'Cinzel', 'Times New Roman', serif")
+        : null;
+      if (!mark) return plainVeil();
 
       const start = new Float32Array(count * 3);
       const data = new Float32Array(count * 3);
@@ -542,7 +609,10 @@ function PreloaderInner() {
         start[i * 3 + 1] = Math.sin(a) * cr;
         start[i * 3 + 2] = 0;
 
-        data[i * 3] = rand() < 0.04 ? 2.5 + rand() * 1.3 : 1.5 + rand() * 1.1;
+        // Smaller points than before, and fewer oversize ones: at the old sizes
+        // neighbouring dots overlapped into a blob, which is what softened the
+        // wordmark. Density now comes from the count, not from fat points.
+        data[i * 3] = rand() < 0.03 ? 1.9 + rand() * 0.9 : 1.05 + rand() * 0.7;
         data[i * 3 + 1] = rand();
         data[i * 3 + 2] = 2.0 + rand() * 6.0;
       }
@@ -560,7 +630,7 @@ function PreloaderInner() {
       gl.linkProgram(program);
       if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
         // Shader failed somewhere exotic — degrade to the static logo.
-        return plainVeil(2100);
+        return plainVeil();
       }
       gl.useProgram(program);
 
@@ -573,22 +643,19 @@ function PreloaderInner() {
         gl!.vertexAttribPointer(loc, size, gl!.FLOAT, false, 0, 0);
       };
       attach("aStart", start);
-      attach("aTarget", lockup.pos);
-      attach("aText", word.pos);
+      attach("aTarget", mark.pos);
       attach("aData", data);
-      attach("aArt", lockup.art, 4);
+      attach("aArt", mark.art, 4);
 
       const U = (name: string) => gl!.getUniformLocation(program, name);
       const uProgress = U("uProgress");
-      const uTextProgress = U("uTextProgress");
       const uTime = U("uTime");
       const uExpand = U("uExpand");
-      const uFlare = U("uFlare");
+      const uFade = U("uFade");
       const uAspect = U("uAspect");
       const uFit = U("uFit");
       const uDpr = U("uDpr");
-      const uLogoScale = U("uLogoScale");
-      const uTextScale = U("uTextScale");
+      const uMarkScale = U("uMarkScale");
       const uGemReveal = U("uGemReveal");
 
       gl.uniform3f(U("uInk"), THEME_BLUE[0], THEME_BLUE[1], THEME_BLUE[2]);
@@ -613,12 +680,11 @@ function PreloaderInner() {
         gl.uniform1f(uFit, fit);
         gl.uniform1f(uDpr, dpr);
 
-        // Fit each cloud to the viewport on both axes: clouds are normalised to
+        // Fit the cloud to the viewport on both axes: it is normalised to
         // max|x| = 1, so width is the direct constraint and ky covers height.
         const fitCloud = (ky: number, wFrac: number, hFrac: number) =>
           Math.min((wFrac * aspect) / fit, hFrac / Math.max(ky * fit, 0.0001));
-        gl.uniform1f(uLogoScale, fitCloud(lockup.ky, LOGO_FILL.w, LOGO_FILL.h));
-        gl.uniform1f(uTextScale, fitCloud(word.ky, TEXT_FILL.w, TEXT_FILL.h));
+        gl.uniform1f(uMarkScale, fitCloud(mark.ky, MARK_FILL.w, MARK_FILL.h));
       };
       resize();
       resizeHandler = resize;
@@ -629,9 +695,8 @@ function PreloaderInner() {
         if (!gl) return;
         gl.uniform1f(uTime, (performance.now() - t0) * 0.001);
         gl.uniform1f(uProgress, state.progress);
-        gl.uniform1f(uTextProgress, state.textProgress);
         gl.uniform1f(uExpand, state.expand);
-        gl.uniform1f(uFlare, state.flare);
+        gl.uniform1f(uFade, state.fade);
         gl.uniform1f(uGemReveal, state.gemReveal);
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.drawArrays(gl.POINTS, 0, count);
@@ -639,41 +704,48 @@ function PreloaderInner() {
       };
       raf = requestAnimationFrame(tick);
 
-      // ---- Choreography (tuned so the veil lives ~3.5s on screen) ----
-      gsap.fromTo(canvas, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power1.out" });
+      // ---- Choreography: one slide, APPEAR in / STILL held / DISAPPEAR out ----
+      gsap.fromTo(canvas, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power1.out" });
 
-      // Step 1: the swarm gathers and resolves into the lockup — formed by
-      // ~1.4s. Slow on purpose: this drift-and-settle IS the effect.
-      gsap.to(state, { progress: 1.0, duration: 1.25, ease: "power2.out", delay: 0.12 });
+      // Appear: the swarm gathers and resolves into the slide. This drift-and-
+      // settle IS the effect, so it gets the whole beat rather than a fraction.
+      gsap.to(state, { progress: 1.0, duration: APPEAR, ease: "power2.out" });
 
-      // Step 1b: with the stone settled, let its facets come up — the flat blue
-      // silhouette turns to cut sapphire and starts catching the light.
-      gsap.to(state, { gemReveal: 1.0, duration: 0.55, ease: "power2.out", delay: 1.3 });
+      // As the stone lands its facets come up — the flat blue silhouette turns to
+      // cut sapphire, finishing just as the still begins, and keeps it from there.
+      gsap.to(state, {
+        gemReveal: 1.0,
+        duration: APPEAR * 0.45,
+        ease: "power2.out",
+        delay: APPEAR * 0.55,
+      });
 
-      // Step 2: let the stone sit as cut glass — its facets finish arriving at
-      // ~1.85s and the sheen sweep needs room to cross it — then morph to
-      // "WELCOME" by ~2.85s.
-      gsap.to(state, { textProgress: 1.0, duration: 0.6, ease: "power3.inOut", delay: 2.25 });
-
-      // Step 3: hold for a ~3.1s minimum AND until the hero's first frame is
-      // ready (capped at 4s so a slow film can't stall the reveal), then scatter.
-      Promise.all([Promise.race([heroReady, after(4000)]), after(3100)]).then(() => {
+      // Still, then dissolve. Nothing moves far: the slide fades where it stands,
+      // with only enough outward drift to read as dissipating ink, while the white
+      // ground crosses to the hero navy so the handoff never flashes.
+      heldStill().then(() => {
         if (disposed) return;
         unlockScroll();
 
-        // Step 4: scatter the word, and dissolve the white ground into the hero
-        // navy underneath so the handoff never flashes.
         gsap
           .timeline({ onComplete: finish })
-          .to(state, { flare: 1.0, duration: 0.18, ease: "power2.in" }, 0)
-          .to(state, { expand: 3.4, duration: 0.55, ease: "power3.in" }, 0.1)
-          .to(overlay, { backgroundColor: HERO_NAVY, duration: 0.38, ease: "power2.in" }, 0.28)
-          .to(overlay, { autoAlpha: 0, duration: 0.3, ease: "power1.out" }, 0.5);
+          .to(state, { fade: 1.0, duration: DISAPPEAR * 0.82, ease: "power1.inOut" }, 0)
+          .to(state, { expand: 0.3, duration: DISAPPEAR, ease: "power1.in" }, 0)
+          .to(
+            overlay,
+            { backgroundColor: HERO_NAVY, duration: DISAPPEAR * 0.4, ease: "power2.inOut" },
+            DISAPPEAR * 0.34,
+          )
+          .to(
+            overlay,
+            { autoAlpha: 0, duration: DISAPPEAR * 0.3, ease: "power1.out" },
+            DISAPPEAR * 0.7,
+          );
       });
     };
 
     if (reduced) {
-      plainVeil(1400);
+      plainVeil();
     } else {
       startWebGL();
     }
@@ -695,17 +767,22 @@ function PreloaderInner() {
       aria-label="Loading Ceylon Gem Maison"
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-      {/* Shown only on the reduced-motion / no-WebGL paths. Deliberately a raw
-          <img>: the WebGL path already fetches this exact URL to sample the
-          lockup, so sharing the cache entry beats a second, optimised URL. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      {/* Shown only on the reduced-motion / no-WebGL paths, laid out as the same
+          single slide the particles form: the lockup above, WELCOME below. */}
+      <div
         ref={stillRef}
-        src={LOGO_SRC}
-        alt=""
         aria-hidden="true"
-        className="absolute left-1/2 top-1/2 w-[min(78vw,560px)] -translate-x-1/2 -translate-y-1/2 opacity-0"
-      />
+        className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-7 opacity-0"
+      >
+        {/* Deliberately a raw <img>: the WebGL path already fetches this exact
+            URL to sample the lockup, so sharing the cache entry beats a second,
+            optimised URL. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={LOGO_SRC} alt="" className="w-[min(58vw,390px)]" />
+        <span className="font-serif text-xl uppercase tracking-[0.34em] text-gold-500 md:text-2xl">
+          {WELCOME}
+        </span>
+      </div>
       <span className="sr-only">Loading</span>
     </div>
   );

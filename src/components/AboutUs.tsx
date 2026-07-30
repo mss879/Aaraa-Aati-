@@ -48,7 +48,7 @@ export default function AboutUs() {
         {/* Story CTA — satin pill + arrow orb */}
         <div data-reveal className="pt-2">
           <Link href="/about" className="group inline-flex items-center gap-3">
-            <span className="btn-luxe-pill px-8 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.2em]">
+            <span className="btn-luxe-pill">
               Discover Our Story
             </span>
             <span className="btn-luxe-orb h-12 w-12">
@@ -61,24 +61,25 @@ export default function AboutUs() {
 
       </div>
 
-      {/* Desktop Vertical Divider */}
-      <div className="hidden md:block w-[1px] bg-gradient-to-b from-transparent via-zinc-200 to-transparent relative z-25" />
-
-      {/* Right side: Image showcase */}
+      {/* Right side: Image showcase. The photograph meets the cream on a clean
+          edge — no blend of any kind; that was tried and dropped. */}
       <div className="w-full md:w-[45%] relative min-h-[40vh] md:min-h-full overflow-hidden">
         {/* Background Image (slightly oversized so the parallax drift never exposes edges) */}
         <div data-parallax="-0.08" className="absolute inset-0 scale-110">
           <Image
-            src="/why.png"
-            alt="A Ceylon Gem Maison gemmologist inspecting a sapphire solitaire with tweezers, a tray of loose ruby, emerald and sapphire beside him"
+            src="/new-about.jpeg"
+            alt="A Ceylon Gem Maison gemmologist wearing a loupe, setting a blue sapphire halo ring with tweezers, beside a maison tray of loose yellow, red, green, blue, pink and white gemstones"
             fill
             sizes="(max-width: 768px) 100vw, 45vw"
             className="object-cover"
           />
         </div>
 
-        {/* Gradients to blend image edges into the white background */}
-        <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#F7F4EC] via-transparent to-transparent z-10 w-full md:w-[15%]" />
+        {/* Photographic vignette only — deliberately nothing that touches the
+            leading edge. Every attempt at blending that seam was rejected: a
+            cream fade hazed the picture, a black one either vanished or read as
+            a grey bar, and a mask that dissolved the edge was not wanted either.
+            A clean edge is the decision, so leave it alone. */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/35 z-10" />
       </div>
 

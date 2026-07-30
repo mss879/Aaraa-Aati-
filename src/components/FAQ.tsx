@@ -37,7 +37,7 @@ export default function FAQ() {
             concierge answers within the day.
           </p>
           <a href="/contact" className="group mt-8 inline-flex items-center gap-3">
-            <span className="btn-luxe-pill px-7 py-3 font-sans text-xs font-semibold uppercase tracking-[0.2em]">
+            <span className="btn-luxe-pill">
               Ask the Concierge
             </span>
             <span className="btn-luxe-orb h-11 w-11">
