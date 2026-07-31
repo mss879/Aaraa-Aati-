@@ -37,7 +37,7 @@ export default function InquiriesView({ inquiries }: { inquiries: Inquiry[] }) {
               type="button"
               onClick={() => setFilter(f.id)}
               className={`rounded-full px-3 py-1.5 font-sans text-[0.6rem] uppercase tracking-[0.14em] transition-colors cursor-pointer ${
-                filter === f.id ? "bg-gold-500/20 text-gold-100 ring-1 ring-inset ring-gold-400/30" : "text-[#8595ad] hover:text-gold-100"
+                filter === f.id ? "bg-[var(--adm-accent-tint)] text-[var(--adm-ink)] ring-1 ring-inset ring-[var(--adm-accent)]/30" : "text-[var(--adm-ink-soft)] hover:text-[var(--adm-ink)]"
               }`}
             >
               {f.label}
@@ -46,7 +46,7 @@ export default function InquiriesView({ inquiries }: { inquiries: Inquiry[] }) {
         </div>
 
         {shown.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-[#1d3050] bg-[#0a1526]/50 p-8 text-center font-body text-sm text-[#6f8199]">
+          <p className="adm-empty p-8 text-center font-body text-sm text-[var(--adm-muted)]">
             No inquiries here.
           </p>
         ) : (
@@ -58,21 +58,21 @@ export default function InquiriesView({ inquiries }: { inquiries: Inquiry[] }) {
                 onClick={() => setSelectedId(i.id)}
                 className={`w-full rounded-xl border p-3.5 text-left transition-colors ${
                   selectedId === i.id
-                    ? "border-gold-400/50 bg-[#0c1a30]"
-                    : "border-[#16263f] bg-[#0a1526] hover:border-[#27497A]"
+                    ? "border-[var(--adm-accent)] bg-[var(--adm-accent-tint)]"
+                    : "border-[var(--adm-line)] bg-white hover:border-[var(--adm-line-strong)]"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 font-body text-sm text-gold-50">
+                  <span className="flex items-center gap-2 font-body text-sm text-[var(--adm-ink)]">
                     <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: STATUS_DOT[i.status] }} />
                     {i.name}
                   </span>
-                  <span className="font-body text-[0.62rem] text-[#6f8199]">{formatDate(i.created_at)}</span>
+                  <span className="font-body text-[0.62rem] text-[var(--adm-muted)]">{formatDate(i.created_at)}</span>
                 </div>
                 {i.interest && (
-                  <p className="mt-1 font-sans text-[0.6rem] uppercase tracking-[0.12em] text-gold-400/80">{i.interest}</p>
+                  <p className="mt-1 font-sans text-[0.6rem] uppercase tracking-[0.12em] text-[var(--adm-accent)]">{i.interest}</p>
                 )}
-                <p className="mt-1 line-clamp-1 font-body text-[0.72rem] text-[#8595ad]">{i.message}</p>
+                <p className="mt-1 line-clamp-1 font-body text-[0.72rem] text-[var(--adm-ink-soft)]">{i.message}</p>
               </button>
             ))}
           </div>
@@ -82,43 +82,43 @@ export default function InquiriesView({ inquiries }: { inquiries: Inquiry[] }) {
       {/* Detail */}
       <div className="lg:col-span-3">
         {!selected ? (
-          <p className="rounded-2xl border border-dashed border-[#1d3050] bg-[#0a1526]/50 p-10 text-center font-body text-sm text-[#6f8199]">
+          <p className="adm-empty p-10 text-center font-body text-sm text-[var(--adm-muted)]">
             Select an inquiry to read it.
           </p>
         ) : (
-          <div className="rounded-2xl border border-[#16263f] bg-[#0a1526] p-6">
+          <div className="adm-card p-6">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="font-serif text-2xl font-light text-gold-50">{selected.name}</h2>
+                <h2 className="font-serif text-2xl font-light text-[var(--adm-ink)]">{selected.name}</h2>
                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-body text-[0.8rem]">
-                  <a href={`mailto:${selected.email}`} className="text-gold-200 hover:text-gold-300">{selected.email}</a>
-                  {selected.phone && <a href={`tel:${selected.phone}`} className="text-gold-200 hover:text-gold-300">{selected.phone}</a>}
+                  <a href={`mailto:${selected.email}`} className="text-[var(--adm-accent-strong)] hover:text-[var(--adm-accent)]">{selected.email}</a>
+                  {selected.phone && <a href={`tel:${selected.phone}`} className="text-[var(--adm-accent-strong)] hover:text-[var(--adm-accent)]">{selected.phone}</a>}
                 </div>
               </div>
-              <span className="font-body text-[0.66rem] text-[#6f8199]">{formatDate(selected.created_at)}</span>
+              <span className="font-body text-[0.66rem] text-[var(--adm-muted)]">{formatDate(selected.created_at)}</span>
             </div>
 
             {selected.interest && (
-              <p className="mt-4 inline-block rounded-full bg-gold-500/15 px-3 py-1 font-sans text-[0.6rem] uppercase tracking-[0.14em] text-gold-200">
+              <p className="mt-4 inline-block rounded-full bg-[var(--adm-accent-tint)] px-3 py-1 font-sans text-[0.6rem] uppercase tracking-[0.14em] text-[var(--adm-accent-strong)]">
                 {selected.interest}
               </p>
             )}
 
-            <p className="mt-4 whitespace-pre-wrap font-body text-sm leading-relaxed text-[#c9d4e6]">
+            <p className="mt-4 whitespace-pre-wrap font-body text-sm leading-relaxed text-[var(--adm-ink-soft)]">
               {selected.message}
             </p>
 
             {selected.source_piece && (
-              <p className="mt-3 font-body text-[0.68rem] text-[#6f8199]">
+              <p className="mt-3 font-body text-[0.68rem] text-[var(--adm-muted)]">
                 Interested in: {selected.source_piece}
               </p>
             )}
 
-            <div className="mt-7 flex flex-wrap items-center gap-2 border-t border-[#16263f] pt-5">
+            <div className="mt-7 flex flex-wrap items-center gap-2 border-t border-[var(--adm-line)] pt-5">
               {selected.promoted_lead_id ? (
                 <Link
                   href="/admin/crm"
-                  className="rounded-full bg-emerald-500/15 px-4 py-2 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-emerald-300 ring-1 ring-inset ring-emerald-400/30"
+                  className="rounded-full bg-emerald-50 px-4 py-2 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-emerald-700 ring-1 ring-inset ring-emerald-200"
                 >
                   ✓ In CRM — open board
                 </Link>
@@ -127,7 +127,7 @@ export default function InquiriesView({ inquiries }: { inquiries: Inquiry[] }) {
                   <input type="hidden" name="id" value={selected.id} />
                   <button
                     type="submit"
-                    className="rounded-full bg-gold-400 px-5 py-2.5 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-gold-300 cursor-pointer"
+                    className="adm-btn"
                   >
                     Send to CRM →
                   </button>
@@ -138,7 +138,7 @@ export default function InquiriesView({ inquiries }: { inquiries: Inquiry[] }) {
                 <form action={setInquiryStatus}>
                   <input type="hidden" name="id" value={selected.id} />
                   <input type="hidden" name="status" value="read" />
-                  <button type="submit" className="rounded-full border border-[#27497A] px-4 py-2.5 font-sans text-[0.62rem] uppercase tracking-[0.16em] text-[#c9d4e6] transition-colors hover:border-gold-400/50 hover:text-gold-200 cursor-pointer">
+                  <button type="submit" className="adm-btn-ghost">
                     Mark read
                   </button>
                 </form>
@@ -147,7 +147,7 @@ export default function InquiriesView({ inquiries }: { inquiries: Inquiry[] }) {
                 <form action={setInquiryStatus}>
                   <input type="hidden" name="id" value={selected.id} />
                   <input type="hidden" name="status" value="archived" />
-                  <button type="submit" className="rounded-full border border-[#27497A] px-4 py-2.5 font-sans text-[0.62rem] uppercase tracking-[0.16em] text-[#8595ad] transition-colors hover:border-rose-400/40 hover:text-rose-300 cursor-pointer">
+                  <button type="submit" className="rounded-full border border-[var(--adm-line)] px-4 py-2.5 font-sans text-[0.62rem] uppercase tracking-[0.16em] text-[var(--adm-ink-soft)] transition-colors hover:border-rose-400/40 hover:text-[var(--adm-danger)] cursor-pointer">
                     Archive
                   </button>
                 </form>

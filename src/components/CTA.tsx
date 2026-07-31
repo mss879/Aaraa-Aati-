@@ -19,7 +19,7 @@ export default function CTA() {
           on empty silk. .silk-navy stays on the section underneath as the loading
           colour, so the band never flashes pale before the art arrives. */}
       <Image
-        src="/bespoke.webp"
+        src="/about1.webp"
         alt=""
         fill
         sizes="100vw"

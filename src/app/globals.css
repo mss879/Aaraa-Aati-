@@ -3,6 +3,17 @@
 :root {
   --background: #e9e4d8;
   --foreground: #13294b;
+  /* The navbar is fixed, so it takes no space in the flow. Anything that has to
+     start below it — or stick beneath it — measures from here rather than
+     hardcoding the number in half a dozen places. It is the logo's height plus
+     the bar's padding and hairline. */
+  --nav-h: 61px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --nav-h: 69px;
+  }
 }
 
 @theme {
@@ -231,33 +242,9 @@ p {
   color: #102359;
 }
 
-/* Ivory category chip pinned on imagery (reference-style product tag) */
-.chip-luxe {
-  display: inline-flex;
-  align-items: center;
-  /* Same silhouette as the CTAs, on a shallower point — these sit at ~26px tall
-     and a full 16px point would swallow the first and last letter. */
-  --gem-point: 9px;
-  clip-path: polygon(
-    var(--gem-point) 0%,
-    calc(100% - var(--gem-point)) 0%,
-    100% 50%,
-    calc(100% - var(--gem-point)) 100%,
-    var(--gem-point) 100%,
-    0% 50%
-  );
-  background: #f7f4ec;
-  color: #102349;
-  /* wider inline padding so the points clear the text */
-  padding: 0.42rem 1.45rem;
-  font-family: var(--font-sans);
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  /* clip-path crops box-shadow, so the lift has to be a filter */
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.28));
-}
+/* The category chip's material and metrics live down with the platinum tab's,
+   below the shared silhouette rule — it has to be declared after that rule to
+   override --gem-point, since both are single-class and source order decides. */
 
 /* Deep-navy silk band, the dark-section canvas of the reference layout */
 .silk-navy {
@@ -281,6 +268,7 @@ p {
 /* The silhouette itself, shared by every CTA and label system. */
 .btn-luxe-pill,
 .btn-platinum,
+.chip-luxe,
 .eyebrow-gem {
   --gem-point: 18px;
   --gem-clip: polygon(
@@ -324,49 +312,28 @@ p {
   text-transform: uppercase;
 }
 
-/* The eyebrow's fill, inset by its stroke width. z-index -1 puts it above the
-   element's own background (the stroke) but below the label, so plain text
-   children need no wrapper; `isolation: isolate` above keeps the -1 from
-   escaping the chip. */
-.eyebrow-gem::before {
-  content: "";
-  position: absolute;
-  inset: var(--gem-stroke);
-  z-index: -1;
-  background: var(--gem-fill);
-  clip-path: var(--gem-clip);
-}
-
-/* Section eyebrow labels — the dotted "· THE MAISON PORTFOLIO" chips. Same
-   silhouette on a shallower point, since these are only ~26px tall. The fill is
-   the cream ground pre-blended with the 5% sapphire wash these used to carry,
-   because an inset fill has to be opaque. */
-.eyebrow-gem {
-  --gem-point: 10px;
-  --gem-stroke: 1px;
-  --gem-fill: #edeceb;
-  background-color: rgba(46, 91, 224, 0.2);
-  padding-inline: 1.15rem;
-}
-
-/* The --ring-white / --ring-cream / --frost variants are gone: each existed only
-   because a translucent or ground-matched fill had to be picked per surface, and
-   .btn-platinum is opaque metal that reads the same on any of them. */
+/* The old --gem-stroke / --gem-fill mechanism is gone with its last user. It
+   painted an opaque inset fill to fake a hairline border, which meant picking a
+   fill per surface — .gem-btn needed a --ring-white, a --ring-cream and a
+   --frost for exactly that reason. Everything colourless is now the one glass
+   below, which is opaque and reads the same on white, cream or navy. */
 
 /* ---------------------------------------------------------------------------
-   Platinum tab — the colourless counterpart to the sapphire one, for secondary
-   CTAs. Same silhouette, same solved insets, same 1px edge / 5px crown / table
-   construction; only the material changes, which is what makes the two read as
-   siblings rather than as two different buttons.
+   White-gem glass — the colourless counterpart to the sapphire tab. Every
+   non-blue button in the house is made of it: .btn-platinum for secondary CTAs,
+   .chip-luxe for the category tags on imagery. Same 1px rim / crown / glass face
+   construction as the sapphire tab, so the whole set reads as one system; only
+   the material and the size change.
 
-   The stone here is polished platinum over faceted crystal, so the table is
-   broken into angular planes. Those facets are hard-stopped gradients rather
-   than an image: a texture bitmap at this size either bands or blurs, while
-   hard stops give clean facet edges at any width and cost nothing to serve.
-   Two crossing directions make the shards, and a conic fan at each point does
-   what light does leaving a cut tip.
+   The face is CLEAR glass, not cut facets. Two earlier attempts drew facets in
+   here — first as hard-stopped gradients, then as an SVG polygon mesh — and at
+   these heights both collapsed into a mess of slanted lines. Polished glass
+   carries ONE broad specular sweep with a soft shadow under it, so that is all
+   this is: no hard stops, no angular shapes, nothing that can read as a line.
 --------------------------------------------------------------------------- */
-.btn-platinum {
+.btn-platinum,
+.chip-luxe,
+.eyebrow-gem {
   /* the outer rim — only ~1px of this shows, around the whole silhouette */
   background: linear-gradient(180deg, #ffffff 0%, #e8eef6 45%, #b6c2d2 78%, #f7fafd 100%);
   color: #13294b;
@@ -379,7 +346,11 @@ p {
 }
 
 .btn-platinum::before,
-.btn-platinum::after {
+.btn-platinum::after,
+.chip-luxe::before,
+.chip-luxe::after,
+.eyebrow-gem::before,
+.eyebrow-gem::after {
   content: "";
   position: absolute;
   z-index: -1;
@@ -395,9 +366,9 @@ p {
 }
 
 /* the crown — a bevel turning from a white crest down into shadow and back up */
-.btn-platinum::before {
-  --gem-inner-point: 16.9px;
-  inset: 1px 1.5px;
+.btn-platinum::before,
+.chip-luxe::before,
+.eyebrow-gem::before {
   background: linear-gradient(
     180deg,
     #ffffff 0%,
@@ -410,16 +381,10 @@ p {
   );
 }
 
-/* the table — platinum broken into facets, with a lighter band across the
-   middle for the label to read against */
-.btn-platinum::after {
-  --gem-inner-point: 11.6px;
-  inset: 6px 8.7px;
-  /* Clear glass, not cut facets. Two earlier attempts drew the stone's facets
-     here — first as hard-stopped gradients, then as an SVG polygon mesh — and at
-     a 22px-tall face both collapsed into a mess of slanted lines. Polished glass
-     carries ONE broad specular sweep and a soft shadow under it, so that is all
-     this is: no hard stops, no angular shapes, nothing to read as a line. */
+/* the glass face */
+.btn-platinum::after,
+.chip-luxe::after,
+.eyebrow-gem::after {
   background:
     /* the specular sweep, thrown from above the top-left corner */
     radial-gradient(
@@ -432,6 +397,60 @@ p {
        the face depth instead of reading as a flat panel */
     linear-gradient(180deg, rgba(255, 255, 255, 0) 52%, rgba(103, 121, 148, 0.3) 100%),
     linear-gradient(180deg, #fbfdff 0%, #e7edf5 42%, #ccd6e3 74%, #eff4f9 100%);
+}
+
+/* The chip's own metrics. Its point is shallower than the tabs' — these are 28px
+   tall, and a full 18px point would swallow the first and last letter. The height
+   is fixed for the same reason the tabs' is: the glass frame is cut from geometry
+   that depends on it. Declared here, after the shared silhouette rule, so its
+   --gem-point actually wins. */
+.chip-luxe {
+  --gem-point: 10px;
+  --gem-h: 1.75rem;
+  min-height: var(--gem-h);
+  padding-block: 0;
+  /* enough that the points clear the text, less the trailing letter-space so the
+     label stays on the silhouette's axis */
+  padding-inline: 1.4rem calc(1.4rem - 0.22em);
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* Section eyebrow labels — the "· OUR ATELIER & HERITAGE" chips. Same glass and
+   the same geometry as the category chip; only the type differs, and the blue
+   accent is kept because these are labels rather than buttons. */
+.eyebrow-gem {
+  --gem-point: 10px;
+  --gem-h: 1.75rem;
+  min-height: var(--gem-h);
+  padding-block: 0;
+  padding-inline: 1.15rem calc(1.15rem - 0.3em);
+  color: #16339b;
+}
+
+/* Per-size geometry, each solved from that element's own height and point with
+   the formulas above .btn-luxe-pill. The tab: H 34px, P 18px, 1px rim, 6px
+   crown. The chip: H 28px, P 10px, 1px rim, 5px crown. */
+.btn-platinum::before {
+  --gem-inner-point: 16.9px;
+  inset: 1px 1.5px;
+}
+.btn-platinum::after {
+  --gem-inner-point: 11.6px;
+  inset: 6px 8.7px;
+}
+.chip-luxe::before,
+.eyebrow-gem::before {
+  --gem-inner-point: 9.3px;
+  inset: 1px 1.2px;
+}
+.chip-luxe::after,
+.eyebrow-gem::after {
+  --gem-inner-point: 6.4px;
+  inset: 5px 6.1px;
 }
 
 .btn-platinum:hover,
@@ -585,4 +604,182 @@ p {
   height: 2px;
   border-radius: 999px;
   background: linear-gradient(90deg, #1f46c4, #4f7bee);
+}
+
+/* ===========================================================================
+   THE BACK OFFICE — light theme.
+
+   The public site is cream-and-navy cinema. The back office is a tool, and a
+   tool wants daylight: white surfaces on a pale blue canvas, navy ink, and the
+   house sapphire as the ONLY accent, so a status dot or a primary button
+   points without having to shout.
+
+   Everything is scoped to .admin-theme (set on the /admin wrapper) — the
+   marketing pages never see these tokens. The component classes sit in
+   @layer components so a Tailwind utility can still override one per element.
+=========================================================================== */
+.admin-theme {
+  --adm-canvas: #f2f6fc;        /* the room */
+  --adm-surface: #ffffff;       /* cards, sidebar, drawers */
+  --adm-inset: #f7f9fd;         /* panels sunk into a card */
+  --adm-line: #e3e9f4;          /* hairlines */
+  --adm-line-strong: #c9d7ec;   /* hairlines on hover */
+  --adm-ink: #13294b;           /* the house navy — primary text */
+  --adm-ink-soft: #4a6285;      /* secondary text */
+  --adm-muted: #7b8ca9;         /* labels, timestamps */
+  --adm-faint: #a9b8d0;         /* placeholders */
+  --adm-accent: #2e5be0;        /* house sapphire */
+  --adm-accent-strong: #1f46c4; /* pressed / hover */
+  --adm-accent-tint: #eaf0fe;   /* selected rows, active nav */
+  --adm-danger: #d6455f;
+  --adm-shadow: 0 1px 2px rgba(19, 41, 75, 0.05), 0 10px 30px rgba(19, 41, 75, 0.06);
+  --adm-shadow-lift: 0 2px 6px rgba(19, 41, 75, 0.07), 0 18px 44px rgba(19, 41, 75, 0.12);
+
+  background-color: var(--adm-canvas);
+  color: var(--adm-ink);
+}
+
+@layer components {
+  .adm-card {
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-line);
+    border-radius: 1rem;
+    box-shadow: var(--adm-shadow);
+  }
+
+  /* A card that is also a link or a button. */
+  .adm-card-link {
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  }
+  .adm-card-link:hover {
+    border-color: var(--adm-line-strong);
+    box-shadow: var(--adm-shadow-lift);
+  }
+
+  /* Selected in a list — the tint carries it, not a border colour, so rows
+     don't jump by a pixel when you click through them. */
+  .adm-card-on {
+    border-color: var(--adm-accent);
+    background: var(--adm-accent-tint);
+    box-shadow: var(--adm-shadow);
+  }
+
+  .adm-inset {
+    background: var(--adm-inset);
+    border: 1px solid var(--adm-line);
+    border-radius: 0.75rem;
+  }
+
+  .adm-label {
+    font-family: var(--font-sans);
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--adm-muted);
+  }
+
+  .adm-field {
+    width: 100%;
+    border: 1px solid var(--adm-line);
+    border-radius: 0.75rem;
+    background: var(--adm-surface);
+    padding: 0.625rem 0.875rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--adm-ink);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .adm-field::placeholder { color: var(--adm-faint); }
+  .adm-field:hover { border-color: var(--adm-line-strong); }
+  .adm-field:focus {
+    border-color: var(--adm-accent);
+    box-shadow: 0 0 0 3px rgba(46, 91, 224, 0.14);
+  }
+
+  /* Primary and secondary share their metrics, so any two sit level. */
+  .adm-btn,
+  .adm-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-family: var(--font-sans);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+      box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  .adm-btn {
+    background: var(--adm-accent);
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(19, 41, 75, 0.08), 0 8px 20px rgba(46, 91, 224, 0.22);
+  }
+  .adm-btn:hover {
+    background: var(--adm-accent-strong);
+    box-shadow: 0 2px 4px rgba(19, 41, 75, 0.1), 0 12px 26px rgba(46, 91, 224, 0.3);
+  }
+  .adm-btn:active { transform: translateY(1px); }
+  .adm-btn:disabled,
+  .adm-btn-ghost:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+  .adm-btn-ghost {
+    background: var(--adm-surface);
+    color: var(--adm-ink-soft);
+    border-color: var(--adm-line);
+  }
+  .adm-btn-ghost:hover {
+    border-color: var(--adm-accent);
+    color: var(--adm-accent);
+  }
+
+  /* Filter pills and one-click status pills. */
+  .adm-chip {
+    border-radius: 999px;
+    padding: 0.375rem 0.875rem;
+    font-family: var(--font-sans);
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--adm-muted);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .adm-chip:hover { color: var(--adm-ink); background: var(--adm-inset); }
+  .adm-chip-on {
+    background: var(--adm-accent-tint);
+    color: var(--adm-accent-strong);
+  }
+  .adm-chip-on:hover { background: var(--adm-accent-tint); color: var(--adm-accent-strong); }
+
+  .adm-empty {
+    border: 1px dashed var(--adm-line-strong);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--adm-muted);
+  }
+
+  /* Destructive actions are text, never a red button — the back office should
+     not offer a big red thing to click by accident. */
+  .adm-danger-link {
+    font-family: var(--font-sans);
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--adm-muted);
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  .adm-danger-link:hover { color: var(--adm-danger); }
 }

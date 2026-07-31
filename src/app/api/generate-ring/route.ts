@@ -9,15 +9,15 @@ import { getClientIp, hashIp, isSameOrigin, rateLimit } from "@/lib/server/secur
  * POST /api/generate-ring
  * Renders the configured piece as a photoreal product shot via Gemini, then —
  * when the Supabase backend is configured — persists the render (image in the
- * private ring-generations bucket + a generations row linked to the atelier
- * lead) and enforces anti-abuse controls.
+ * private ring-generations bucket + a generations row linked to the open craft
+ * request) and enforces anti-abuse controls.
  *
- * Body: { ...RingConfig, leadId }  ·  Response: { image: "data:image/png;base64,...", config }
+ * Body: { ...RingConfig, requestId }  ·  Response: { image: "data:image/png;base64,...", config }
  *
  * Security (active only when the backend is configured):
  *   - same-origin check
- *   - lead-gated: a well-formed leadId (from the atelier's contact gate) is required
- *   - durable rate limits: per-IP (hour + day) and per-lead (hour)
+ *   - gated: a well-formed requestId (from the atelier's contact gate) is required
+ *   - durable rate limits: per-IP (hour + day) and per-request (hour)
  *   - client IP stored only as a salted hash
  */
 
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
   const config = sanitizeConfig(payload);
   const prompt = buildJewelPrompt(config);
-  const leadId = typeof payload.leadId === "string" ? payload.leadId : "";
+  const requestId = typeof payload.requestId === "string" ? payload.requestId : "";
 
   // ---- Anti-abuse + persistence (only when the backend is wired up) ---------
   const backend = hasServiceRole;
@@ -58,9 +58,9 @@ export async function POST(req: Request) {
     if (!isSameOrigin(req)) {
       return NextResponse.json({ error: "Bad origin." }, { status: 403 });
     }
-    // Lead-gated: the render must originate from a visitor who passed the
-    // atelier's contact gate (which hands back a leadId).
-    if (!UUID_RE.test(leadId)) {
+    // Gated: the render must originate from a visitor who passed the atelier's
+    // contact gate (which hands back a craft-request id).
+    if (!UUID_RE.test(requestId)) {
       return NextResponse.json(
         { error: "Please start your design from the atelier." },
         { status: 400 },
@@ -68,12 +68,12 @@ export async function POST(req: Request) {
     }
 
     const ipHash = hashIp(getClientIp(req));
-    const [ipHour, ipDay, perLead] = await Promise.all([
+    const [ipHour, ipDay, perRequest] = await Promise.all([
       rateLimit(supabase, `gen:ip:${ipHash}`, 10, 3600),
       rateLimit(supabase, `gen:ipday:${ipHash}`, 25, 86400),
-      rateLimit(supabase, `gen:lead:${leadId}`, 6, 3600),
+      rateLimit(supabase, `gen:req:${requestId}`, 6, 3600),
     ]);
-    if (!ipHour || !ipDay || !perLead) {
+    if (!ipHour || !ipDay || !perRequest) {
       return NextResponse.json(
         {
           error:
@@ -101,7 +101,7 @@ export async function POST(req: Request) {
       const text = parts.map((p) => p.text).filter(Boolean).join(" ").slice(0, 300);
       if (backend && supabase) {
         await recordGeneration(supabase, {
-          leadId,
+          requestId,
           config,
           prompt,
           ipHash: hashIp(getClientIp(req)),
@@ -135,22 +135,25 @@ export async function POST(req: Request) {
     try {
       const ext = mime.includes("jpeg") || mime.includes("jpg") ? "jpg" : "png";
       const buffer = Buffer.from(base64, "base64");
-      // Only link to a lead that actually exists (avoids an FK violation if the
-      // gate's insert had failed and the client fell back to a stray id).
-      const { data: lead } = await supabase
-        .from("leads")
-        .select("id")
-        .eq("id", leadId)
+      // Only link to a craft request that actually exists (avoids an FK
+      // violation if the gate's insert had failed and the client fell back to a
+      // stray id). promoted_lead_id keeps the render on the CRM card too, once
+      // the request has been sent to the pipeline.
+      const { data: request } = await supabase
+        .from("craft_requests")
+        .select("id, promoted_lead_id")
+        .eq("id", requestId)
         .maybeSingle();
-      const linkedLeadId = lead?.id ?? null;
+      const linkedRequestId = request?.id ?? null;
 
-      const path = `${linkedLeadId ?? "anon"}/${crypto.randomUUID()}.${ext}`;
+      const path = `${linkedRequestId ?? "anon"}/${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from(GENERATIONS_BUCKET)
         .upload(path, buffer, { contentType: mime, upsert: false });
 
       await recordGeneration(supabase, {
-        leadId: linkedLeadId,
+        requestId: linkedRequestId,
+        leadId: request?.promoted_lead_id ?? null,
         config,
         prompt,
         ipHash: hashIp(getClientIp(req)),
@@ -172,7 +175,9 @@ export async function POST(req: Request) {
 async function recordGeneration(
   supabase: ReturnType<typeof createSupabaseAdminClient>,
   args: {
-    leadId: string | null;
+    requestId: string | null;
+    /** Set only once the craft request has been promoted into the CRM. */
+    leadId?: string | null;
     config: ReturnType<typeof sanitizeConfig>;
     prompt: string;
     ipHash: string;
@@ -183,7 +188,8 @@ async function recordGeneration(
   },
 ) {
   const { error } = await supabase.from("generations").insert({
-    lead_id: args.leadId,
+    craft_request_id: args.requestId,
+    lead_id: args.leadId ?? null,
     config: args.config,
     estimated_price: estimatePrice(args.config),
     prompt: args.prompt,

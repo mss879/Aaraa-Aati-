@@ -24,9 +24,10 @@ export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
-  // The atelier is a full-bleed configurator and /admin is the back office —
-  // neither has ever carried the marketing chrome.
-  if (pathname.startsWith("/admin") || pathname.startsWith("/atelier")) return null;
+  // /admin is the back office: it has its own shell and no business carrying
+  // marketing chrome. Everything public gets this bar, the atelier included —
+  // pages clear it with --nav-h, since it is fixed and takes no space in flow.
+  if (pathname.startsWith("/admin")) return null;
 
   return (
     <nav className="fixed inset-x-0 top-0 z-50 border-b border-[#13294B]/10 bg-white shadow-[0_1px_24px_rgba(19,41,75,0.07)]">

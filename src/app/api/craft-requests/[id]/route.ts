@@ -10,11 +10,11 @@ import {
 } from "@/lib/server/security";
 
 /**
- * PATCH /api/leads/[id]
- * Enriches an existing atelier lead with the latest customization config as the
- * visitor progresses, so the CRM shows their design even if they never render.
- * Only the config/price are updatable here; nothing else is exposed publicly.
- * Next 16: params is a Promise.
+ * PATCH /api/craft-requests/[id]
+ * Enriches an open commission with the latest customization config as the
+ * visitor progresses, so the Crafting inbox shows their design even if they
+ * never render. Only the config/price are updatable here; nothing else is
+ * exposed publicly. Next 16: params is a Promise.
  */
 
 export const runtime = "nodejs";
@@ -48,24 +48,24 @@ export async function PATCH(
   const supabase = createSupabaseAdminClient();
 
   // Light per-IP guard against hammering (60 updates / hour).
-  const ipKey = `leadpatch:ip:${hashIp(getClientIp(req))}`;
+  const ipKey = `craftpatch:ip:${hashIp(getClientIp(req))}`;
   if (!(await rateLimit(supabase, ipKey, 60, 3600))) {
     return NextResponse.json({ error: "Too many requests." }, { status: 429 });
   }
 
   const config = sanitizeConfig(body.config);
 
-  // Only update leads that came from the atelier and aren't yet in a later
-  // stage — never let a public caller mutate a lead the admin is working.
+  // Only requests still sitting untriaged in the inbox may be rewritten by a
+  // public caller — never one the admin has already read or promoted.
   const { error } = await supabase
-    .from("leads")
+    .from("craft_requests")
     .update({ config, estimated_price: estimatePrice(config) })
     .eq("id", id)
-    .eq("source", "atelier")
-    .eq("stage", "new");
+    .eq("status", "new")
+    .is("promoted_lead_id", null);
 
   if (error) {
-    return NextResponse.json({ error: "Could not update lead." }, { status: 500 });
+    return NextResponse.json({ error: "Could not update your commission." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function AtelierPage() {
   return (
-    <main className="min-h-svh w-full bg-[#0A1F3D]">
+    <main className="min-h-svh w-full bg-[#0A1F3D] pt-[var(--nav-h)]">
       <AtelierConfigurator />
     </main>
   );

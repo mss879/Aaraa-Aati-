@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import Link from "next/link";
 import gsap from "gsap";
 import BespokeJewel3D from "@/components/atelier/BespokeJewel3D";
 import {
@@ -317,18 +316,19 @@ const LOADING_LINES = [
   "Polishing under the atelier lamp…",
 ];
 
-const LEAD_ID_KEY = "cgm_lead_id";
+const REQUEST_ID_KEY = "cgm_craft_request_id";
 const LEAD_ENTERED_KEY = "cgm_atelier_entered";
 
 /* ------------------------------------------------- lead-capture intro gate */
 
 /**
  * Shown once before the configurator. Captures name + phone + email so every
- * visitor who designs becomes a CRM lead (source='atelier'). Fails open: if the
- * backend is unconfigured or the save fails, the visitor still enters — we never
- * block the design experience on lead persistence.
+ * visitor who designs opens a craft request in the Crafting inbox (which the
+ * admin promotes to the CRM by hand). Fails open: if the backend is
+ * unconfigured or the save fails, the visitor still enters — we never block the
+ * design experience on persistence.
  */
-function AtelierGate({ onEnter }: { onEnter: (leadId: string | null) => void }) {
+function AtelierGate({ onEnter }: { onEnter: (requestId: string | null) => void }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -342,7 +342,7 @@ function AtelierGate({ onEnter }: { onEnter: (leadId: string | null) => void }) 
     setSending(true);
     setError(null);
     try {
-      const res = await fetch("/api/leads", {
+      const res = await fetch("/api/craft-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, phone, email, company }),
@@ -356,123 +356,137 @@ function AtelierGate({ onEnter }: { onEnter: (leadId: string | null) => void }) 
       if (!res.ok) {
         throw new Error(data.error || "Could not start your commission. Please try again.");
       }
-      onEnter(typeof data.leadId === "string" ? data.leadId : null);
+      onEnter(typeof data.requestId === "string" ? data.requestId : null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setSending(false);
     }
   };
 
+  /* Legibility, not decoration. Three things were fighting the reader here:
+     the value was set in Trajan, which is a capitals-only display face and turns
+     a typed email into unreadable caps; the placeholder was zinc-700, a near-black
+     grey sitting on a navy ground; and the field itself was a bare hairline, so
+     there was nothing to show where you could type. Body serif for the value, a
+     mid-blue placeholder that reads as a hint without disappearing, and a faint
+     filled well with a brighter rule under it. */
   const field =
-    "mt-2 w-full border-b border-[#27497A] bg-transparent py-3 font-serif text-lg font-light tracking-wide text-gold-100 placeholder-zinc-700 outline-none transition-colors focus:border-gold-400";
+    "mt-2 w-full rounded-t-md border-b-2 border-[#3A5E96] bg-white/[0.05] px-3.5 py-3 font-body text-base tracking-wide text-white outline-none transition-colors placeholder:text-[#7186AC] hover:border-[#4C77C0] focus:border-gold-400 focus:bg-white/[0.09]";
   const label =
-    "font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-100/60";
+    "font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-200";
 
   return (
-    <div className="relative flex min-h-svh w-full items-center justify-center overflow-hidden bg-[#0A1F3D] px-6 py-16 text-gold-50">
+    <div className="relative flex min-h-[calc(100svh_-_var(--nav-h))] w-full items-center justify-center overflow-hidden bg-[#0A1F3D] px-6 py-16 text-gold-50">
       {/* ambient dressing, matching the configurator stage */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(46,91,224,0.12)_0%,transparent_55%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(46,91,224,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(46,91,224,0.025)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(circle_at_center,black_25%,transparent_72%)]" />
 
-      <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5 md:p-7">
-        <Link
-          href="/"
-          className="group flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-4 py-2 font-sans text-[0.62rem] uppercase tracking-[0.25em] text-gold-100/80 backdrop-blur-md transition-colors hover:border-gold-400/40 hover:text-gold-200"
-        >
-          <svg viewBox="0 0 24 24" className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Maison Home
-        </Link>
-        <span className="hidden rounded-full border border-gold-400/20 bg-black/40 px-4 py-2 font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-300 backdrop-blur-md sm:block">
-          Bespoke Atelier
-        </span>
-      </div>
+      {/* The floating "Maison Home" pill that used to sit here is gone: the site
+          navbar now runs across every public page, so it carried a second home
+          link directly under the first one. */}
 
-      <form onSubmit={submit} className="relative w-full max-w-md">
-        <p className="font-sans text-[0.62rem] font-medium uppercase tracking-[0.4em] text-gold-400">
-          Begin your commission
-        </p>
-        <h1 className="mt-3 font-serif text-3xl font-light leading-[1.1] tracking-wide text-gold-50 md:text-[2.6rem]">
-          Who are we <span className="italic text-gold-200">designing for?</span>
-        </h1>
-        <p className="mt-4 font-body text-xs font-light leading-relaxed tracking-wide text-[#A9B8D0] md:text-sm">
-          A few details so our atelier concierge can follow up with your quote and
-          certification — then your private design studio opens.
-        </p>
+      {/* The form sits on its own panel. Navy type on a navy stage with only
+          ambient wash behind it gave the eye no edge to catch — a faint lifted
+          surface with a hairline is what separates the form from the room. */}
+      <form
+        onSubmit={submit}
+        className="relative w-full max-w-4xl rounded-2xl border border-[#2A4C80] bg-[#0C2447]/80 p-7 shadow-[0_24px_60px_rgba(3,10,28,0.55)] backdrop-blur-xl md:p-10"
+      >
+        {/* Laid out across rather than down. Three fields stacked in a 448px
+            column left most of a wide stage empty either side; the invitation and
+            the fields sitting side by side use that width and shorten the form to
+            about half its height. Stacks back to one column below md. */}
+        <div className="grid items-center gap-9 md:grid-cols-[0.95fr_1.05fr] md:gap-14">
+          {/* the invitation */}
+          <div>
+            <p className="font-sans text-[0.62rem] font-medium uppercase tracking-[0.4em] text-gold-300">
+              Begin your commission
+            </p>
+            <h1 className="mt-3 font-serif text-3xl font-light leading-[1.1] tracking-wide text-gold-50 md:text-[2.6rem]">
+              Who are we <span className="italic text-gold-200">designing for?</span>
+            </h1>
+            <p className="mt-4 font-body text-sm font-light leading-relaxed tracking-wide text-[#A9B8D0]">
+              A few details so our atelier concierge can follow up with your quote and
+              certification — then your private design studio opens.
+            </p>
+          </div>
 
-        <div className="mt-9 space-y-7">
+          {/* the details */}
           <div>
-            <label htmlFor="lead-name" className={label}>Full name</label>
-            <input
-              id="lead-name"
-              type="text"
-              required
-              autoComplete="name"
-              placeholder="Amara Perera"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={field}
-            />
-          </div>
-          <div>
-            <label htmlFor="lead-phone" className={label}>Phone / WhatsApp</label>
-            <input
-              id="lead-phone"
-              type="tel"
-              required
-              autoComplete="tel"
-              placeholder="+65 9123 4567"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className={field}
-            />
-          </div>
-          <div>
-            <label htmlFor="lead-email" className={label}>Email</label>
-            <input
-              id="lead-email"
-              type="email"
-              required
-              autoComplete="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={field}
-            />
+            <div className="space-y-6">
+              <div>
+                <label htmlFor="lead-name" className={label}>Full name</label>
+                <input
+                  id="lead-name"
+                  type="text"
+                  required
+                  autoComplete="name"
+                  placeholder="Amara Perera"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={field}
+                />
+              </div>
+              <div>
+                <label htmlFor="lead-phone" className={label}>Phone / WhatsApp</label>
+                <input
+                  id="lead-phone"
+                  type="tel"
+                  required
+                  autoComplete="tel"
+                  placeholder="+65 9123 4567"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className={field}
+                />
+              </div>
+              <div>
+                <label htmlFor="lead-email" className={label}>Email</label>
+                <input
+                  id="lead-email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={field}
+                />
+              </div>
+            </div>
+
+            {/* Honeypot */}
+            <div aria-hidden className="absolute left-[-9999px] top-0 h-0 w-0 overflow-hidden">
+              <label htmlFor="lead-company">Company</label>
+              <input
+                id="lead-company"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={sending}
+              className="btn-luxe-pill mt-8 w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {sending ? "Opening the atelier…" : "Enter the atelier"}
+            </button>
+
+            {error && (
+              <p className="mt-4 text-center font-body text-[0.78rem] tracking-wide text-rose-300" role="alert">
+                {error}
+              </p>
+            )}
+
+            <p className="mt-4 text-center font-body text-[0.68rem] font-light tracking-[0.12em] text-[#8296B8]">
+              Your details stay private to the Maison — never shared, never sold.
+            </p>
           </div>
         </div>
-
-        {/* Honeypot */}
-        <div aria-hidden className="absolute left-[-9999px] top-0 h-0 w-0 overflow-hidden">
-          <label htmlFor="lead-company">Company</label>
-          <input
-            id="lead-company"
-            type="text"
-            tabIndex={-1}
-            autoComplete="off"
-            value={company}
-            onChange={(e) => setCompany(e.target.value)}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={sending}
-          className="group relative mt-10 w-full overflow-hidden rounded-full bg-gold-400 px-8 py-4 font-sans text-xs font-semibold uppercase tracking-[0.25em] text-white shadow-[0_4px_30px_rgba(46,91,224,0.3)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-[0_6px_40px_rgba(46,91,224,0.5)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
-        >
-          <span className="relative z-10">{sending ? "Opening the atelier…" : "Enter the atelier →"}</span>
-          <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-        </button>
-
-        {error && (
-          <p className="mt-4 text-center font-body text-[0.72rem] font-light tracking-wide text-rose-300" role="alert">
-            {error}
-          </p>
-        )}
-        <p className="mt-4 text-center font-body text-[0.6rem] font-light tracking-[0.15em] text-[#4A6285]">
-          Your details stay private to the Maison — never shared, never sold.
-        </p>
       </form>
     </div>
   );
@@ -483,11 +497,11 @@ export default function AtelierConfigurator() {
   const [config, setConfig] = useState<RingConfig>(DEFAULT_CONFIG);
   const [gen, setGen] = useState<GenState>({ status: "idle" });
   const [loadingLine, setLoadingLine] = useState(0);
-  // Lead gate: `entered` unlocks the configurator; `leadId` links renders to the
-  // CRM lead created at the gate. `null` before hydration so we don't flash the
-  // gate for a returning visitor whose session already entered.
+  // Contact gate: `entered` unlocks the configurator; `requestId` links renders
+  // to the craft request opened at the gate. `null` before hydration so we don't
+  // flash the gate for a returning visitor whose session already entered.
   const [entered, setEntered] = useState<boolean | null>(null);
-  const [leadId, setLeadId] = useState<string | null>(null);
+  const [requestId, setRequestId] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -500,8 +514,8 @@ export default function AtelierConfigurator() {
   /* eslint-disable react-hooks/set-state-in-effect -- mount-time read from an external system (sessionStorage) */
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem(LEAD_ID_KEY);
-      if (saved) setLeadId(saved);
+      const saved = sessionStorage.getItem(REQUEST_ID_KEY);
+      if (saved) setRequestId(saved);
       setEntered(sessionStorage.getItem(LEAD_ENTERED_KEY) === "1");
     } catch {
       setEntered(false);
@@ -510,10 +524,10 @@ export default function AtelierConfigurator() {
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const enterAtelier = useCallback((id: string | null) => {
-    setLeadId(id);
+    setRequestId(id);
     setEntered(true);
     try {
-      if (id) sessionStorage.setItem(LEAD_ID_KEY, id);
+      if (id) sessionStorage.setItem(REQUEST_ID_KEY, id);
       sessionStorage.setItem(LEAD_ENTERED_KEY, "1");
     } catch {
       /* sessionStorage unavailable — fine, just won't persist across reloads */
@@ -555,16 +569,17 @@ export default function AtelierConfigurator() {
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
-  // Enrich the lead with the finished design when they reach the review step, so
-  // the CRM reflects what they configured even if they never render.
+  // Enrich the craft request with the finished design when they reach the review
+  // step, so the Crafting inbox reflects what they configured even if they never
+  // render.
   useEffect(() => {
-    if (!entered || !leadId || stepKey !== "review") return;
-    fetch(`/api/leads/${leadId}`, {
+    if (!entered || !requestId || stepKey !== "review") return;
+    fetch(`/api/craft-requests/${requestId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ config }),
     }).catch(() => {});
-  }, [entered, leadId, stepKey, config]);
+  }, [entered, requestId, stepKey, config]);
 
   const generate = async () => {
     abortRef.current?.abort();
@@ -576,7 +591,7 @@ export default function AtelierConfigurator() {
       const res = await fetch("/api/generate-ring", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...config, leadId }),
+        body: JSON.stringify({ ...config, requestId }),
         signal: controller.signal,
       });
       const data = await res.json().catch(() => ({}));
@@ -624,7 +639,7 @@ export default function AtelierConfigurator() {
   // Pre-hydration: hold a plain navy field so the gate never flashes for a
   // returning visitor whose session already entered.
   if (entered === null) {
-    return <div className="min-h-svh w-full bg-[#0A1F3D]" />;
+    return <div className="min-h-[calc(100svh_-_var(--nav-h))] w-full bg-[#0A1F3D]" />;
   }
   // Lead-capture gate — contact details before any design happens.
   if (!entered) {
@@ -632,26 +647,19 @@ export default function AtelierConfigurator() {
   }
 
   return (
-    <div className="relative flex min-h-svh w-full flex-col bg-[#0A1F3D] text-gold-50 lg:flex-row">
+    <div className="relative flex min-h-[calc(100svh_-_var(--nav-h))] w-full flex-col bg-[#0A1F3D] text-gold-50 lg:flex-row">
       {/* ======================= LEFT · LIVE 3D STAGE ======================= */}
-      <div className="sticky top-0 z-10 h-[44svh] w-full shrink-0 lg:h-svh lg:w-[52%] xl:w-[55%]">
+      <div className="sticky top-[var(--nav-h)] z-10 h-[44svh] w-full shrink-0 lg:h-[calc(100svh_-_var(--nav-h))] lg:w-[52%] xl:w-[55%]">
         {/* ambient stage dressing */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(46,91,224,0.10)_0%,transparent_55%)]" />
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(46,91,224,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(46,91,224,0.025)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(circle_at_center,black_30%,transparent_75%)]" />
 
         <BespokeJewel3D config={config} />
 
-        {/* top bar */}
-        <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5 md:p-7">
-          <Link
-            href="/"
-            className="group flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-4 py-2 font-sans text-[0.62rem] uppercase tracking-[0.25em] text-gold-100/80 backdrop-blur-md transition-colors hover:border-gold-400/40 hover:text-gold-200"
-          >
-            <svg viewBox="0 0 24 24" className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Maison Home
-          </Link>
+        {/* Context badge only. The "Maison Home" pill that sat opposite it is
+            gone — the site navbar now runs across the atelier too, so it was a
+            second home link sitting directly beneath the first. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-end p-5 md:p-7">
           <span className="hidden rounded-full border border-gold-400/20 bg-black/40 px-4 py-2 font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-300 backdrop-blur-md sm:block">
             Bespoke Atelier
           </span>
@@ -1006,7 +1014,7 @@ export default function AtelierConfigurator() {
           role="dialog"
           aria-modal="true"
           aria-label="AI ring reveal"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-5 backdrop-blur-xl"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-5 backdrop-blur-xl"
         >
           {gen.status === "loading" && (
             <div className="flex flex-col items-center text-center">

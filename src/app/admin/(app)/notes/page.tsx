@@ -10,8 +10,8 @@ export default async function NotesPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <header className="mb-8">
-        <h1 className="font-serif text-3xl font-light tracking-wide text-gold-50">Notes</h1>
-        <p className="mt-1.5 font-body text-sm text-[#8595ad]">
+        <h1 className="font-serif text-3xl font-light tracking-wide text-[var(--adm-ink)]">Notes</h1>
+        <p className="mt-1.5 font-body text-sm text-[var(--adm-ink-soft)]">
           A private scratchpad for the atelier — reminders, follow-ups, stones to source.
         </p>
       </header>

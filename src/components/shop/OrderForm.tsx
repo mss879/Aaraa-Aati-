@@ -1,0 +1,352 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { MAX_ORDER_QUANTITY, formatMoney } from "@/lib/shop";
+import { WHATSAPP_NUMBER } from "@/lib/contact";
+
+/**
+ * Place an order for one piece.
+ *
+ * There is no card checkout and no basket — the maison confirms availability,
+ * sizing and shipping by hand, then invoices. So this is one honest form: who
+ * you are, where it goes, how many. The price is re-read on the server; nothing
+ * here is trusted.
+ */
+
+const inputClasses =
+  "w-full bg-transparent border-b border-zinc-300 py-2.5 font-body text-sm md:text-base text-[#13294B] placeholder-zinc-400 focus:outline-none focus:border-amber-600 transition-colors";
+const labelClasses =
+  "block font-sans text-[0.68rem] font-medium uppercase tracking-[0.2em] text-[#5E7495] mb-1";
+
+export default function OrderForm({
+  productId,
+  productTitle,
+  price,
+  currency,
+  inStock,
+}: {
+  productId: string;
+  productTitle: string;
+  price: number | null;
+  currency: string;
+  inStock: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address1, setAddress1] = useState("");
+  const [address2, setAddress2] = useState("");
+  const [city, setCity] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [country, setCountry] = useState("Singapore");
+  const [note, setNote] = useState("");
+  const [company, setCompany] = useState(""); // honeypot
+  const [sending, setSending] = useState(false);
+  const [placed, setPlaced] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (sending) return;
+    setSending(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId,
+          quantity,
+          name,
+          email,
+          phone,
+          address1,
+          address2,
+          city,
+          postalCode,
+          country,
+          note,
+          company,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Your order could not be placed. Please try again.");
+      }
+      setPlaced(typeof data.orderNumber === "string" ? data.orderNumber : "—");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (placed) {
+    return (
+      <div className="rounded-3xl border border-zinc-200 bg-white p-8 shadow-[0_20px_60px_rgba(0,0,0,0.06)]">
+        <h3 className="font-serif text-2xl font-normal tracking-wide text-[#13294B]">
+          Your order is with us
+        </h3>
+        <p className="mt-3 font-body text-sm leading-relaxed text-[#4A6285] md:text-base">
+          Reference <span className="font-medium text-[#13294B]">{placed}</span>. A gemologist will
+          write within one business day to confirm the piece, sizing and delivery, and to arrange
+          payment. Nothing has been charged.
+        </p>
+        {WHATSAPP_NUMBER && (
+          <a
+            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+              `Hello — I've just placed order ${placed} for the ${productTitle}.`,
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-7 inline-flex btn-platinum"
+          >
+            Continue on WhatsApp
+          </a>
+        )}
+      </div>
+    );
+  }
+
+  if (!inStock) {
+    return (
+      <div className="rounded-3xl border border-zinc-200 bg-white p-8">
+        <h3 className="font-serif text-xl font-normal tracking-wide text-[#13294B]">
+          Currently reserved
+        </h3>
+        <p className="mt-3 font-body text-sm leading-relaxed text-[#4A6285]">
+          This piece is spoken for. The maison can cut its twin — the stone will differ, as stones
+          do.
+        </p>
+        <Link href="/contact" className="mt-6 inline-flex btn-luxe-pill">
+          Ask the Concierge
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-3xl border border-zinc-200 bg-white p-8 shadow-[0_20px_60px_rgba(0,0,0,0.06)]">
+      {!open ? (
+        <>
+          <p className="font-body text-sm leading-relaxed text-[#4A6285] md:text-base">
+            Orders are confirmed by a gemologist before anything is charged — availability, sizing
+            and shipping are settled with you first.
+          </p>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="mt-7 w-full cursor-pointer btn-luxe-pill sm:w-auto"
+          >
+            Place an Order
+          </button>
+        </>
+      ) : (
+        <form onSubmit={submit}>
+          <h3 className="font-serif text-2xl font-normal tracking-wide text-[#13294B]">
+            Order this piece
+          </h3>
+          <p className="mt-2 font-body text-sm leading-relaxed text-[#4A6285]">
+            {productTitle} · {formatMoney(price, currency)}
+          </p>
+
+          <div className="mt-8 space-y-6">
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div>
+                <label htmlFor="order-name" className={labelClasses}>
+                  Full Name
+                </label>
+                <input
+                  id="order-name"
+                  type="text"
+                  required
+                  autoComplete="name"
+                  placeholder="Amara Perera"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label htmlFor="order-email" className={labelClasses}>
+                  Email
+                </label>
+                <input
+                  id="order-email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={inputClasses}
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div>
+                <label htmlFor="order-phone" className={labelClasses}>
+                  Phone
+                </label>
+                <input
+                  id="order-phone"
+                  type="tel"
+                  autoComplete="tel"
+                  placeholder="+65 9123 4567"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label htmlFor="order-quantity" className={labelClasses}>
+                  Quantity
+                </label>
+                <select
+                  id="order-quantity"
+                  value={quantity}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  className={`${inputClasses} cursor-pointer`}
+                >
+                  {Array.from({ length: MAX_ORDER_QUANTITY }, (_, i) => i + 1).map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="order-address1" className={labelClasses}>
+                Delivery Address
+              </label>
+              <input
+                id="order-address1"
+                type="text"
+                autoComplete="address-line1"
+                placeholder="Street and number"
+                value={address1}
+                onChange={(e) => setAddress1(e.target.value)}
+                className={inputClasses}
+              />
+              <input
+                id="order-address2"
+                type="text"
+                autoComplete="address-line2"
+                aria-label="Apartment, unit or floor"
+                placeholder="Apartment, unit or floor (optional)"
+                value={address2}
+                onChange={(e) => setAddress2(e.target.value)}
+                className={`${inputClasses} mt-3`}
+              />
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-3">
+              <div>
+                <label htmlFor="order-city" className={labelClasses}>
+                  City
+                </label>
+                <input
+                  id="order-city"
+                  type="text"
+                  autoComplete="address-level2"
+                  placeholder="Singapore"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label htmlFor="order-postal" className={labelClasses}>
+                  Postal Code
+                </label>
+                <input
+                  id="order-postal"
+                  type="text"
+                  autoComplete="postal-code"
+                  placeholder="238823"
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label htmlFor="order-country" className={labelClasses}>
+                  Country
+                </label>
+                <input
+                  id="order-country"
+                  type="text"
+                  autoComplete="country-name"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  className={inputClasses}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="order-note" className={labelClasses}>
+                Anything we should know?{" "}
+                <span className="normal-case tracking-normal text-[#A9B8D0]">(optional)</span>
+              </label>
+              <textarea
+                id="order-note"
+                rows={3}
+                placeholder="Ring size, engraving, the date you need it by…"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className={`${inputClasses} resize-none`}
+              />
+            </div>
+          </div>
+
+          {/* Honeypot — hidden from humans, catches naive bots. */}
+          <div aria-hidden className="absolute left-[-9999px] top-0 h-0 w-0 overflow-hidden">
+            <label htmlFor="order-company">Company</label>
+            <input
+              id="order-company"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+            />
+          </div>
+
+          <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
+            <button
+              type="submit"
+              disabled={sending}
+              className="w-full cursor-pointer btn-luxe-pill disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              {sending ? "Placing…" : "Confirm Order"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="cursor-pointer font-sans text-[0.7rem] uppercase tracking-[0.2em] text-[#5E7495] transition-colors hover:text-[#13294B]"
+            >
+              Cancel
+            </button>
+          </div>
+
+          <p className="mt-5 font-body text-[0.78rem] leading-relaxed text-[#5E7495]">
+            No payment is taken here. We confirm the piece, then send an invoice.
+          </p>
+
+          {error && (
+            <p className="mt-4 font-body text-[0.85rem] leading-relaxed text-rose-600" role="alert">
+              {error}
+            </p>
+          )}
+        </form>
+      )}
+    </div>
+  );
+}

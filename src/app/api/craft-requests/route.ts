@@ -12,11 +12,15 @@ import {
 } from "@/lib/server/security";
 
 /**
- * POST /api/leads
- * Creates a CRM lead the moment a visitor enters the atelier. Body:
+ * POST /api/craft-requests
+ * Opens a bespoke commission when a visitor passes the atelier gate. Body:
  *   { name, phone, email?, config?, company? }   (company = honeypot)
- * Returns { leadId }. All writes use the service role after validation + a
- * per-IP rate limit. Fails gracefully so the atelier funnel is never blocked.
+ * Returns { requestId }.
+ *
+ * This lands in the Crafting inbox, NOT the CRM — the admin promotes the ones
+ * worth working (Admin → Crafting → Send to CRM), exactly as with contact-form
+ * inquiries. All writes use the service role after validation + a per-IP rate
+ * limit, and the route fails gracefully so the design funnel is never blocked.
  */
 
 export const runtime = "nodejs";
@@ -41,7 +45,7 @@ export async function POST(req: Request) {
 
   // Honeypot: real users never fill this. Pretend success, persist nothing.
   if (cleanText(body.company, 100)) {
-    return NextResponse.json({ leadId: null, ok: true });
+    return NextResponse.json({ requestId: null, ok: true });
   }
 
   const name = cleanText(body.name, 120);
@@ -58,9 +62,9 @@ export async function POST(req: Request) {
 
   const supabase = createSupabaseAdminClient();
 
-  // Per-IP spam guard: 15 new leads / hour.
-  const ipKey = `lead:ip:${hashIp(getClientIp(req))}`;
-  if (!(await rateLimit(supabase, ipKey, 15, 3600))) {
+  // Per-IP spam guard: 15 new commissions / hour.
+  const ipHash = hashIp(getClientIp(req));
+  if (!(await rateLimit(supabase, `craft:ip:${ipHash}`, 15, 3600))) {
     return NextResponse.json(
       { error: "Too many requests. Please try again shortly." },
       { status: 429 },
@@ -76,22 +80,23 @@ export async function POST(req: Request) {
   }
 
   const { data, error } = await supabase
-    .from("leads")
+    .from("craft_requests")
     .insert({
       name,
       phone,
       email,
-      source: "atelier",
-      stage: "new",
       config,
       estimated_price,
+      status: "new",
+      ip_hash: ipHash,
+      user_agent: req.headers.get("user-agent"),
     })
     .select("id")
     .single();
 
   if (error) {
-    return NextResponse.json({ error: "Could not save lead." }, { status: 500 });
+    return NextResponse.json({ error: "Could not start your commission." }, { status: 500 });
   }
 
-  return NextResponse.json({ leadId: data.id });
+  return NextResponse.json({ requestId: data.id });
 }

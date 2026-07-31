@@ -5,12 +5,18 @@ import { createNote, deleteNote, updateNote } from "@/app/admin/_actions";
 import type { Note, NoteColor } from "@/lib/supabase/types";
 import { formatDate } from "@/lib/leads";
 
-const COLORS: { id: NoteColor; bg: string; ring: string; dot: string }[] = [
-  { id: "sapphire", bg: "#0e2a53", ring: "#2e5be0", dot: "#4f7bee" },
-  { id: "amber", bg: "#332608", ring: "#8a6a1e", dot: "#f0b429" },
-  { id: "emerald", bg: "#0c2b22", ring: "#1f7a5e", dot: "#34d399" },
-  { id: "rose", bg: "#341019", ring: "#8a3550", dot: "#fb7185" },
-  { id: "slate", bg: "#1a2436", ring: "#3a4a63", dot: "#8595ad" },
+/**
+ * The scratchpad. In daylight a note is a tinted card rather than a coloured
+ * block: the paper stays near-white so the handwriting (navy, like everything
+ * else) is what you read, and the colour lives in the wash, the hairline and
+ * the dot. Sapphire is the default because it is the house's own.
+ */
+const COLORS: { id: NoteColor; bg: string; line: string; dot: string }[] = [
+  { id: "sapphire", bg: "#eef3fe", line: "#c5d6fb", dot: "#2e5be0" },
+  { id: "amber", bg: "#fdf5e6", line: "#f0dcb2", dot: "#e0a020" },
+  { id: "emerald", bg: "#eaf7f1", line: "#bde3d2", dot: "#12a06e" },
+  { id: "rose", bg: "#fdeef1", line: "#f6cbd5", dot: "#e04f6d" },
+  { id: "slate", bg: "#f2f5fa", line: "#dbe3ef", dot: "#7b8ca9" },
 ];
 const colorOf = (c: NoteColor) => COLORS.find((x) => x.id === c) ?? COLORS[0];
 
@@ -21,11 +27,11 @@ function NoteCard({ note }: { note: Note }) {
 
   return (
     <div
-      className="flex flex-col rounded-2xl border p-4 shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
-      style={{ backgroundColor: c.bg, borderColor: `${c.ring}66` }}
+      className="flex flex-col rounded-2xl border p-4 shadow-[var(--adm-shadow)]"
+      style={{ backgroundColor: c.bg, borderColor: c.line }}
     >
       <div className="mb-2 flex items-center justify-between">
-        <span className="font-sans text-[0.55rem] uppercase tracking-[0.2em] text-white/40">
+        <span className="font-sans text-[0.55rem] uppercase tracking-[0.2em] text-[var(--adm-muted)]">
           {formatDate(note.updated_at)}
         </span>
         <div className="flex items-center gap-1.5">
@@ -37,11 +43,22 @@ function NoteCard({ note }: { note: Note }) {
               type="submit"
               title={note.pinned ? "Unpin" : "Pin"}
               className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors cursor-pointer ${
-                note.pinned ? "text-gold-300" : "text-white/30 hover:text-white/70"
+                note.pinned
+                  ? "text-[var(--adm-accent)]"
+                  : "text-[var(--adm-faint)] hover:text-[var(--adm-ink-soft)]"
               }`}
             >
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill={note.pinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.6">
-                <path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z" strokeLinejoin="round" />
+              <svg
+                viewBox="0 0 24 24"
+                className="h-3.5 w-3.5"
+                fill={note.pinned ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth="1.6"
+              >
+                <path
+                  d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
           </form>
@@ -51,7 +68,7 @@ function NoteCard({ note }: { note: Note }) {
             <button
               type="submit"
               title="Delete"
-              className="flex h-6 w-6 items-center justify-center rounded-full text-white/30 transition-colors hover:text-rose-300 cursor-pointer"
+              className="flex h-6 w-6 items-center justify-center rounded-full text-[var(--adm-faint)] transition-colors hover:text-[var(--adm-danger)] cursor-pointer"
             >
               <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.6">
                 <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
@@ -69,16 +86,22 @@ function NoteCard({ note }: { note: Note }) {
             rows={4}
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            className="w-full resize-none rounded-lg border border-white/15 bg-black/20 p-2.5 font-body text-sm text-white outline-none focus:border-white/40"
+            className="adm-field resize-none"
           />
           <div className="flex items-center gap-2">
-            <button type="submit" className="rounded-full bg-white/15 px-3 py-1 font-sans text-[0.6rem] uppercase tracking-[0.15em] text-white hover:bg-white/25 cursor-pointer">
+            <button
+              type="submit"
+              className="rounded-full bg-white px-3.5 py-1.5 font-sans text-[0.6rem] uppercase tracking-[0.15em] text-[var(--adm-ink)] ring-1 ring-inset ring-[var(--adm-line)] transition-colors hover:text-[var(--adm-accent)] cursor-pointer"
+            >
               Save
             </button>
             <button
               type="button"
-              onClick={() => { setBody(note.body); setEditing(false); }}
-              className="font-sans text-[0.6rem] uppercase tracking-[0.15em] text-white/50 hover:text-white/80 cursor-pointer"
+              onClick={() => {
+                setBody(note.body);
+                setEditing(false);
+              }}
+              className="font-sans text-[0.6rem] uppercase tracking-[0.15em] text-[var(--adm-muted)] hover:text-[var(--adm-ink)] cursor-pointer"
             >
               Cancel
             </button>
@@ -88,7 +111,7 @@ function NoteCard({ note }: { note: Note }) {
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="whitespace-pre-wrap text-left font-body text-sm leading-relaxed text-white/90 cursor-text"
+          className="whitespace-pre-wrap text-left font-body text-sm leading-relaxed text-[var(--adm-ink)] cursor-text"
         >
           {note.body || "Empty note — click to edit"}
         </button>
@@ -103,8 +126,12 @@ function NoteCard({ note }: { note: Note }) {
             <button
               type="submit"
               title={opt.id}
-              className="h-3.5 w-3.5 rounded-full ring-1 ring-inset ring-white/20 transition-transform hover:scale-125 cursor-pointer"
-              style={{ backgroundColor: opt.dot, outline: note.color === opt.id ? "2px solid rgba(255,255,255,0.6)" : "none", outlineOffset: "1px" }}
+              className="h-3.5 w-3.5 rounded-full ring-1 ring-inset ring-black/10 transition-transform hover:scale-125 cursor-pointer"
+              style={{
+                backgroundColor: opt.dot,
+                outline: note.color === opt.id ? "2px solid rgba(19,41,75,0.35)" : "none",
+                outlineOffset: "1px",
+              }}
             />
           </form>
         ))}
@@ -119,13 +146,13 @@ export default function NotesBoard({ notes, compact = false }: { notes: Note[]; 
   return (
     <div>
       {!compact && (
-        <form action={createNote} className="mb-6 rounded-2xl border border-[#16263f] bg-[#0a1526] p-4">
+        <form action={createNote} className="adm-card mb-6 p-4">
           <textarea
             name="body"
             rows={3}
             required
             placeholder="Jot a quick note — a call to make, a stone to source, a follow-up…"
-            className="w-full resize-none rounded-lg border border-[#27497A] bg-[#0d1b30] p-3 font-body text-sm text-gold-50 placeholder-[#4A6285] outline-none focus:border-gold-400"
+            className="adm-field resize-none"
           />
           <input type="hidden" name="color" value={color} />
           <div className="mt-3 flex items-center justify-between">
@@ -136,15 +163,16 @@ export default function NotesBoard({ notes, compact = false }: { notes: Note[]; 
                   type="button"
                   onClick={() => setColor(opt.id)}
                   title={opt.id}
-                  className="h-4 w-4 rounded-full ring-1 ring-inset ring-white/20 transition-transform hover:scale-110 cursor-pointer"
-                  style={{ backgroundColor: opt.dot, outline: color === opt.id ? "2px solid rgba(255,255,255,0.7)" : "none", outlineOffset: "1px" }}
+                  className="h-4 w-4 rounded-full ring-1 ring-inset ring-black/10 transition-transform hover:scale-110 cursor-pointer"
+                  style={{
+                    backgroundColor: opt.dot,
+                    outline: color === opt.id ? "2px solid rgba(19,41,75,0.35)" : "none",
+                    outlineOffset: "1px",
+                  }}
                 />
               ))}
             </div>
-            <button
-              type="submit"
-              className="rounded-full bg-gold-400 px-5 py-2 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-white transition-colors hover:bg-gold-300 cursor-pointer"
-            >
+            <button type="submit" className="adm-btn">
               Add note
             </button>
           </div>
@@ -152,9 +180,7 @@ export default function NotesBoard({ notes, compact = false }: { notes: Note[]; 
       )}
 
       {notes.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-[#1d3050] bg-[#0a1526]/50 p-8 text-center font-body text-sm text-[#6f8199]">
-          No notes yet.
-        </p>
+        <p className="adm-empty p-8 text-center font-body text-sm">No notes yet.</p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {notes.map((note) => (

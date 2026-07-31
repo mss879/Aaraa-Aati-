@@ -34,23 +34,23 @@ function LoginForm() {
     router.refresh();
   };
 
-  const field =
-    "mt-2 w-full rounded-xl border border-[#27497A] bg-[#0d1b30] px-4 py-3 font-body text-sm text-gold-50 placeholder-[#4A6285] outline-none transition-colors focus:border-gold-400";
+  const field = "adm-field mt-2 py-3";
 
   return (
-    <div className="flex min-h-svh items-center justify-center px-6">
-      <form onSubmit={submit} className="w-full max-w-sm">
-        <Link href="/" className="font-sans text-[0.6rem] uppercase tracking-[0.35em] text-gold-400">
+    <div className="flex min-h-svh items-center justify-center px-6 py-16">
+      {/* One card, centred, on the canvas — the whole back office in miniature. */}
+      <form onSubmit={submit} className="adm-card w-full max-w-sm p-8 md:p-10">
+        <Link href="/" className="font-sans text-[0.6rem] uppercase tracking-[0.35em] text-[var(--adm-accent)]">
           Ceylon Gem Maison
         </Link>
-        <h1 className="mt-3 font-serif text-3xl font-light tracking-wide text-gold-50">
+        <h1 className="mt-3 font-serif text-3xl font-light tracking-wide text-[var(--adm-ink)]">
           Maison Admin
         </h1>
-        <p className="mt-2 font-body text-sm text-[#8ea1c0]">Sign in to your back office.</p>
+        <p className="mt-2 font-body text-sm text-[var(--adm-ink-soft)]">Sign in to your back office.</p>
 
         <div className="mt-8 space-y-5">
           <div>
-            <label htmlFor="email" className="font-sans text-[0.6rem] uppercase tracking-[0.28em] text-[#8ea1c0]">
+            <label htmlFor="email" className="adm-label">
               Email
             </label>
             <input
@@ -64,7 +64,7 @@ function LoginForm() {
             />
           </div>
           <div>
-            <label htmlFor="password" className="font-sans text-[0.6rem] uppercase tracking-[0.28em] text-[#8ea1c0]">
+            <label htmlFor="password" className="adm-label">
               Password
             </label>
             <input
@@ -82,13 +82,13 @@ function LoginForm() {
         <button
           type="submit"
           disabled={busy}
-          className="mt-8 w-full rounded-full bg-gold-400 px-8 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.25em] text-white transition-colors hover:bg-gold-300 disabled:opacity-60 cursor-pointer"
+          className="adm-btn mt-8 w-full py-3.5"
         >
           {busy ? "Signing in…" : "Sign in"}
         </button>
 
         {error && (
-          <p className="mt-5 font-body text-[0.8rem] text-rose-300" role="alert">
+          <p className="mt-5 font-body text-[0.8rem] text-[var(--adm-danger)]" role="alert">
             {error}
           </p>
         )}

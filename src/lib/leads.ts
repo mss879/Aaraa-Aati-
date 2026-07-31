@@ -29,7 +29,10 @@ export const STAGE_LABEL: Record<LeadStage, string> = Object.fromEntries(
 ) as Record<LeadStage, string>;
 
 export const SOURCE_META: Record<LeadSource, { label: string; accent: string }> = {
+  // 'atelier' is historical: bespoke commissions now arrive promoted from the
+  // Crafting inbox, which stamps them 'craft'.
   atelier: { label: "Atelier", accent: "#4f7bee" },
+  craft: { label: "Crafting", accent: "#4f7bee" },
   inquiry: { label: "Inquiry", accent: "#f0b429" },
   manual: { label: "Manual", accent: "#8595ad" },
 };

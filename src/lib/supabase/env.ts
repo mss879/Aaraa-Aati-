@@ -17,3 +17,19 @@ export const hasServiceRole = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY)
 
 /** Bucket that holds AI-generated ring renders (private). */
 export const GENERATIONS_BUCKET = "ring-generations";
+
+/** Bucket that holds shop product photography (public-read, admin-write). */
+export const PRODUCT_IMAGES_BUCKET = "product-images";
+
+/**
+ * Public CDN URL for an object in the product-images bucket. Returns null when
+ * Supabase isn't configured or the path is empty, so callers can fall back to a
+ * placeholder instead of rendering a broken image.
+ */
+export function productImageUrl(path: string | null | undefined): string | null {
+  if (!SUPABASE_URL || !path) return null;
+  return `${SUPABASE_URL}/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/${path
+    .split("/")
+    .map(encodeURIComponent)
+    .join("/")}`;
+}

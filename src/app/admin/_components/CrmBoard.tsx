@@ -79,23 +79,27 @@ export default function CrmBoard({
               onDragOver={(e) => { e.preventDefault(); setOverStage(stage.id); }}
               onDragLeave={() => setOverStage((s) => (s === stage.id ? null : s))}
               onDrop={() => drop(stage.id)}
-              className={`flex w-72 shrink-0 flex-col rounded-2xl border bg-[#0a1526] transition-colors ${
-                isOver ? "border-gold-400/60 bg-[#0c1a30]" : "border-[#16263f]"
+              /* In daylight the column is the tray and the cards are the paper
+                 on it: a tinted panel with white cards lifted off it. */
+              className={`flex w-72 shrink-0 flex-col rounded-2xl border transition-colors ${
+                isOver
+                  ? "border-[var(--adm-accent)] bg-[var(--adm-accent-tint)]"
+                  : "border-[var(--adm-line)] bg-[var(--adm-inset)]"
               }`}
             >
-              <div className="flex items-center justify-between border-b border-[#16263f] px-4 py-3">
+              <div className="flex items-center justify-between border-b border-[var(--adm-line)] px-4 py-3">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stage.accent }} />
-                  <span className="font-sans text-[0.68rem] uppercase tracking-[0.18em] text-gold-100">
+                  <span className="font-sans text-[0.68rem] uppercase tracking-[0.18em] text-[var(--adm-ink)]">
                     {stage.label}
                   </span>
                 </div>
-                <span className="font-serif text-sm text-[#6f8199]">{items.length}</span>
+                <span className="font-serif text-sm text-[var(--adm-muted)]">{items.length}</span>
               </div>
 
               <div className="flex min-h-[120px] flex-col gap-2.5 p-3">
                 {items.length === 0 && (
-                  <p className="py-6 text-center font-body text-[0.7rem] text-[#43536e]">Drop here</p>
+                  <p className="py-6 text-center font-body text-[0.7rem] text-[var(--adm-faint)]">Drop here</p>
                 )}
                 {items.map((lead) => {
                   const src = SOURCE_META[lead.source];
@@ -108,7 +112,7 @@ export default function CrmBoard({
                       onDragStart={() => setDragId(lead.id)}
                       onDragEnd={() => setDragId(null)}
                       onClick={() => setSelectedId(lead.id)}
-                      className={`group w-full rounded-xl border border-[#1c2c46] bg-[#0c1930] p-3 text-left transition-all hover:border-gold-400/40 cursor-grab active:cursor-grabbing ${
+                      className={`group w-full rounded-xl border border-[var(--adm-line)] bg-white p-3 text-left shadow-[0_1px_2px_rgba(19,41,75,0.05)] transition-all hover:-translate-y-px hover:border-[var(--adm-accent)] hover:shadow-[var(--adm-shadow)] cursor-grab active:cursor-grabbing ${
                         dragId === lead.id ? "opacity-40" : ""
                       }`}
                     >
@@ -118,11 +122,11 @@ export default function CrmBoard({
                           <img src={thumb} alt="" className="h-11 w-11 shrink-0 rounded-lg bg-white object-cover" />
                         )}
                         <div className="min-w-0 flex-1">
-                          <p className="truncate font-body text-sm text-gold-50">{lead.name}</p>
-                          <p className="truncate font-body text-[0.7rem] text-[#8595ad]">{lead.phone}</p>
+                          <p className="truncate font-body text-sm text-[var(--adm-ink)]">{lead.name}</p>
+                          <p className="truncate font-body text-[0.7rem] text-[var(--adm-ink-soft)]">{lead.phone}</p>
                         </div>
                       </div>
-                      <p className="mt-2 line-clamp-2 font-body text-[0.68rem] leading-snug text-[#6f8199]">
+                      <p className="mt-2 line-clamp-2 font-body text-[0.68rem] leading-snug text-[var(--adm-muted)]">
                         {configSummary(lead.config)}
                       </p>
                       <div className="mt-2.5 flex items-center justify-between">
@@ -132,7 +136,7 @@ export default function CrmBoard({
                         >
                           {src.label}
                         </span>
-                        <span className="font-serif text-[0.78rem] text-gold-200">
+                        <span className="font-serif text-[0.78rem] text-[var(--adm-accent-strong)]">
                           {formatPrice(lead.estimated_price)}
                         </span>
                       </div>
@@ -179,9 +183,9 @@ function LeadDrawer({
   const src = SOURCE_META[lead.source];
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-[#13294b]/25 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="h-full w-full max-w-md overflow-y-auto border-l border-[#16263f] bg-[#0a1526] p-6"
+        className="h-full w-full max-w-md overflow-y-auto border-l border-[var(--adm-line)] bg-white p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">
@@ -192,12 +196,12 @@ function LeadDrawer({
             >
               {src.label} · {formatDate(lead.created_at)}
             </span>
-            <h2 className="mt-3 font-serif text-2xl font-light text-gold-50">{lead.name}</h2>
+            <h2 className="mt-3 font-serif text-2xl font-light text-[var(--adm-ink)]">{lead.name}</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-[#27497A] text-[#A9B8D0] transition-colors hover:border-gold-400/50 hover:text-gold-200 cursor-pointer"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--adm-line)] text-[var(--adm-muted)] transition-colors hover:border-[var(--adm-accent)] hover:text-[var(--adm-accent)] cursor-pointer"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
@@ -206,20 +210,20 @@ function LeadDrawer({
         </div>
 
         {/* Contact */}
-        <div className="mt-5 space-y-2 rounded-xl border border-[#16263f] bg-[#0c1930] p-4">
-          <a href={`tel:${lead.phone}`} className="flex items-center gap-2 font-body text-sm text-gold-100 hover:text-gold-300">
-            <span className="text-[#6f8199]">Phone</span> {lead.phone}
+        <div className="mt-5 space-y-2 adm-inset p-4">
+          <a href={`tel:${lead.phone}`} className="flex items-center gap-2 font-body text-sm text-[var(--adm-ink)] hover:text-[var(--adm-accent)]">
+            <span className="text-[var(--adm-muted)]">Phone</span> {lead.phone}
           </a>
           {lead.email && (
-            <a href={`mailto:${lead.email}`} className="flex items-center gap-2 font-body text-sm text-gold-100 hover:text-gold-300">
-              <span className="text-[#6f8199]">Email</span> {lead.email}
+            <a href={`mailto:${lead.email}`} className="flex items-center gap-2 font-body text-sm text-[var(--adm-ink)] hover:text-[var(--adm-accent)]">
+              <span className="text-[var(--adm-muted)]">Email</span> {lead.email}
             </a>
           )}
         </div>
 
         {/* Stage */}
         <div className="mt-5">
-          <p className="mb-2 font-sans text-[0.6rem] uppercase tracking-[0.2em] text-[#6f8199]">Stage</p>
+          <p className="mb-2 adm-label">Stage</p>
           <div className="flex flex-wrap gap-1.5">
             {LEAD_STAGES.map((s) => (
               <button
@@ -227,9 +231,9 @@ function LeadDrawer({
                 type="button"
                 onClick={() => onStage(s.id)}
                 className={`rounded-full px-3 py-1.5 font-sans text-[0.6rem] uppercase tracking-[0.12em] transition-colors cursor-pointer ${
-                  lead.stage === s.id ? "text-white" : "text-[#8595ad] hover:text-gold-100"
+                  lead.stage === s.id ? "text-white" : "text-[var(--adm-ink-soft)] hover:text-[var(--adm-ink)]"
                 }`}
-                style={lead.stage === s.id ? { backgroundColor: s.accent } : { backgroundColor: "rgba(255,255,255,0.04)" }}
+                style={lead.stage === s.id ? { backgroundColor: s.accent } : { backgroundColor: "var(--adm-inset)" }}
               >
                 {s.label}
               </button>
@@ -238,16 +242,16 @@ function LeadDrawer({
         </div>
 
         {/* Design */}
-        <div className="mt-5 rounded-xl border border-[#16263f] bg-[#0c1930] p-4">
-          <p className="font-sans text-[0.6rem] uppercase tracking-[0.2em] text-[#6f8199]">Design</p>
-          <p className="mt-1.5 font-body text-sm text-gold-100">{configSummary(lead.config)}</p>
-          <p className="mt-2 font-serif text-lg text-gold-200">{formatPrice(lead.estimated_price)}</p>
+        <div className="mt-5 adm-inset p-4">
+          <p className="adm-label">Design</p>
+          <p className="mt-1.5 font-body text-sm text-[var(--adm-ink)]">{configSummary(lead.config)}</p>
+          <p className="mt-2 font-serif text-lg text-[var(--adm-accent-strong)]">{formatPrice(lead.estimated_price)}</p>
         </div>
 
         {/* Generations */}
         {generations.length > 0 && (
           <div className="mt-5">
-            <p className="mb-2 font-sans text-[0.6rem] uppercase tracking-[0.2em] text-[#6f8199]">
+            <p className="mb-2 adm-label">
               AI renders ({generations.length})
             </p>
             <div className="grid grid-cols-3 gap-2">
@@ -256,7 +260,7 @@ function LeadDrawer({
                   // eslint-disable-next-line @next/next/no-img-element -- signed private URL
                   <img key={g.id} src={g.imageUrl} alt="" className="aspect-square w-full rounded-lg bg-white object-cover" />
                 ) : (
-                  <div key={g.id} className="flex aspect-square items-center justify-center rounded-lg border border-[#16263f] font-sans text-[0.55rem] uppercase tracking-[0.15em] text-[#43536e]">
+                  <div key={g.id} className="flex aspect-square items-center justify-center rounded-lg border border-[var(--adm-line)] font-sans text-[0.55rem] uppercase tracking-[0.15em] text-[var(--adm-faint)]">
                     {g.status}
                   </div>
                 ),
@@ -267,21 +271,21 @@ function LeadDrawer({
 
         {/* Note */}
         <div className="mt-5">
-          <p className="mb-2 font-sans text-[0.6rem] uppercase tracking-[0.2em] text-[#6f8199]">Note</p>
+          <p className="mb-2 adm-label">Note</p>
           <textarea
             rows={4}
             value={note}
             onChange={(e) => setNote(e.target.value)}
             onBlur={() => note !== (lead.note ?? "") && onNote(note)}
             placeholder="Add context, next steps, quoted price…"
-            className="w-full resize-none rounded-xl border border-[#27497A] bg-[#0d1b30] p-3 font-body text-sm text-gold-50 placeholder-[#4A6285] outline-none focus:border-gold-400"
+            className="adm-field resize-none"
           />
         </div>
 
         <button
           type="button"
           onClick={onArchive}
-          className="mt-6 font-sans text-[0.6rem] uppercase tracking-[0.2em] text-[#6f8199] transition-colors hover:text-rose-300 cursor-pointer"
+          className="mt-6 adm-danger-link"
         >
           Archive lead
         </button>
