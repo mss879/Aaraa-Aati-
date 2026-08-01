@@ -1,14 +1,72 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 
+/**
+ * Credentials can be perfectly correct and still not get you in: the server also
+ * checks the address against ADMIN_EMAILS. Without this notice that refusal is
+ * invisible — the form simply reappears, which reads as a failed password.
+ */
+function DeniedNotice({ reason }: { reason: string }) {
+  const [signedInAs, setSignedInAs] = useState<string | null>(null);
+  const forbidden = reason === "forbidden";
+
+  useEffect(() => {
+    if (!forbidden || !hasSupabaseEnv) return;
+    createSupabaseBrowserClient()
+      .auth.getUser()
+      .then(({ data }) => setSignedInAs(data.user?.email ?? null));
+  }, [forbidden]);
+
+  if (reason === "unconfigured") {
+    return (
+      <Notice>
+        The backend isn’t configured on this deploy — <code>NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
+        <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> must be set <em>before</em> the build runs.
+      </Notice>
+    );
+  }
+  if (!forbidden) return null;
+
+  return (
+    <Notice>
+      {signedInAs ? <>Signed in as <strong>{signedInAs}</strong>, but that</> : <>That</>} address
+      isn’t on the back office allowlist. Add it to <code>ADMIN_EMAILS</code> in the host’s
+      environment (server-side, not build-only), then redeploy.
+      <button
+        type="button"
+        onClick={async () => {
+          if (hasSupabaseEnv) await createSupabaseBrowserClient().auth.signOut();
+          window.location.replace("/admin/login");
+        }}
+        className="mt-3 block font-sans text-[0.7rem] uppercase tracking-[0.2em] text-[var(--adm-accent)] underline underline-offset-4"
+      >
+        Sign out
+      </button>
+    </Notice>
+  );
+}
+
+function Notice({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      role="alert"
+      className="mb-6 rounded-lg border border-[var(--adm-line)] bg-[var(--adm-inset)] px-4 py-3 font-body text-[0.8rem] leading-relaxed text-[var(--adm-ink-soft)] [&_code]:font-sans [&_code]:text-[0.75rem] [&_code]:text-[var(--adm-ink)]"
+    >
+      {children}
+    </div>
+  );
+}
+
 function LoginForm() {
   const router = useRouter();
-  const nextPath = useSearchParams().get("next") || "/admin";
+  const params = useSearchParams();
+  const nextPath = params.get("next") || "/admin";
+  const reason = params.get("reason") ?? "";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -46,9 +104,13 @@ function LoginForm() {
         <h1 className="mt-3 font-serif text-3xl font-light tracking-wide text-[var(--adm-ink)]">
           Maison Admin
         </h1>
-        <p className="mt-2 font-body text-sm text-[var(--adm-ink-soft)]">Sign in to your back office.</p>
+        <p className="mt-2 mb-8 font-body text-sm text-[var(--adm-ink-soft)]">
+          Sign in to your back office.
+        </p>
 
-        <div className="mt-8 space-y-5">
+        <DeniedNotice reason={reason} />
+
+        <div className="space-y-5">
           <div>
             <label htmlFor="email" className="adm-label">
               Email
