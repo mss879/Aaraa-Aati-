@@ -2,14 +2,38 @@
  * Shared model for the Bespoke Atelier jewellery configurator.
  * Used by the interactive form, the WebGL preview and the
  * /api/generate-ring route so every surface agrees on the options.
+ *
+ * The ring settings mirror the Maison's "Classic Engagement Ring Styles"
+ * chart (18 silhouettes) and the bracelets mirror the "5 Simple Sapphire
+ * Bracelet Designs" chart — clients pick the standardised design, then
+ * change metal, stone shape, stone colour and carat within atelier limits.
  */
 
 export type PieceId = "ring" | "necklace" | "bracelet";
-export type SettingId = "solitaire" | "halo" | "trinity" | "pave";
+export type SettingId =
+  | "solitaire"
+  | "tension"
+  | "three-stone"
+  | "pave"
+  | "channel"
+  | "bezel"
+  | "halo"
+  | "double-halo"
+  | "split-shank"
+  | "cathedral"
+  | "vintage"
+  | "milgrain"
+  | "trilogy"
+  | "toi-et-moi"
+  | "bypass"
+  | "flush"
+  | "stackable"
+  | "signet";
 export type MetalId = "yellow-gold" | "rose-gold" | "white-gold" | "platinum";
 export type GemId = "diamond" | "ruby" | "sapphire" | "emerald" | "amethyst" | "aquamarine";
-export type CutId = "round" | "princess" | "oval" | "emerald";
-export type BraceletStyleId = "cable" | "bangle" | "curb" | "rope";
+export type CutId = "round" | "princess" | "oval" | "emerald" | "marquise" | "pear";
+export type BraceletStyleId = "single" | "tennis" | "station" | "bar" | "mixed";
+export type PendantStyleId = "bezel" | "prong" | "pear-drop" | "bar" | "solitaire-drop";
 export type FitId = "slender" | "classic" | "generous";
 
 export interface RingConfig {
@@ -18,10 +42,12 @@ export interface RingConfig {
   metal: MetalId;
   gem: GemId;
   cut: CutId;
-  carat: number; // 0.5 – 3.0
+  /** Rings/necklaces: centre-stone carat. Bracelets: carat PER STONE. */
+  carat: number;
   engraving: string;
-  /** Bracelets are pure metalwork — styled, not stone-set. */
   braceletStyle: BraceletStyleId;
+  /** Necklaces are pendant-led — the design fixes the stone shape. */
+  pendantStyle: PendantStyleId;
   fit: FitId;
 }
 
@@ -33,9 +59,33 @@ export const DEFAULT_CONFIG: RingConfig = {
   cut: "round",
   carat: 1.0,
   engraving: "",
-  braceletStyle: "cable",
+  braceletStyle: "tennis",
+  pendantStyle: "bezel",
   fit: "classic",
 };
+
+/* ---------- carat rules & the private-appointment threshold ---------- */
+
+export interface CaratRule {
+  min: number;
+  max: number;
+  step: number;
+  /** Above this weight the commission moves to a private appointment. */
+  cap: number;
+}
+
+/** Bracelets are per-stone; rings and necklaces are the centre stone. */
+export const CARAT_RULES: Record<PieceId, CaratRule> = {
+  ring: { min: 0.5, max: 3.0, step: 0.1, cap: 1.5 },
+  necklace: { min: 0.5, max: 3.0, step: 0.1, cap: 1.5 },
+  bracelet: { min: 0.1, max: 1.0, step: 0.05, cap: 0.5 },
+};
+
+export const caratRuleFor = (piece: PieceId): CaratRule => CARAT_RULES[piece];
+
+/** True when the chosen weight exceeds the standard atelier limit. */
+export const isAppointmentCarat = (config: RingConfig): boolean =>
+  config.carat > caratRuleFor(config.piece).cap + 1e-9;
 
 export interface PieceOption {
   id: PieceId;
@@ -81,60 +131,157 @@ export const PIECES: PieceOption[] = [
     id: "bracelet",
     label: "The Bracelet",
     tagline: "A circle of presence",
-    description: "Pure precious metal for the wrist — chain, bangle or twisted rope.",
+    description: "Stone-set designs for the wrist — from one bezel-set gem to a full line of light.",
     noun: "bracelet",
     engravingSpot: "on the polished clasp tag",
-    metalFactor: 2.6,
-    settingFactor: 0, // bracelets carry no stone setting
+    metalFactor: 2.2,
+    settingFactor: 0, // bracelets price their stones through the design instead
     craftBase: 650,
   },
 ];
 
-/* ---------- bracelet styles (pure metalwork — no stone) ---------- */
+/* ---------- bracelet designs (the five standardised silhouettes) ---------- */
 
 export interface BraceletStyleOption {
   id: BraceletStyleId;
   label: string;
   tagline: string;
+  /** The chart's caption, generalised so any gem colour reads correctly. */
   description: string;
-  /** Prompt fragment describing the bracelet for the AI render. */
+  /**
+   * Prompt fragment for the AI render. "{stones}" is replaced with the
+   * client's per-stone carat, cut and gem (e.g. "0.5 carat round Ceylon sapphires").
+   */
   prompt: string;
+  /** How many stones the design carries — drives pricing and the 3D preview. */
+  stoneCount: number;
   /** Heavier metalwork costs more. */
   priceFactor: number;
 }
 
 export const BRACELET_STYLES: BraceletStyleOption[] = [
   {
-    id: "cable",
-    label: "Cable Chain",
-    tagline: "The eternal classic",
-    description: "Round interlocking links, hand-finished — supple, timeless, everyday luxury.",
-    prompt: "a classic cable-link chain bracelet of round interlocking hand-polished links",
+    id: "single",
+    label: "Bezel Set Single",
+    tagline: "One stone, one chain",
+    description: "A single stone in a sleek bezel setting on a delicate chain.",
+    prompt:
+      "a delicate fine cable-chain bracelet centred on a single {stones} held in a sleek round polished bezel setting",
+    stoneCount: 1,
     priceFactor: 1.0,
   },
   {
-    id: "bangle",
-    label: "Bangle",
-    tagline: "One unbroken line",
-    description: "A single broad, mirror-polished band — sculptural and absolute.",
-    prompt: "a solid mirror-polished bangle bracelet with a broad rounded profile and clean unbroken lines",
-    priceFactor: 1.25,
+    id: "tennis",
+    label: "Tennis Bracelet",
+    tagline: "An unbroken line of light",
+    description: "A classic line of stones in prong settings for timeless elegance.",
+    prompt:
+      "a classic tennis bracelet — one continuous flexible line of {stones}, each stone held in its own four-prong setting",
+    stoneCount: 38,
+    priceFactor: 1.45,
   },
   {
-    id: "curb",
-    label: "Curb Chain",
-    tagline: "Flat-laid strength",
-    description: "Twisted, flattened links that lie flush on the wrist — quietly assertive.",
-    prompt: "a curb-link chain bracelet of flat twisted interlocking links lying flush",
+    id: "station",
+    label: "Station Bracelet",
+    tagline: "Points along a fine line",
+    description: "Multiple bezel-set stones spaced along a fine chain.",
+    prompt:
+      "a station bracelet — three bezel-set {stones} spaced along the front of a delicate fine cable chain",
+    stoneCount: 3,
+    priceFactor: 1.05,
+  },
+  {
+    id: "bar",
+    label: "Bar Bracelet",
+    tagline: "Sleek, modern, linear",
+    description: "A row of stones set in a slim bar for a sleek and modern look.",
+    prompt:
+      "a bar bracelet — a slim polished horizontal bar channel-set with a neat row of {stones}, suspended between two fine chains",
+    stoneCount: 13,
+    priceFactor: 1.15,
+  },
+  {
+    id: "mixed",
+    label: "Mixed Shape",
+    tagline: "Two shapes, one rhythm",
+    description: "Alternating round and marquise stones for a subtle touch of interest.",
+    prompt:
+      "a delicate fine chain bracelet with four spaced bezel-set stones alternating between marquise-cut stones lying lengthwise along the chain and {stones}",
+    stoneCount: 4,
     priceFactor: 1.1,
   },
+];
+
+/* ---------- pendant designs (the five standardised silhouettes) ----------
+   The design IS the shape: each pendant locks its signature cut, exactly as
+   drawn on the Maison's pendant chart. Clients still choose metal and colour. */
+
+export interface PendantStyleOption {
+  id: PendantStyleId;
+  label: string;
+  tagline: string;
+  /** The chart's caption, generalised so any gem colour reads correctly. */
+  description: string;
+  /** Prompt fragment for the AI render — shape and setting language baked in. */
+  prompt: string;
+  /** The signature stone shape this design is drawn around. */
+  cut: CutId;
+  basePrice: number;
+}
+
+export const PENDANT_STYLES: PendantStyleOption[] = [
   {
-    id: "rope",
-    label: "Twisted Rope",
-    tagline: "Strands, entwined",
-    description: "Three strands of gold wound about each other — light moves along the spiral.",
-    prompt: "a twisted rope bangle bracelet of three intertwined polished metal strands",
-    priceFactor: 1.35,
+    id: "bezel",
+    label: "Bezel Set",
+    tagline: "Clean, modern, rimmed in metal",
+    description: "A single round stone in a bezel setting for a clean and modern look.",
+    prompt:
+      "a single round stone fully encircled by a smooth polished round bezel rim, hanging from a small round bail loop",
+    cut: "round",
+    basePrice: 1400,
+  },
+  {
+    id: "prong",
+    label: "Prong Set",
+    tagline: "Four claws, full brilliance",
+    description:
+      "An oval stone in a classic four-prong setting that highlights the stone's natural brilliance.",
+    prompt:
+      "an upright oval stone held in a classic four-prong claw setting beneath a gracefully tapered bail",
+    cut: "oval",
+    basePrice: 1500,
+  },
+  {
+    id: "pear-drop",
+    label: "Pear Drop",
+    tagline: "A single drop of light",
+    description: "A pear-shaped stone with a delicate setting for an elegant and feminine touch.",
+    prompt:
+      "a pear-shaped stone hanging point-up in a delicate three-prong setting beneath a slender tapered bail",
+    cut: "pear",
+    basePrice: 1700,
+  },
+  {
+    id: "bar",
+    label: "Bar Set",
+    tagline: "Minimal, sleek, architectural",
+    description:
+      "A rectangular stone set in a minimal bar design for a sleek and contemporary style.",
+    prompt:
+      "an upright rectangular step-cut stone held in a minimal bar setting that grips only its top and bottom edges, beneath a sleek flat bail",
+    cut: "emerald",
+    basePrice: 1600,
+  },
+  {
+    id: "solitaire-drop",
+    label: "Solitaire Drop",
+    tagline: "Small, subtle, timeless",
+    description:
+      "A small round stone with a subtle drop design for a timeless and versatile look.",
+    prompt:
+      "a small round stone in a tiny three-prong martini setting hanging from an elongated drop bail",
+    cut: "round",
+    basePrice: 1200,
   },
 ];
 
@@ -154,17 +301,27 @@ export const FITS: FitOption[] = [
   { id: "generous", label: "Generous", size: "19 cm", scale3d: 1.06 },
 ];
 
+/* ---------- ring settings (the eighteen classic silhouettes) ---------- */
+
+/** How the WebGL preview assembles the silhouette from shared parts. */
+export interface SettingThree {
+  head: "prong" | "bezel" | "flush" | "tension" | "none";
+  halos?: 0 | 1 | 2;
+  sides?: "none" | "flank" | "graduated" | "toi";
+  accents?: ("pave" | "channel" | "milgrain" | "eternity")[];
+  band?: "round" | "wide" | "open" | "split" | "cathedral" | "bypass" | "signet" | "thin";
+}
+
 export interface SettingOption {
   id: SettingId;
   label: string;
   tagline: string;
+  /** The chart's caption — kept word-for-word where possible. */
   description: string;
   /** Prompt fragment describing the setting for the AI render. */
   prompt: string;
   basePrice: number;
-  /** Copy overrides for when the piece is a necklace (band → chain framing). */
-  necklaceDescription?: string;
-  necklacePrompt?: string;
+  three: SettingThree;
 }
 
 export const SETTINGS: SettingOption[] = [
@@ -172,51 +329,183 @@ export const SETTINGS: SettingOption[] = [
     id: "solitaire",
     label: "Solitaire",
     tagline: "One stone, undivided light",
-    description: "A single center stone raised on a six-prong crown — the purest, most timeless silhouette.",
+    description: "A single center stone on a plain band.",
     prompt:
-      "a classic solitaire setting where the single center stone is held high in a delicate six-prong crown basket",
+      "a classic solitaire setting — the single center stone raised on a plain polished band in a delicate prong crown",
     basePrice: 1800,
+    three: { head: "prong" },
   },
   {
-    id: "halo",
-    label: "Halo",
-    tagline: "A crown of micro-diamonds",
-    description: "The center stone encircled by a halo of micro-set diamonds, amplifying its fire and presence.",
+    id: "tension",
+    label: "Tension",
+    tagline: "Held by force alone",
+    description: "The stone is held securely by the tension of the band.",
     prompt:
-      "a halo setting where the center stone is encircled by a sparkling ring of small pavé micro-diamonds",
-    basePrice: 2600,
+      "a modern tension setting — the center stone gripped in mid-air between the two open ends of a sleek broad band, appearing to float with no prongs",
+    basePrice: 2400,
+    three: { head: "tension", band: "open" },
   },
   {
-    id: "trinity",
-    label: "Trinity",
-    tagline: "Past · Present · Forever",
-    description: "Three stones side by side — a grand center flanked by two companions, telling a story in light.",
+    id: "three-stone",
+    label: "Three Stone",
+    tagline: "Past · Present · Future",
+    description: "A center stone flanked by two side stones.",
     prompt:
-      "a three-stone trinity setting with the large center stone flanked by two smaller matching side stones",
+      "a three-stone setting — the large center stone flanked closely by two smaller matching side stones on the shoulders of the band",
     basePrice: 3200,
-    necklaceDescription:
-      "A grand center pendant flanked by two smaller companions set along the chain — a story told in light.",
-    necklacePrompt:
-      "a trinity design with the grand center pendant flanked by two smaller matching stones set along the chain",
+    three: { head: "prong", sides: "flank" },
   },
   {
     id: "pave",
     label: "Pavé",
     tagline: "A band paved in starlight",
-    description: "The shoulders of the band are micro-set with accent diamonds that shimmer with every movement.",
+    description: "Small diamonds set closely together along the band.",
     prompt:
-      "a pavé setting where the shoulders of the band are micro-set with tiny accent diamonds running along the band",
+      "a pavé setting — the shoulders of the band micro-set with a continuous run of tiny sparkling accent diamonds",
     basePrice: 2400,
-    necklaceDescription:
-      "The chain approaching the pendant is micro-set with accent diamonds that shimmer with every movement.",
-    necklacePrompt:
-      "a pavé design where the chain approaching the pendant is micro-set with tiny accent diamonds",
+    three: { head: "prong", accents: ["pave"] },
+  },
+  {
+    id: "channel",
+    label: "Channel Set",
+    tagline: "Light, recessed in metal",
+    description: "Diamonds are set into a channel within the band.",
+    prompt:
+      "a channel setting — a neat row of small accent diamonds recessed into a smooth channel cut within the band, flush between two polished metal rails",
+    basePrice: 2600,
+    three: { head: "prong", accents: ["channel"] },
+  },
+  {
+    id: "bezel",
+    label: "Bezel Set",
+    tagline: "Rimmed in precious metal",
+    description: "The stone is surrounded by a metal rim.",
+    prompt:
+      "a bezel setting — the center stone fully encircled by a smooth polished metal rim on a clean band",
+    basePrice: 2000,
+    three: { head: "bezel" },
+  },
+  {
+    id: "halo",
+    label: "Halo",
+    tagline: "A crown of micro-diamonds",
+    description: "A circle of small diamonds surrounds the center stone.",
+    prompt:
+      "a halo setting — the center stone encircled by a sparkling ring of small pavé micro-diamonds",
+    basePrice: 2600,
+    three: { head: "prong", halos: 1 },
+  },
+  {
+    id: "double-halo",
+    label: "Double Halo",
+    tagline: "Twice-crowned brilliance",
+    description: "Two halos of diamonds surround the center stone.",
+    prompt:
+      "a double-halo setting — the center stone encircled by two concentric sparkling rings of small pavé micro-diamonds",
+    basePrice: 3400,
+    three: { head: "prong", halos: 2 },
+  },
+  {
+    id: "split-shank",
+    label: "Split Shank",
+    tagline: "Two paths to one stone",
+    description: "The band splits into two as it approaches the stone.",
+    prompt:
+      "a split-shank setting — the band dividing into two slender parallel strands as it rises toward the center stone",
+    basePrice: 2500,
+    three: { head: "prong", band: "split" },
+  },
+  {
+    id: "cathedral",
+    label: "Cathedral",
+    tagline: "Arched toward the light",
+    description: "Arched supports elevate the center stone.",
+    prompt:
+      "a cathedral setting — graceful arched supports rising from the shoulders of the band to elevate the center stone high above it",
+    basePrice: 2300,
+    three: { head: "prong", band: "cathedral" },
+  },
+  {
+    id: "vintage",
+    label: "Vintage / Antique",
+    tagline: "An heirloom, newly made",
+    description: "Intricate detailing inspired by vintage eras.",
+    prompt:
+      "a vintage antique-style setting — intricate filigree scrollwork, milgrain-beaded edges and tiny accent diamonds in an ornate old-world design",
+    basePrice: 3000,
+    three: { head: "prong", accents: ["milgrain", "pave"] },
+  },
+  {
+    id: "milgrain",
+    label: "Milgrain",
+    tagline: "Beaded, whisper-fine edges",
+    description: "Tiny beaded edges add a vintage-inspired touch.",
+    prompt:
+      "a milgrain setting — the edges of the band finished with rows of tiny hand-beaded milgrain detail framing the center stone",
+    basePrice: 2200,
+    three: { head: "prong", accents: ["milgrain"] },
+  },
+  {
+    id: "trilogy",
+    label: "Trilogy",
+    tagline: "Three stones, one story",
+    description: "Three stones, often in graduated sizes.",
+    prompt:
+      "a trilogy setting — three stones in graduated sizes, the largest at the center stepping down to two smaller companions",
+    basePrice: 3400,
+    three: { head: "prong", sides: "graduated" },
+  },
+  {
+    id: "toi-et-moi",
+    label: "Toi et Moi",
+    tagline: "You and me, entwined",
+    description: "Two stones set side-by-side, symbolizing two souls.",
+    prompt:
+      "a toi et moi setting — two stones nestled side by side, the chosen stone paired with a complementary companion of contrasting shape, symbolizing two souls",
+    basePrice: 3000,
+    three: { head: "none", sides: "toi" },
+  },
+  {
+    id: "bypass",
+    label: "Bypass",
+    tagline: "A current around the stone",
+    description: "The band curves around the center stone.",
+    prompt:
+      "a bypass setting — the two ends of the band sweeping past each other in a graceful curve that wraps around the center stone",
+    basePrice: 2400,
+    three: { head: "prong", band: "bypass" },
+  },
+  {
+    id: "flush",
+    label: "Flush Set",
+    tagline: "Set level, worn always",
+    description: "The stone is set level with the band.",
+    prompt:
+      "a flush setting — the stone sunk into a broad domed band so its table sits perfectly level with the polished metal surface",
+    basePrice: 1900,
+    three: { head: "flush", band: "wide" },
+  },
+  {
+    id: "stackable",
+    label: "Stackable",
+    tagline: "One of many, complete alone",
+    description: "Designed to be stacked with other bands.",
+    prompt:
+      "a slender stackable eternity band — a delicate thin band set all the way around with a continuous line of small stones, designed to be stacked",
+    basePrice: 1600,
+    three: { head: "none", band: "thin", accents: ["eternity"] },
+  },
+  {
+    id: "signet",
+    label: "Signet Style",
+    tagline: "Bold, classic, sealed",
+    description: "A classic, bold look with a bezel-set stone.",
+    prompt:
+      "a signet-style ring — a bold classic domed signet form with the stone bezel-set flush into its broad polished face",
+    basePrice: 2600,
+    three: { head: "flush", band: "signet" },
   },
 ];
-
-/** Setting copy adjusted to the piece (a pavé chain ≠ a pavé band). */
-export const settingDescriptionFor = (s: SettingOption, piece: PieceId) =>
-  piece === "necklace" ? s.necklaceDescription ?? s.description : s.description;
 
 export interface MetalOption {
   id: MetalId;
@@ -400,11 +689,21 @@ export const CUTS: CutOption[] = [
     description: "Art-deco hall-of-mirrors elegance",
     prompt: "step-cut emerald cut with long hall-of-mirrors facets",
   },
+  {
+    id: "marquise",
+    label: "Marquise",
+    facets: "58 facets",
+    description: "A pointed ellipse that reads regal and large",
+    prompt: "elongated pointed marquise cut",
+  },
+  {
+    id: "pear",
+    label: "Pear",
+    facets: "58 facets",
+    description: "A teardrop — one point, one soft curve",
+    prompt: "teardrop pear cut",
+  },
 ];
-
-export const CARAT_MIN = 0.5;
-export const CARAT_MAX = 3.0;
-export const CARAT_STEP = 0.1;
 
 /* ---------- lookups & helpers ---------- */
 
@@ -415,19 +714,36 @@ export const gemById = (id: GemId) => GEMS.find((g) => g.id === id) ?? GEMS[0];
 export const cutById = (id: CutId) => CUTS.find((c) => c.id === id) ?? CUTS[0];
 export const braceletStyleById = (id: BraceletStyleId) =>
   BRACELET_STYLES.find((b) => b.id === id) ?? BRACELET_STYLES[0];
+export const pendantStyleById = (id: PendantStyleId) =>
+  PENDANT_STYLES.find((p) => p.id === id) ?? PENDANT_STYLES[0];
 export const fitById = (id: FitId) => FITS.find((f) => f.id === id) ?? FITS[1];
 
 export function estimatePrice(config: RingConfig): number {
   const piece = pieceById(config.piece);
-  // Bracelets are pure metalwork — priced on metal weight and style, no stone.
-  const raw =
-    config.piece === "bracelet"
-      ? piece.craftBase +
-        metalById(config.metal).price * piece.metalFactor * braceletStyleById(config.braceletStyle).priceFactor
-      : piece.craftBase +
-        settingById(config.setting).basePrice * piece.settingFactor +
-        metalById(config.metal).price * piece.metalFactor +
-        gemById(config.gem).pricePerCarat * config.carat;
+  let raw: number;
+  if (config.piece === "bracelet") {
+    // Stone-set designs: metalwork by style, then every stone at its per-carat
+    // rate. Melee-sized multi-stone lines trade well below centre-stone rates.
+    const style = braceletStyleById(config.braceletStyle);
+    const gem = gemById(config.gem);
+    const multi = style.stoneCount > 1;
+    raw =
+      piece.craftBase +
+      metalById(config.metal).price * piece.metalFactor * style.priceFactor +
+      gem.pricePerCarat * config.carat * style.stoneCount * (multi ? 0.35 : 1);
+  } else if (config.piece === "necklace") {
+    raw =
+      piece.craftBase +
+      pendantStyleById(config.pendantStyle).basePrice +
+      metalById(config.metal).price * piece.metalFactor +
+      gemById(config.gem).pricePerCarat * config.carat;
+  } else {
+    raw =
+      piece.craftBase +
+      settingById(config.setting).basePrice * piece.settingFactor +
+      metalById(config.metal).price * piece.metalFactor +
+      gemById(config.gem).pricePerCarat * config.carat;
+  }
   return Math.round(raw / 50) * 50;
 }
 
@@ -437,25 +753,38 @@ export function sanitizeConfig(input: unknown): RingConfig {
   const pick = <T extends { id: string }>(list: T[], v: unknown, fallback: string) =>
     (list.some((o) => o.id === v) ? v : fallback) as never;
 
+  const piece = pick(PIECES, body.piece, "ring") as PieceId;
+  const rule = caratRuleFor(piece);
   const caratNum = Number(body.carat);
   const carat = Number.isFinite(caratNum)
-    ? Math.min(CARAT_MAX, Math.max(CARAT_MIN, Math.round(caratNum * 10) / 10))
-    : 1.0;
+    ? Math.min(
+        rule.max,
+        Math.max(rule.min, Math.round(caratNum / rule.step) * rule.step),
+      )
+    : Math.min(rule.max, Math.max(rule.min, 1.0));
 
   const engraving =
     typeof body.engraving === "string"
       ? body.engraving.replace(/[^\p{L}\p{N} .,&'\-]/gu, "").slice(0, 28).trim()
       : "";
 
+  const pendantStyle = pick(PENDANT_STYLES, body.pendantStyle, "bezel") as PendantStyleId;
+  // The pendant design fixes the necklace's stone shape.
+  const cut =
+    piece === "necklace"
+      ? pendantStyleById(pendantStyle).cut
+      : (pick(CUTS, body.cut, "round") as CutId);
+
   return {
-    piece: pick(PIECES, body.piece, "ring"),
+    piece,
     setting: pick(SETTINGS, body.setting, "solitaire"),
     metal: pick(METALS, body.metal, "yellow-gold"),
     gem: pick(GEMS, body.gem, "diamond"),
-    cut: pick(CUTS, body.cut, "round"),
-    carat,
+    cut,
+    carat: Math.round(carat * 100) / 100,
     engraving,
-    braceletStyle: pick(BRACELET_STYLES, body.braceletStyle, "cable"),
+    braceletStyle: pick(BRACELET_STYLES, body.braceletStyle, "tennis"),
+    pendantStyle,
     fit: pick(FITS, body.fit, "classic"),
   };
 }
@@ -463,16 +792,28 @@ export function sanitizeConfig(input: unknown): RingConfig {
 /** Pre-filled WhatsApp enquiry text for the configured piece. */
 export function buildWhatsAppMessage(config: RingConfig): string {
   const piece = pieceById(config.piece);
+  const overCap = isAppointmentCarat(config);
+  const rule = caratRuleFor(config.piece);
   const lines = [
-    `Hello Ceylon Gem Maison! I just designed a bespoke ${piece.noun} on your site and would love to enquire:`,
+    overCap
+      ? `Hello Ceylon Gem Maison! I just designed a bespoke ${piece.noun} on your site and would like to arrange a private appointment:`
+      : `Hello Ceylon Gem Maison! I just designed a bespoke ${piece.noun} on your site and would love to enquire:`,
     `• Piece: ${piece.label.replace(/^The /, "")}`,
   ];
   if (config.piece === "bracelet") {
+    const style = braceletStyleById(config.braceletStyle);
     const fit = fitById(config.fit);
     lines.push(
-      `• Style: ${braceletStyleById(config.braceletStyle).label}`,
+      `• Design: ${style.label}`,
       `• Metal: ${metalById(config.metal).karat} ${metalById(config.metal).label}`,
+      `• Stones: ${style.stoneCount} × ${config.carat.toFixed(2)} ct ${cutById(config.cut).label} ${gemById(config.gem).label}`,
       `• Fit: ${fit.label} (${fit.size})`,
+    );
+  } else if (config.piece === "necklace") {
+    lines.push(
+      `• Pendant: ${pendantStyleById(config.pendantStyle).label}`,
+      `• Metal: ${metalById(config.metal).karat} ${metalById(config.metal).label}`,
+      `• Stone: ${config.carat.toFixed(1)} ct ${cutById(config.cut).label} ${gemById(config.gem).label}`,
     );
   } else {
     lines.push(
@@ -482,7 +823,16 @@ export function buildWhatsAppMessage(config: RingConfig): string {
     );
   }
   if (config.engraving) lines.push(`• Engraving: "${config.engraving}"`);
-  lines.push(`• Estimated from: $${estimatePrice(config).toLocaleString("en-US")}`);
+  if (overCap) {
+    lines.push(
+      config.piece === "bracelet"
+        ? `• Note: stones above ${rule.cap} ct each exceed the standard collection — I understand this becomes a private appointment.`
+        : `• Note: a centre stone above ${rule.cap} ct exceeds the standard collection — I understand this becomes a private appointment.`,
+      `• Estimate: by private consultation at the atelier`,
+    );
+  } else {
+    lines.push(`• Estimated from: $${estimatePrice(config).toLocaleString("en-US")}`);
+  }
   return lines.join("\n");
 }
 
@@ -493,32 +843,34 @@ export function buildJewelPrompt(config: RingConfig): string {
   const metal = metalById(config.metal);
   const gem = gemById(config.gem);
   const cut = cutById(config.cut);
-  const settingPrompt =
-    config.piece === "necklace" ? setting.necklacePrompt ?? setting.prompt : setting.prompt;
 
   const subject = {
     ring: [
       `a single engagement ring.`,
-      `The ring features ${settingPrompt}.`,
+      `The ring features ${setting.prompt}.`,
       `The band is crafted from ${metal.prompt}.`,
     ],
     necklace: [
-      `a single pendant necklace on a fine cable chain.`,
-      `The pendant presents ${settingPrompt}, hanging from a delicate bail.`,
-      `The chain, bail and pendant are all crafted from ${metal.prompt}.`,
+      `a single pendant necklace on a delicate fine cable chain.`,
+      `The pendant presents ${pendantStyleById(config.pendantStyle).prompt}.`,
+      `The chain, bail and pendant setting are all crafted from ${metal.prompt}.`,
     ],
     bracelet: [
-      // bracelets are pure metalwork — no stone in the composition
-      `${braceletStyleById(config.braceletStyle).prompt}.`,
-      `The entire bracelet is crafted from ${metal.prompt}, with no gemstones.`,
+      // stone-set designs: the style template names its own stones
+      `${(() => {
+        const style = braceletStyleById(config.braceletStyle);
+        const stones = `${config.carat.toFixed(2)} carat ${cut.prompt} ${gem.prompt}${style.stoneCount === 1 ? "" : " stones"}`;
+        return style.prompt.replace("{stones}", stones);
+      })()}.`,
+      `All the metalwork — chain, settings and clasp — is crafted from ${metal.prompt}.`,
     ],
   }[config.piece];
 
   const focus =
     config.piece === "bracelet"
       ? [
-          `Photorealistic macro studio photography, razor-sharp focus on the metalwork, high-end jewelry catalog style,`,
-          `three-quarter hero angle showing the full sweep of the bracelet and the texture of its surface, delicate light along every polished edge.`,
+          `Photorealistic macro studio photography, razor-sharp focus on the gemstones and settings, high-end jewelry catalog style,`,
+          `three-quarter hero angle showing the full sweep of the bracelet, delicate sparkle highlights on every stone and polished edge.`,
         ]
       : [
           `The center stone is a ${config.carat.toFixed(1)} carat ${cut.prompt} ${gem.prompt}.`,

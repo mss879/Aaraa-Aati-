@@ -17,7 +17,7 @@ import * as THREE from "three";
  * girdle, then curl over the crown and bite it. That is what prongCurve builds.
  */
 
-export type GemCut = "round" | "princess" | "oval" | "emerald";
+export type GemCut = "round" | "princess" | "oval" | "emerald" | "marquise" | "pear";
 
 type Disposable = { dispose: () => void };
 
@@ -74,6 +74,12 @@ export const CUT_SPEC: Record<GemCut, CutSpec> = {
   oval: { seg: 16, sx: 1.28, sz: 0.82, phiStart: 0, prongs: 6, prongPhase: 0 },
   // emerald cuts are corner-set in the trade, so four claws rather than six
   emerald: { seg: 8, sx: 1.24, sz: 0.78, phiStart: Math.PI / 8, prongs: 4, prongPhase: Math.PI / 4 },
+  // marquise: a stretched hexagonal lens whose vertices land on ±X — the two
+  // points of the boat shape. Six flat facet columns read as the cut.
+  marquise: { seg: 6, sx: 1.55, sz: 0.62, phiStart: Math.PI / 6, prongs: 6, prongPhase: 0 },
+  // pear: five-sided lathe with one vertex pulled onto +X as the drop's point;
+  // the remaining vertices round off the bowl end.
+  pear: { seg: 5, sx: 1.35, sz: 0.8, phiStart: Math.PI / 10, prongs: 5, prongPhase: Math.PI / 5 },
 };
 
 /** Outer radius of the stone at height `y`, as a fraction of the girdle radius. */
@@ -166,9 +172,16 @@ export function createHead(opts: {
   /** Radial segments per prong tube: 6 on phones, 8 on desktop. */
   prongSeg: number;
   disposables: Disposable[];
+  /** Override the cut's default claw count/placement (pendant settings). */
+  prongs?: number;
+  prongPhase?: number;
 }): { head: THREE.Group; girdleX: number; girdleZ: number } {
   const { cut, metalMat, gemMat, prongSeg, disposables } = opts;
-  const spec = CUT_SPEC[cut];
+  const spec = {
+    ...CUT_SPEC[cut],
+    prongs: opts.prongs ?? CUT_SPEC[cut].prongs,
+    prongPhase: opts.prongPhase ?? CUT_SPEC[cut].prongPhase,
+  };
   const head = new THREE.Group();
 
   // --- seat: fills the junction where the head meets the band ---

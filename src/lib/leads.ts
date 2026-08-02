@@ -4,6 +4,7 @@ import {
   fitById,
   gemById,
   metalById,
+  pendantStyleById,
   pieceById,
   settingById,
   type RingConfig,
@@ -48,14 +49,18 @@ export function configSummary(config: RingConfig | null | undefined): string {
     const piece = pieceById(config.piece).label.replace(/^The /, "");
     const metal = metalById(config.metal).label;
     if (config.piece === "bracelet") {
-      const style = braceletStyleById(config.braceletStyle).label;
+      const style = braceletStyleById(config.braceletStyle);
       const fit = fitById(config.fit);
-      return `${style} Bracelet · ${metal} · ${fit.label} (${fit.size})`;
+      const stones = `${style.stoneCount} × ${Number(config.carat).toFixed(2)} ct ${gemById(config.gem).label}`;
+      return `${style.label.replace(/ Bracelet$/, "")} Bracelet · ${stones} · ${metal} · ${fit.label} (${fit.size})`;
     }
     const gem = gemById(config.gem).label;
     const cut = cutById(config.cut).label;
-    const setting = settingById(config.setting).label;
     const carat = Number(config.carat).toFixed(1);
+    if (config.piece === "necklace") {
+      return `${carat} ct ${cut} ${gem} · ${metal} · ${pendantStyleById(config.pendantStyle).label} Pendant`;
+    }
+    const setting = settingById(config.setting).label;
     return `${carat} ct ${cut} ${gem} · ${metal} · ${setting} ${piece}`;
   } catch {
     return "—";

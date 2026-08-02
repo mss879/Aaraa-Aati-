@@ -5,29 +5,30 @@ import gsap from "gsap";
 import BespokeJewel3D from "@/components/atelier/BespokeJewel3D";
 import {
   BRACELET_STYLES,
-  CARAT_MAX,
-  CARAT_MIN,
-  CARAT_STEP,
   CUTS,
   DEFAULT_CONFIG,
   FITS,
   GEMS,
   METALS,
+  PENDANT_STYLES,
   PIECES,
   SETTINGS,
   type BraceletStyleId,
+  type PendantStyleId,
   type PieceId,
   type RingConfig,
   braceletStyleById,
   buildWhatsAppMessage,
+  caratRuleFor,
   cutById,
   estimatePrice,
   fitById,
   gemById,
+  isAppointmentCarat,
   metalById,
+  pendantStyleById,
   pieceById,
   settingById,
-  settingDescriptionFor,
 } from "@/lib/ring-options";
 
 import { WHATSAPP_NUMBER } from "@/lib/contact";
@@ -44,6 +45,8 @@ function WhatsAppIcon({ className = "h-4 w-4" }: { className?: string }) {
 
 const fmtPrice = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
 const fmtCarat = (n: number) => n.toFixed(1);
+/** Bracelet stones step in 0.05 ct — two decimals or the slider reads as stuck. */
+const fmtCarat2 = (n: number) => n.toFixed(2);
 
 /** Number that GSAP-tweens between values (price ticker, carat readout). */
 function AnimatedNumber({ value, format }: { value: number; format: (n: number) => string }) {
@@ -74,7 +77,7 @@ function AnimatedNumber({ value, format }: { value: number; format: (n: number) 
 const SIZE_BODY: Record<PieceId, string> = {
   ring: "Scale the stone to the hand that will wear it, and hide a few words inside the band.",
   necklace: "Scale the stone to the neckline it will grace, and hide a few words on the clasp tag.",
-  bracelet: "Size the piece to the wrist that will wear it, and hide a few words on the clasp.",
+  bracelet: "Choose the weight of each stone, size the piece to the wrist, and hide a few words on the clasp.",
 };
 
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII"];
@@ -92,20 +95,31 @@ function stepsFor(pieceId: PieceId): StepDef[] {
     pieceId === "bracelet"
       ? [
           pieceStep,
-          { key: "style", short: "Style", name: "The Style", title: "Choose the silhouette", body: "Cable, bangle, curb or rope — pure precious metal, four temperaments." },
+          { key: "style", short: "Design", name: "The Design", title: "Choose the design", body: "Five signatures of the Maison — from a single bezel-set stone to an unbroken line of light." },
           metalStep,
-          { key: "size", short: "Fit", name: "The Presence", title: "Fit & inscription", body: SIZE_BODY.bracelet },
+          { key: "gem", short: "Stone", name: "The Gemstones", title: "Colour the stones", body: "From glacial diamonds to Ceylon sapphires — every stone is hand-selected and certified." },
+          { key: "cut", short: "Shape", name: "The Shape", title: "Shape the stones", body: "The cut decides how each stone breathes light. Six signatures, six temperaments." },
+          { key: "size", short: "Size", name: "The Presence", title: "Stones, fit & inscription", body: SIZE_BODY.bracelet },
           reviewStep,
         ]
-      : [
-          pieceStep,
-          { key: "setting", short: "Setting", name: "The Setting", title: "Choose the architecture", body: `The setting is the soul of the ${piece.noun} — how the stone is held, presented, and lived with.` },
-          metalStep,
-          { key: "gem", short: "Stone", name: "The Gemstone", title: "Set the heart of the piece", body: "From glacial diamonds to pigeon-blood rubies — every stone is hand-selected and certified." },
-          { key: "cut", short: "Cut", name: "The Cut", title: "Shape the light", body: "The cut decides how your stone breathes light. Four signatures, four temperaments." },
-          { key: "size", short: "Size", name: "The Presence", title: "Carat & inscription", body: SIZE_BODY[pieceId] },
-          reviewStep,
-        ];
+      : pieceId === "necklace"
+        ? [
+            pieceStep,
+            { key: "pendant", short: "Pendant", name: "The Pendant", title: "Choose the pendant", body: "Five signatures of the Maison — each design carries its own stone shape, true to the drawing." },
+            metalStep,
+            { key: "gem", short: "Stone", name: "The Gemstone", title: "Colour the stone", body: "From glacial diamonds to Ceylon sapphires — every stone is hand-selected and certified." },
+            { key: "size", short: "Size", name: "The Presence", title: "Carat & inscription", body: SIZE_BODY.necklace },
+            reviewStep,
+          ]
+        : [
+            pieceStep,
+            { key: "setting", short: "Setting", name: "The Setting", title: "Choose the architecture", body: "The eighteen classic silhouettes — how the stone is held, presented, and lived with." },
+            metalStep,
+            { key: "gem", short: "Stone", name: "The Gemstone", title: "Set the heart of the piece", body: "From glacial diamonds to pigeon-blood rubies — every stone is hand-selected and certified." },
+            { key: "cut", short: "Cut", name: "The Cut", title: "Shape the light", body: "The cut decides how your stone breathes light. Six signatures, six temperaments." },
+            { key: "size", short: "Size", name: "The Presence", title: "Carat & inscription", body: SIZE_BODY[pieceId] },
+            reviewStep,
+          ];
 
   return steps.map(({ name, ...s }, i) => ({ ...s, eyebrow: `${ROMAN[i]} · ${name}` }));
 }
@@ -147,72 +161,340 @@ function PieceIcon({ id }: { id: PieceId }) {
   );
 }
 
+/** The five standardised bracelet designs, drawn flat like the Maison's chart. */
 function BraceletStyleIcon({ id }: { id: BraceletStyleId }) {
-  const common = { fill: "none", stroke: "currentColor", strokeWidth: 1.4 };
+  const stroke = "currentColor";
+  const common = { fill: "none", stroke, strokeWidth: 1.3 };
+  const chainLink = (x: number) => (
+    <circle key={x} cx={x} cy={24} r="1.5" {...common} strokeWidth={1} />
+  );
+  const marquise = (cx: number) => (
+    <path
+      key={cx}
+      d={`M${cx - 4.2} 24 Q${cx} 20.6 ${cx + 4.2} 24 Q${cx} 27.4 ${cx - 4.2} 24 z`}
+      {...common}
+    />
+  );
   return (
     <svg viewBox="0 0 48 48" className="h-10 w-10">
-      {id === "cable" &&
-        Array.from({ length: 10 }).map((_, i) => {
-          const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
-          return <circle key={i} cx={24 + Math.cos(a) * 13} cy={24 + Math.sin(a) * 13} r="3.4" {...common} />;
-        })}
-      {id === "bangle" && (
+      {id === "single" && (
         <>
-          <circle cx="24" cy="24" r="14" {...common} />
-          <circle cx="24" cy="24" r="9.5" {...common} />
+          {[5, 9, 13, 17, 31, 35, 39, 43].map(chainLink)}
+          <circle cx="24" cy="24" r="4.8" {...common} />
+          <circle cx="24" cy="24" r="2.7" {...common} />
         </>
       )}
-      {id === "curb" &&
-        Array.from({ length: 8 }).map((_, i) => {
-          const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
-          const cx = 24 + Math.cos(a) * 13;
-          const cy = 24 + Math.sin(a) * 13;
-          const deg = (a * 180) / Math.PI + 90;
-          return <ellipse key={i} cx={cx} cy={cy} rx="5" ry="2.6" transform={`rotate(${deg} ${cx} ${cy})`} {...common} />;
-        })}
-      {id === "rope" && (
+      {id === "tennis" && (
         <>
-          <circle cx="24" cy="24" r="13" {...common} strokeWidth={5} strokeDasharray="4.5 3.2" strokeLinecap="round" opacity={0.9} />
-          <circle cx="24" cy="24" r="13" {...common} strokeWidth={0.8} opacity={0.35} />
+          {[6, 10.5, 15, 19.5, 24, 28.5, 33, 37.5, 42].map((x) => (
+            <g key={x}>
+              <circle cx={x} cy={24} r="2.35" {...common} />
+              <circle cx={x} cy={24} r="0.7" fill={stroke} stroke="none" />
+            </g>
+          ))}
+        </>
+      )}
+      {id === "station" && (
+        <>
+          {[4.5, 15.5, 19.5, 28.5, 32.5, 43.5].map(chainLink)}
+          {[10, 24, 38].map((x) => (
+            <g key={x}>
+              <circle cx={x} cy={24} r="3.4" {...common} />
+              <circle cx={x} cy={24} r="1.7" {...common} />
+            </g>
+          ))}
+        </>
+      )}
+      {id === "bar" && (
+        <>
+          {[4.5, 8.5, 12.5, 35.5, 39.5, 43.5].map(chainLink)}
+          <rect x="15.5" y="21.2" width="17" height="5.6" rx="2.8" {...common} />
+          {[19, 22.3, 25.7, 29].map((x) => (
+            <circle key={x} cx={x} cy={24} r="1.1" fill={stroke} stroke="none" />
+          ))}
+        </>
+      )}
+      {id === "mixed" && (
+        <>
+          {[4.5, 43.5].map(chainLink)}
+          {[10, 24, 38].map((x) => (
+            <g key={x}>
+              <circle cx={x} cy={24} r="2.5" {...common} />
+              <circle cx={x} cy={24} r="0.7" fill={stroke} stroke="none" />
+            </g>
+          ))}
+          {[17, 31].map(marquise)}
         </>
       )}
     </svg>
   );
 }
 
-function SettingIcon({ id }: { id: RingConfig["setting"] }) {
+/** The five standardised pendant designs, drawn to echo the Maison's chart. */
+function PendantIcon({ id }: { id: PendantStyleId }) {
   const stroke = "currentColor";
-  const common = { fill: "none", stroke, strokeWidth: 1.4, strokeLinecap: "round" as const };
+  const common = {
+    fill: "none",
+    stroke,
+    strokeWidth: 1.3,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+  const thin = { ...common, strokeWidth: 0.8 };
+  /* the chain draping down to the bail */
+  const chain = <path d="M10 5l12.2 9M38 5L25.8 14" {...thin} strokeDasharray="2 1.6" />;
+  /* the small tapered bail most designs hang from */
+  const bail = <path d="M24 13.2c-1.9 1.5-2.5 3.1-1.8 5h3.6c.7-1.9.1-3.5-1.8-5z" {...common} />;
+  const dot = (cx: number, cy: number, r = 1.1, key?: string | number) => (
+    <circle key={key} cx={cx} cy={cy} r={r} fill={stroke} stroke="none" />
+  );
   return (
     <svg viewBox="0 0 48 48" className="h-10 w-10">
-      {/* band */}
-      <circle cx="24" cy="30" r="12" {...common} />
-      {id === "solitaire" && (
-        <path d="M24 8l6 6-6 8-6-8z M18 14h12" {...common} strokeLinejoin="round" />
-      )}
-      {id === "halo" && (
+      {chain}
+      {id === "bezel" && (
         <>
-          <path d="M24 10l4.5 4.5L24 20.5l-4.5-6z" {...common} strokeLinejoin="round" />
-          {Array.from({ length: 8 }).map((_, i) => {
-            const a = (i / 8) * Math.PI * 2;
-            return <circle key={i} cx={24 + Math.cos(a) * 9.5} cy={15 + Math.sin(a) * 9.5} r="1.1" fill={stroke} stroke="none" />;
-          })}
+          <circle cx="24" cy="16.5" r="2.3" {...common} />
+          <circle cx="24" cy="29.5" r="8.4" {...common} />
+          <circle cx="24" cy="29.5" r="5.5" {...common} strokeWidth={1.1} />
         </>
       )}
-      {id === "trinity" && (
+      {id === "prong" && (
         <>
-          <path d="M24 7l5 5-5 7-5-7z" {...common} strokeLinejoin="round" />
-          <path d="M12.5 13l3.2 3.2-3.2 4.5-3.2-4.5z" {...common} strokeLinejoin="round" />
-          <path d="M35.5 13l3.2 3.2-3.2 4.5-3.2-4.5z" {...common} strokeLinejoin="round" />
+          {bail}
+          <ellipse cx="24" cy="30" rx="5.8" ry="7.8" {...common} />
+          {dot(19.9, 24.6, 1.15, "tl")}
+          {dot(28.1, 24.6, 1.15, "tr")}
+          {dot(19.9, 35.4, 1.15, "bl")}
+          {dot(28.1, 35.4, 1.15, "br")}
+        </>
+      )}
+      {id === "pear-drop" && (
+        <>
+          {bail}
+          <path
+            d="M24 20.5c4.5 5 6.1 9 4.7 12.6-1.4 3.7-8 3.7-9.4 0-1.4-3.6.2-7.6 4.7-12.6z"
+            {...common}
+          />
+          {dot(24, 20.9, 1.05, "t")}
+          {dot(19.8, 33.6, 1.05, "l")}
+          {dot(28.2, 33.6, 1.05, "r")}
+        </>
+      )}
+      {id === "bar" && (
+        <>
+          <rect x="22.6" y="13.2" width="2.8" height="4.6" rx="0.7" {...common} />
+          <rect x="20.9" y="21.8" width="6.2" height="14.6" rx="0.8" {...common} />
+          <rect x="19.5" y="20.3" width="9" height="2.6" rx="1.1" {...common} strokeWidth={1.1} />
+          <rect x="19.5" y="35.3" width="9" height="2.6" rx="1.1" {...common} strokeWidth={1.1} />
+        </>
+      )}
+      {id === "solitaire-drop" && (
+        <>
+          <path d="M24 12.5c-1.7 2.2-2.2 6-1.3 9.7h2.6c.9-3.7.4-7.5-1.3-9.7z" {...common} />
+          <circle cx="24" cy="29" r="4.5" {...common} />
+          {dot(24, 24.3, 1.05, "t")}
+          {dot(20.1, 31.4, 1.05, "l")}
+          {dot(27.9, 31.4, 1.05, "r")}
+        </>
+      )}
+    </svg>
+  );
+}
+
+/** The eighteen classic silhouettes, drawn to echo the Maison's style chart. */
+function SettingIcon({ id }: { id: RingConfig["setting"] }) {
+  const stroke = "currentColor";
+  const common = {
+    fill: "none",
+    stroke,
+    strokeWidth: 1.4,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+  const thin = { ...common, strokeWidth: 0.8 };
+  const band = <circle cx="24" cy="30" r="12" {...common} />;
+  const dot = (cx: number, cy: number, r = 1.1, key?: string | number) => (
+    <circle key={key} cx={cx} cy={cy} r={r} fill={stroke} stroke="none" />
+  );
+  /** dots tracing the band's top arc at radius `r` (angles in degrees from top) */
+  const edgeDots = (r: number, angles: number[], size = 0.7) =>
+    angles.map((deg) => {
+      const a = (deg * Math.PI) / 180;
+      return dot(24 + r * Math.sin(a), 30 - r * Math.cos(a), size, `${r}-${deg}`);
+    });
+  return (
+    <svg viewBox="0 0 48 48" className="h-10 w-10">
+      {id === "solitaire" && (
+        <>
+          {band}
+          <path d="M24 8l5.5 5.5L24 21l-5.5-7.5z M18.5 13.5h11" {...common} />
+        </>
+      )}
+      {id === "tension" && (
+        <>
+          <path d="M18.9 19.1 A12 12 0 1 0 29.1 19.1" {...common} strokeWidth={3.2} />
+          <path d="M24 12.6l3.7 3.7L24 21.4l-3.7-5.1z" {...common} />
+        </>
+      )}
+      {id === "three-stone" && (
+        <>
+          {band}
+          <path d="M24 7.5l5 5-5 6.8-5-6.8z" {...common} />
+          <path d="M13.8 11.5l3.4 3.4-3.4 4.6-3.4-4.6z" {...common} />
+          <path d="M34.2 11.5l3.4 3.4-3.4 4.6-3.4-4.6z" {...common} />
         </>
       )}
       {id === "pave" && (
         <>
-          <path d="M24 8l5.5 5.5L24 21l-5.5-7.5z" {...common} strokeLinejoin="round" />
+          {band}
+          <path d="M24 8l5.5 5.5L24 21l-5.5-7.5z" {...common} />
           {[-3, -2, -1, 1, 2, 3].map((i) => {
             const a = Math.PI / 2 + i * 0.32;
-            return <circle key={i} cx={24 + Math.cos(a) * 12} cy={30 - Math.sin(a) * 12} r="1.2" fill={stroke} stroke="none" />;
+            return dot(24 + Math.cos(a) * 12, 30 - Math.sin(a) * 12, 1.2, i);
           })}
+        </>
+      )}
+      {id === "channel" && (
+        <>
+          {band}
+          <path d="M24 7.5l5 5-5 6.8-5-6.8z" {...common} />
+          <path d="M15.5 19.9 A13.2 13.2 0 0 1 32.5 19.9" {...thin} />
+          <path d="M17.1 21.7 A10.8 10.8 0 0 1 30.9 21.7" {...thin} />
+          {[-27, -13, 13, 27].map((deg) => {
+            const a = (deg * Math.PI) / 180;
+            const x = 24 + 12 * Math.sin(a);
+            const y = 30 - 12 * Math.cos(a);
+            return (
+              <rect
+                key={deg}
+                x={x - 1.3}
+                y={y - 1.3}
+                width="2.6"
+                height="2.6"
+                transform={`rotate(${deg} ${x} ${y})`}
+                {...thin}
+              />
+            );
+          })}
+        </>
+      )}
+      {id === "bezel" && (
+        <>
+          {band}
+          <circle cx="24" cy="15" r="6" {...common} />
+          <circle cx="24" cy="15" r="3.9" {...common} strokeWidth={1.1} />
+        </>
+      )}
+      {id === "halo" && (
+        <>
+          {band}
+          <path d="M24 10.2l4.4 4.4-4.4 6-4.4-6z" {...common} />
+          {Array.from({ length: 8 }).map((_, i) => {
+            const a = (i / 8) * Math.PI * 2;
+            return dot(24 + Math.cos(a) * 9, 15 + Math.sin(a) * 9, 1.1, i);
+          })}
+        </>
+      )}
+      {id === "double-halo" && (
+        <>
+          <circle cx="24" cy="31" r="11" {...common} />
+          <circle cx="24" cy="14" r="3" {...common} />
+          {Array.from({ length: 10 }).map((_, i) => {
+            const a = (i / 10) * Math.PI * 2;
+            return dot(24 + Math.cos(a) * 5.6, 14 + Math.sin(a) * 5.6, 0.9, `in-${i}`);
+          })}
+          {Array.from({ length: 14 }).map((_, i) => {
+            const a = (i / 14) * Math.PI * 2;
+            return dot(24 + Math.cos(a) * 8.6, 14 + Math.sin(a) * 8.6, 0.9, `out-${i}`);
+          })}
+        </>
+      )}
+      {id === "split-shank" && (
+        <>
+          <path d="M12 30 A12 12 0 0 0 36 30" {...common} />
+          <path d="M12 30C12 22.5 15.8 16.4 21 13.9" {...common} />
+          <path d="M36 30C36 22.5 32.2 16.4 27 13.9" {...common} />
+          <path d="M14.7 30C14.7 24.3 17.6 19.6 21.8 17.2" {...common} strokeWidth={1.1} />
+          <path d="M33.3 30C33.3 24.3 30.4 19.6 26.2 17.2" {...common} strokeWidth={1.1} />
+          <path d="M24 7.5l4.6 4.6L24 18.4l-4.6-6.3z" {...common} />
+        </>
+      )}
+      {id === "cathedral" && (
+        <>
+          {band}
+          <path d="M14.5 23.5C16.5 17 20 14 22 13.2" {...common} />
+          <path d="M33.5 23.5C31.5 17 28 14 26 13.2" {...common} />
+          <path d="M24 6.5l5 5-5 6.8-5-6.8z" {...common} />
+        </>
+      )}
+      {id === "vintage" && (
+        <>
+          {band}
+          <path d="M24 9.5l4.2 4.2-4.2 5.6-4.2-5.6z" {...common} />
+          <path d="M18.5 15.5c-3.2-1.8-6 .2-4.6 2.6-2.4.6-2.2 3.4.4 3.6" {...common} strokeWidth={1.1} />
+          <path d="M29.5 15.5c3.2-1.8 6 .2 4.6 2.6 2.4.6 2.2 3.4-.4 3.6" {...common} strokeWidth={1.1} />
+          {dot(15, 12.8, 0.9, "l")}
+          {dot(33, 12.8, 0.9, "r")}
+        </>
+      )}
+      {id === "milgrain" && (
+        <>
+          {band}
+          <path d="M24 8l5 5-5 6.8-5-6.8z" {...common} />
+          {edgeDots(13.6, [-42, -28, -14, 14, 28, 42])}
+          {edgeDots(10.4, [-42, -28, -14, 14, 28, 42])}
+        </>
+      )}
+      {id === "trilogy" && (
+        <>
+          {band}
+          <circle cx="24" cy="13.5" r="5" {...common} />
+          <path d="M24 8.5v10M19 13.5h10" {...thin} opacity={0.7} />
+          <circle cx="14.5" cy="17" r="3" {...common} />
+          <circle cx="33.5" cy="17" r="3" {...common} />
+        </>
+      )}
+      {id === "toi-et-moi" && (
+        <>
+          {band}
+          <path d="M17.5 8.2c3 1.6 4.6 4.8 3.5 7.4-1 2.3-4 2.9-5.9 1.2-2-1.8-1.9-5.6 2.4-8.6z" {...common} />
+          <circle cx="29.5" cy="14.5" r="4.2" {...common} />
+          <path d="M29.5 10.3v8.4M25.3 14.5h8.4" {...thin} opacity={0.7} />
+        </>
+      )}
+      {id === "bypass" && (
+        <>
+          <path d="M14.2 23.1 A12 12 0 1 0 33.8 23.1" {...common} />
+          <path d="M14.2 23.1C16 16.8 21 13.6 27.8 15.4" {...common} />
+          <path d="M33.8 23.1C32.4 19.4 28.6 17.6 24.4 18.2" {...common} strokeWidth={1.1} />
+          <circle cx="24" cy="11.8" r="3.4" {...common} />
+          <path d="M24 8.4v6.8M20.6 11.8h6.8" {...thin} opacity={0.7} />
+        </>
+      )}
+      {id === "flush" && (
+        <>
+          <circle cx="24" cy="30" r="11.5" {...common} strokeWidth={4} />
+          <circle cx="24" cy="18.5" r="3.4" {...common} strokeWidth={1.1} />
+          {dot(24, 18.5, 1.6)}
+        </>
+      )}
+      {id === "stackable" && (
+        <>
+          <circle cx="24" cy="24" r="12" {...common} />
+          {Array.from({ length: 12 }).map((_, i) => {
+            const a = (i / 12) * Math.PI * 2;
+            return dot(24 + Math.cos(a) * 12, 24 + Math.sin(a) * 12, 1.1, i);
+          })}
+        </>
+      )}
+      {id === "signet" && (
+        <>
+          <path
+            d="M9.8 28.5C11 20.5 17 15.8 24 15.8s13 4.7 14.2 12.7c.5 6.3-5.6 11.7-14.2 11.7S9.3 34.8 9.8 28.5z"
+            {...common}
+          />
+          <circle cx="24" cy="24.5" r="4.4" {...common} />
+          <circle cx="24" cy="24.5" r="2.2" {...common} strokeWidth={1.1} />
         </>
       )}
     </svg>
@@ -246,6 +528,22 @@ function CutIcon({ id }: { id: RingConfig["cut"] }) {
           <path d="M17 11h14l6 6v14l-6 6H17l-6-6V17z" {...common} strokeLinejoin="round" />
           <path d="M20 15h8l4 4v10l-4 4h-8l-4-4V19z" {...common} strokeWidth={0.8} opacity={0.75} />
           <path d="M22 19h4l2.5 2.5v5L26 29h-4l-2.5-2.5v-5z" {...common} strokeWidth={0.6} opacity={0.55} />
+        </>
+      )}
+      {id === "marquise" && (
+        <>
+          <path d="M24 8C30.5 14.5 30.5 33.5 24 40C17.5 33.5 17.5 14.5 24 8z" {...common} strokeLinejoin="round" />
+          <path d="M24 8v32M19.4 16h9.2M18.6 24h10.8M19.4 32h9.2" {...common} strokeWidth={0.7} opacity={0.7} />
+        </>
+      )}
+      {id === "pear" && (
+        <>
+          <path
+            d="M24 8.5c5.4 6.5 7.6 12.4 6.3 18.1-1 4.6-3.4 7.4-6.3 7.4s-5.3-2.8-6.3-7.4C16.4 20.9 18.6 15 24 8.5z"
+            {...common}
+            strokeLinejoin="round"
+          />
+          <path d="M24 8.5V34M18.2 21.5h11.6M19.3 28h9.4" {...common} strokeWidth={0.7} opacity={0.7} />
         </>
       )}
     </svg>
@@ -543,6 +841,28 @@ export default function AtelierConfigurator() {
     setConfig((c) => ({ ...c, [key]: value }));
   }, []);
 
+  /* Switching piece re-lands the carat inside the new piece's standard range
+     (bracelets weigh per stone). Necklaces are pendant-led, so entering the
+     necklace flow locks the cut to the chosen pendant's signature shape. */
+  const choosePiece = useCallback((id: PieceId) => {
+    setConfig((c) => {
+      if (c.piece === id) return c;
+      const rule = caratRuleFor(id);
+      const carat = id === "bracelet" ? 0.3 : Math.min(rule.cap, Math.max(rule.min, c.carat));
+      const cut = id === "necklace" ? pendantStyleById(c.pendantStyle).cut : c.cut;
+      return { ...c, piece: id, carat, cut };
+    });
+  }, []);
+
+  /* The pendant design IS the shape — selecting one sets its signature cut. */
+  const choosePendant = useCallback((id: PendantStyleId) => {
+    setConfig((c) => ({ ...c, pendantStyle: id, cut: pendantStyleById(id).cut }));
+  }, []);
+
+  const caratRule = caratRuleFor(config.piece);
+  const overCap = isAppointmentCarat(config);
+  const fmtCaratPiece = config.piece === "bracelet" ? fmtCarat2 : fmtCarat;
+
   /* step-change entrance animation */
   useLayoutEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -618,9 +938,26 @@ export default function AtelierConfigurator() {
     config.piece === "bracelet"
       ? [
           { label: "Piece", value: piece.label.replace(/^The /, ""), key: "piece" },
-          { label: "Style", value: braceletStyleById(config.braceletStyle).label, key: "style" },
+          { label: "Design", value: braceletStyleById(config.braceletStyle).label, key: "style" },
           { label: "Metal", value: metalValue, key: "metal" },
+          { label: "Gemstone", value: gemById(config.gem).label, key: "gem" },
+          { label: "Shape", value: cutById(config.cut).label, key: "cut" },
+          {
+            label: "Stones",
+            value: `${braceletStyleById(config.braceletStyle).stoneCount} × ${fmtCarat2(config.carat)} ct`,
+            key: "size",
+          },
           { label: "Fit", value: `${fitById(config.fit).label} · ${fitById(config.fit).size}`, key: "size" },
+          { label: "Engraving", value: config.engraving || "—", key: "size" },
+        ]
+      : config.piece === "necklace"
+      ? [
+          { label: "Piece", value: piece.label.replace(/^The /, ""), key: "piece" },
+          { label: "Pendant", value: pendantStyleById(config.pendantStyle).label, key: "pendant" },
+          { label: "Metal", value: metalValue, key: "metal" },
+          { label: "Gemstone", value: gemById(config.gem).label, key: "gem" },
+          { label: "Shape", value: `${cutById(config.cut).label} · by design`, key: "pendant" },
+          { label: "Carat", value: `${config.carat.toFixed(1)} ct`, key: "size" },
           { label: "Engraving", value: config.engraving || "—", key: "size" },
         ]
       : [
@@ -672,17 +1009,22 @@ export default function AtelierConfigurator() {
             {config.piece === "bracelet" ? (
               <>
                 <p className="mt-1.5 font-serif text-base font-light tracking-wide text-gold-100/90 md:text-lg">
-                  {braceletStyleById(config.braceletStyle).label} Bracelet · {metalById(config.metal).label}
+                  {braceletStyleById(config.braceletStyle).label.replace(/ Bracelet$/, "")} Bracelet ·{" "}
+                  {metalById(config.metal).label}
                 </p>
                 <p className="font-body text-[0.65rem] tracking-[0.2em] text-gold-100/60">
-                  {fitById(config.fit).label} fit · {fitById(config.fit).size}
+                  {braceletStyleById(config.braceletStyle).stoneCount} ×{" "}
+                  <AnimatedNumber value={config.carat} format={fmtCarat2} /> ct{" "}
+                  {gemById(config.gem).label} · {fitById(config.fit).label} fit
                 </p>
               </>
             ) : (
               <>
                 <p className="mt-1.5 font-serif text-base font-light tracking-wide text-gold-100/90 md:text-lg">
-                  {settingById(config.setting).label} {piece.label.replace(/^The /, "")} ·{" "}
-                  {metalById(config.metal).label} · {gemById(config.gem).label}
+                  {config.piece === "necklace"
+                    ? `${pendantStyleById(config.pendantStyle).label} Pendant`
+                    : `${settingById(config.setting).label} ${piece.label.replace(/^The /, "")}`}{" "}
+                  · {metalById(config.metal).label} · {gemById(config.gem).label}
                 </p>
                 <p className="font-body text-[0.65rem] tracking-[0.2em] text-gold-100/60">
                   {cutById(config.cut).label} · <AnimatedNumber value={config.carat} format={fmtCarat} /> ct
@@ -691,9 +1033,15 @@ export default function AtelierConfigurator() {
             )}
           </div>
           <div className="text-right">
-            <p className="font-sans text-[0.6rem] uppercase tracking-[0.3em] text-gold-100/50">Estimated from</p>
+            <p className="font-sans text-[0.6rem] uppercase tracking-[0.3em] text-gold-100/50">
+              {overCap ? "Reserved for" : "Estimated from"}
+            </p>
             <p className="mt-1 font-serif text-2xl font-light text-gold-200 md:text-3xl">
-              <AnimatedNumber value={price} format={fmtPrice} />
+              {overCap ? (
+                <span className="text-lg italic md:text-xl">Private appointment</span>
+              ) : (
+                <AnimatedNumber value={price} format={fmtPrice} />
+              )}
             </p>
           </div>
         </div>
@@ -751,7 +1099,7 @@ export default function AtelierConfigurator() {
               {stepKey === "piece" && (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   {PIECES.map((p) => (
-                    <OptionCard key={p.id} selected={config.piece === p.id} onSelect={() => set("piece", p.id)}>
+                    <OptionCard key={p.id} selected={config.piece === p.id} onSelect={() => choosePiece(p.id)}>
                       <span className={`${config.piece === p.id ? "text-gold-300" : "text-[#5E7495] group-hover:text-gold-200/70"} transition-colors`}>
                         <PieceIcon id={p.id} />
                       </span>
@@ -779,17 +1127,45 @@ export default function AtelierConfigurator() {
                 </div>
               )}
 
-              {/* --- Setting --- */}
+              {/* --- Setting: the eighteen classic silhouettes (rings) --- */}
               {stepKey === "setting" && (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {SETTINGS.map((s) => (
-                    <OptionCard key={s.id} selected={config.setting === s.id} onSelect={() => set("setting", s.id)}>
+                    <OptionCard
+                      key={s.id}
+                      selected={config.setting === s.id}
+                      onSelect={() => set("setting", s.id)}
+                      className="!p-4"
+                    >
                       <span className={`${config.setting === s.id ? "text-gold-300" : "text-[#5E7495] group-hover:text-gold-200/70"} transition-colors`}>
                         <SettingIcon id={s.id} />
                       </span>
-                      <h3 className="mt-3 font-serif text-lg font-light tracking-wide text-gold-50">{s.label}</h3>
-                      <p className="mt-0.5 font-sans text-[0.62rem] uppercase tracking-[0.2em] text-gold-400/80">{s.tagline}</p>
-                      <p className="mt-2 font-body text-[0.7rem] font-light leading-relaxed text-[#5E7495]">{settingDescriptionFor(s, config.piece)}</p>
+                      <h3 className="mt-2.5 font-serif text-base font-light tracking-wide text-gold-50">{s.label}</h3>
+                      <p className="mt-1.5 font-body text-[0.68rem] font-light leading-relaxed text-[#5E7495]">{s.description}</p>
+                    </OptionCard>
+                  ))}
+                </div>
+              )}
+
+              {/* --- Pendant: the five standardised designs (necklaces) ---
+                  each locks its signature stone shape, per the chart */}
+              {stepKey === "pendant" && (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {PENDANT_STYLES.map((p) => (
+                    <OptionCard
+                      key={p.id}
+                      selected={config.pendantStyle === p.id}
+                      onSelect={() => choosePendant(p.id)}
+                      className="!p-4"
+                    >
+                      <span className={`${config.pendantStyle === p.id ? "text-gold-300" : "text-[#5E7495] group-hover:text-gold-200/70"} transition-colors`}>
+                        <PendantIcon id={p.id} />
+                      </span>
+                      <h3 className="mt-2.5 font-serif text-base font-light tracking-wide text-gold-50">{p.label}</h3>
+                      <p className="mt-0.5 font-sans text-[0.58rem] uppercase tracking-[0.18em] text-gold-400/80">
+                        {cutById(p.cut).label} · by design
+                      </p>
+                      <p className="mt-1.5 font-body text-[0.68rem] font-light leading-relaxed text-[#5E7495]">{p.description}</p>
                     </OptionCard>
                   ))}
                 </div>
@@ -851,10 +1227,49 @@ export default function AtelierConfigurator() {
                 </div>
               )}
 
-              {/* --- Size: carat for stone pieces, wrist fit for bracelets --- */}
+              {/* --- Size: carat (per stone on bracelets), wrist fit, inscription --- */}
               {stepKey === "size" && (
                 <div className="space-y-10">
-                  {config.piece === "bracelet" ? (
+                  <div data-step-item>
+                    <div className="flex items-end justify-between">
+                      <span className="font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-100/60">
+                        {config.piece === "bracelet" ? "Carat · each stone" : "Carat weight"}
+                      </span>
+                      <span className="font-serif text-5xl font-light text-gold-200">
+                        <AnimatedNumber value={config.carat} format={fmtCaratPiece} />
+                        <span className="ml-1 text-lg text-gold-100/50">ct</span>
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={caratRule.min}
+                      max={caratRule.max}
+                      step={caratRule.step}
+                      value={config.carat}
+                      onChange={(e) => set("carat", Number(e.target.value))}
+                      className="luxe-range mt-6 w-full"
+                      aria-label={config.piece === "bracelet" ? "Carat weight per stone" : "Carat weight"}
+                    />
+                    <div className="mt-2 flex justify-between font-body text-[0.6rem] tracking-[0.15em] text-[#4A6285]">
+                      <span>{caratRule.min} · delicate</span>
+                      <span>{caratRule.cap} · atelier limit</span>
+                      <span>{caratRule.max} · by appointment</span>
+                    </div>
+                    {overCap && (
+                      <div className="mt-5 rounded-xl border border-gold-400/40 bg-gold-500/[0.08] px-4 py-3.5" role="status">
+                        <p className="font-sans text-[0.6rem] uppercase tracking-[0.3em] text-gold-300">
+                          Private appointment
+                        </p>
+                        <p className="mt-1.5 font-body text-[0.72rem] font-light leading-relaxed text-gold-100/80">
+                          {config.piece === "bracelet"
+                            ? `Stones above ${caratRule.cap} ct each move beyond the standard collection. Our concierge will source and certify stones of this calibre with you in person — reserve your appointment from the final step.`
+                            : `A centre stone above ${caratRule.cap} ct moves beyond the standard collection. Our concierge will source and certify a stone of this calibre with you in person — reserve your appointment from the final step.`}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {config.piece === "bracelet" && (
                     <div data-step-item>
                       <span className="font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-100/60">Wrist fit</span>
                       <div className="mt-4 grid grid-cols-3 gap-3">
@@ -868,31 +1283,6 @@ export default function AtelierConfigurator() {
                       <p className="mt-3 font-body text-[0.6rem] font-light tracking-[0.15em] text-[#4A6285]">
                         Every bracelet is finished to measure at the atelier — this sets the starting fit.
                       </p>
-                    </div>
-                  ) : (
-                    <div data-step-item>
-                      <div className="flex items-end justify-between">
-                        <span className="font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-100/60">Carat weight</span>
-                        <span className="font-serif text-5xl font-light text-gold-200">
-                          <AnimatedNumber value={config.carat} format={fmtCarat} />
-                          <span className="ml-1 text-lg text-gold-100/50">ct</span>
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min={CARAT_MIN}
-                        max={CARAT_MAX}
-                        step={CARAT_STEP}
-                        value={config.carat}
-                        onChange={(e) => set("carat", Number(e.target.value))}
-                        className="luxe-range mt-6 w-full"
-                        aria-label="Carat weight"
-                      />
-                      <div className="mt-2 flex justify-between font-body text-[0.6rem] tracking-[0.15em] text-[#4A6285]">
-                        <span>0.5 · delicate</span>
-                        <span>1.5 · statement</span>
-                        <span>3.0 · monumental</span>
-                      </div>
                     </div>
                   )}
 
@@ -939,9 +1329,15 @@ export default function AtelierConfigurator() {
                       </div>
                     ))}
                     <div data-step-item className="flex items-center justify-between px-5 py-4">
-                      <dt className="font-sans text-[0.62rem] uppercase tracking-[0.25em] text-gold-400">Estimated from</dt>
+                      <dt className="font-sans text-[0.62rem] uppercase tracking-[0.25em] text-gold-400">
+                        {overCap ? "Private appointment" : "Estimated from"}
+                      </dt>
                       <dd className="font-serif text-2xl font-light text-gold-200">
-                        <AnimatedNumber value={price} format={fmtPrice} />
+                        {overCap ? (
+                          <span className="text-lg italic">By consultation</span>
+                        ) : (
+                          <AnimatedNumber value={price} format={fmtPrice} />
+                        )}
                       </dd>
                     </div>
                   </dl>
@@ -973,10 +1369,12 @@ export default function AtelierConfigurator() {
                       className="flex w-full items-center justify-center gap-3 rounded-full border border-[#25D366]/40 bg-[#25D366]/[0.08] px-8 py-4 font-sans text-xs font-semibold uppercase tracking-[0.25em] text-[#4be084] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#25D366]/80 hover:bg-[#25D366]/15 hover:shadow-[0_6px_30px_rgba(37,211,102,0.2)] active:translate-y-0"
                     >
                       <WhatsAppIcon />
-                      Enquire on WhatsApp
+                      {overCap ? "Book a private appointment" : "Enquire on WhatsApp"}
                     </a>
                     <p className="text-center font-body text-[0.6rem] font-light tracking-[0.15em] text-[#4A6285]">
-                      Sends your full composition to our atelier concierge — no obligation.
+                      {overCap
+                        ? "Stones of this calibre are sourced and certified in person — your composition reserves the appointment."
+                        : "Sends your full composition to our atelier concierge — no obligation."}
                     </p>
                   </div>
                 </div>
@@ -1089,8 +1487,10 @@ export default function AtelierConfigurator() {
 
               <p className="px-7 pt-4 text-center font-serif text-sm font-light italic tracking-wide text-gold-100/80">
                 {config.piece === "bracelet"
-                  ? `${braceletStyleById(config.braceletStyle).label} Bracelet · ${metalById(config.metal).label} · ${fitById(config.fit).label} fit (${fitById(config.fit).size})`
-                  : `${config.carat.toFixed(1)} ct ${cutById(config.cut).label} ${gemById(config.gem).label} · ${metalById(config.metal).label} · ${settingById(config.setting).label} ${piece.label.replace(/^The /, "")}`}
+                  ? `${braceletStyleById(config.braceletStyle).label.replace(/ Bracelet$/, "")} Bracelet · ${braceletStyleById(config.braceletStyle).stoneCount} × ${fmtCarat2(config.carat)} ct ${cutById(config.cut).label} ${gemById(config.gem).label} · ${metalById(config.metal).label} · ${fitById(config.fit).label} fit (${fitById(config.fit).size})`
+                  : config.piece === "necklace"
+                    ? `${config.carat.toFixed(1)} ct ${cutById(config.cut).label} ${gemById(config.gem).label} · ${metalById(config.metal).label} · ${pendantStyleById(config.pendantStyle).label} Pendant`
+                    : `${config.carat.toFixed(1)} ct ${cutById(config.cut).label} ${gemById(config.gem).label} · ${metalById(config.metal).label} · ${settingById(config.setting).label} ${piece.label.replace(/^The /, "")}`}
                 {config.engraving ? ` · “${config.engraving}”` : ""}
               </p>
 
