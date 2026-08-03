@@ -1,7 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cinzel, EB_Garamond } from "next/font/google";
 import Preloader from "@/components/fx/Preloader";
 import Navbar from "@/components/Navbar";
+import {
+  ATELIER_ADDRESS,
+  SUPPORT_EMAIL,
+  TELEPHONE_E164,
+} from "@/lib/contact";
+import { OG_IMAGE, SITE_LOCALE, SITE_NAME, SOCIAL_PROFILES, SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 // Headings: Trajan Pro where installed, with Cinzel (the classic Trajan-style
@@ -22,7 +28,17 @@ const garamond = EB_Garamond({
   display: "swap",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.ceylongemmaison.com";
+/**
+ * Colour of the browser chrome on mobile — the cream the page actually opens
+ * on, so the status bar doesn't flash a default white band above the hero.
+ */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F7F4EC" },
+    { media: "(prefers-color-scheme: dark)", color: "#0A1F3D" },
+  ],
+  colorScheme: "light",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -47,30 +63,27 @@ export const metadata: Metadata = {
   category: "Jewelry",
   creator: "ARC AI",
   publisher: "Ceylon Gem Maison",
+  // The default social block. Every public route overrides it via
+  // pageMetadata() in src/lib/seo.ts — without that, Next inherits this whole
+  // object and every page shares the homepage's og:title and og:url.
   openGraph: {
     title: "Ceylon Gem Maison | Bespoke Ceylon Sapphire & Diamond Jewellery",
     description:
       "Design your own sapphire ring in a live 3D atelier with instant quotations — ethically sourced Ceylon gemstones, delivered insured to Singapore.",
     type: "website",
     url: "/",
-    siteName: "Ceylon Gem Maison",
-    locale: "en_SG",
-    images: [
-      {
-        url: "/og.png",
-        width: 1024,
-        height: 1024,
-        alt: "Ceylon Gem Maison cushion-cut Ceylon sapphire and diamond ring on blue silk background",
-      },
-    ],
+    siteName: SITE_NAME,
+    locale: SITE_LOCALE,
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: "Ceylon Gem Maison | Bespoke Ceylon Sapphire & Diamond Jewellery, Singapore",
     description:
       "Design your own sapphire ring in a live 3D atelier with instant quotations — ethically sourced Ceylon gemstones, delivered insured to Singapore.",
-    images: ["/og.png"],
+    images: [OG_IMAGE.url],
   },
+  formatDetection: { telephone: false, address: false, email: false },
   robots: {
     index: true,
     follow: true,
@@ -97,18 +110,37 @@ const structuredData = {
       name: "Ceylon Gem Maison",
       url: SITE_URL,
       logo: `${SITE_URL}/logo.jpeg`,
-      image: `${SITE_URL}/og.png`,
+      image: `${SITE_URL}${OG_IMAGE.url}`,
       description:
         "Bespoke Ceylon sapphire and diamond jewellery house with years of professional experience exporting world-class, ethically sourced gemstones — serving private clients in Singapore and worldwide.",
-      email: "support@ceylongemmaison.com",
+      email: SUPPORT_EMAIL,
+      telephone: TELEPHONE_E164,
       priceRange: "$$$",
       currenciesAccepted: "SGD, USD",
+      paymentAccepted: "Bank transfer, Credit card",
       address: {
         "@type": "PostalAddress",
-        streetAddress: "66 Flora Road, #05-10, The Gale",
-        postalCode: "506912",
-        addressLocality: "Singapore",
-        addressCountry: "SG",
+        streetAddress: ATELIER_ADDRESS.street,
+        postalCode: ATELIER_ADDRESS.postalCode,
+        addressLocality: ATELIER_ADDRESS.locality,
+        addressCountry: ATELIER_ADDRESS.country,
+      },
+      // Ties the site's entity to its verified public profiles — the strongest
+      // signal Google has for "these accounts are the same business".
+      sameAs: SOCIAL_PROFILES,
+      // The atelier is by appointment, not a walk-in shopfront.
+      openingHoursSpecification: {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ],
+        opens: "10:00",
+        closes: "19:00",
       },
       areaServed: [
         { "@type": "Country", name: "Singapore" },
@@ -119,6 +151,24 @@ const structuredData = {
         "Bespoke engagement rings",
         "Ethical gemstone sourcing",
         "Gemstone certification",
+      ],
+      makesOffer: [
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "Bespoke engagement ring commissions",
+            serviceType: "Bespoke jewellery design",
+          },
+        },
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "Ceylon sapphire sourcing at origin",
+            serviceType: "Gemstone sourcing",
+          },
+        },
       ],
     },
     {

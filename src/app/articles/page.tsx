@@ -6,13 +6,14 @@ import Footer from "@/components/Footer";
 import ScrollFX from "@/components/fx/ScrollFX";
 import LuxeCursor from "@/components/fx/LuxeCursor";
 import { ARTICLES } from "@/lib/articles";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "The Journal — Sapphire & Jewellery Guides for Singapore",
   description:
     "Guides and stories from the Ceylon Gem Maison atelier: choosing a Ceylon sapphire engagement ring in Singapore, sapphires versus diamonds, and the journey of an ethically sourced gem.",
-  alternates: { canonical: "/articles" },
-};
+  path: "/articles",
+});
 
 export default function ArticlesPage() {
   const [featured, ...rest] = ARTICLES;

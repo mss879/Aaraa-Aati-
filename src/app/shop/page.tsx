@@ -9,13 +9,47 @@ import LuxeCursor from "@/components/fx/LuxeCursor";
 import { getShopCategories, getShopProducts } from "@/lib/shop-data";
 import { productImageUrl } from "@/lib/supabase/env";
 import { formatMoney } from "@/lib/shop";
+import { SITE_URL, absoluteUrl, breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Shop the Maison",
-  description:
-    "Ceylon Gem Maison pieces available to order now — rings, earrings and bracelets in hand-cut Ceylon stones and 18k gold, shipped from Singapore.",
-  alternates: { canonical: "/shop" },
-};
+type ShopSearchParams = { category?: string };
+
+/**
+ * Category-aware metadata.
+ *
+ * The sitemap advertises /shop?category=<slug> as its own crawlable URL, but a
+ * static `canonical: "/shop"` told Google every one of those pages was a
+ * duplicate of the unfiltered listing — the two signals cancelled out and the
+ * category pages were dropped. Each filtered view now canonicalises to itself
+ * and carries its own title and description; an unknown ?category= value (a
+ * stale link, a typo) falls back to the plain /shop canonical so junk query
+ * strings can't mint indexable URLs.
+ */
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<ShopSearchParams>;
+}): Promise<Metadata> {
+  const { category } = await searchParams;
+  const categories = await getShopCategories();
+  const active = categories.find((c) => c.slug === category) ?? null;
+
+  if (!active) {
+    return pageMetadata({
+      title: "Shop the Maison",
+      description:
+        "Ceylon Gem Maison pieces available to order now — rings, earrings and bracelets in hand-cut Ceylon stones and 18k gold, shipped from Singapore.",
+      path: "/shop",
+    });
+  }
+
+  return pageMetadata({
+    title: `${active.name} — Available Now`,
+    description:
+      active.description ||
+      `${active.name} from Ceylon Gem Maison — hand-cut Ceylon stones set in 18k gold, ready to order and shipped insured from Singapore.`,
+    path: `/shop?category=${active.slug}`,
+  });
+}
 
 // The catalogue changes when the admin publishes, not per visitor.
 export const revalidate = 60;
@@ -31,7 +65,7 @@ export default async function ShopPage({
   searchParams,
 }: {
   // Next 16: searchParams is a Promise.
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<ShopSearchParams>;
 }) {
   const { category } = await searchParams;
   const [categories, products] = await Promise.all([
@@ -44,8 +78,45 @@ export default async function ShopPage({
     ? activeCategory.image_url
     : "/ring_model.png";
 
+  /* Breadcrumbs mirroring the trail, plus the listing itself as an ItemList so
+     the catalogue is legible to Google as a collection rather than a wall of
+     links. Position is 1-based and follows the on-page order. */
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      breadcrumbJsonLd([
+        { name: "Shop", path: "/shop" },
+        ...(activeCategory
+          ? [{ name: activeCategory.name, path: `/shop?category=${activeCategory.slug}` }]
+          : []),
+      ]),
+      {
+        "@type": "CollectionPage",
+        "@id": `${SITE_URL}/shop#collection`,
+        name: activeCategory ? `${activeCategory.name} — Ceylon Gem Maison` : "Shop the Maison",
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        about: { "@id": `${SITE_URL}/#organization` },
+        inLanguage: "en-SG",
+        mainEntity: {
+          "@type": "ItemList",
+          numberOfItems: products.length,
+          itemListElement: products.map((product, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: product.title,
+            url: absoluteUrl(`/shop/${product.slug}`),
+          })),
+        },
+      },
+    ],
+  };
+
   return (
     <main className="relative flex min-h-screen w-full select-none flex-col bg-[#F7F4EC]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ScrollFX />
       <LuxeCursor />
 

@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import ScrollFX from "@/components/fx/ScrollFX";
 import LuxeCursor from "@/components/fx/LuxeCursor";
 import { ARTICLES, getArticle } from "@/lib/articles";
+import { SITE_URL, absoluteUrl, breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -17,18 +18,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const article = getArticle(slug);
   if (!article) return {};
-  return {
+  return pageMetadata({
     title: article.seoTitle,
     description: article.description,
-    alternates: { canonical: `/articles/${article.slug}` },
-    openGraph: {
-      title: article.seoTitle,
-      description: article.description,
-      type: "article",
-      publishedTime: article.date,
-      images: [{ url: article.heroImage }],
-    },
-  };
+    path: `/articles/${article.slug}`,
+    type: "article",
+    publishedTime: article.date,
+    modifiedTime: article.date,
+    image: { url: article.heroImage, alt: article.heroAlt },
+  });
 }
 
 export default async function ArticlePage({ params }: Props) {
@@ -37,22 +35,37 @@ export default async function ArticlePage({ params }: Props) {
   if (!article) notFound();
 
   const related = ARTICLES.filter((a) => a.slug !== article.slug).slice(0, 2);
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://www.ceylongemmaison.com";
+  const url = absoluteUrl(`/articles/${article.slug}`);
 
+  /* The author and publisher now point at the single Organization node declared
+     in the root layout (@id …/#organization) instead of restating a second,
+     thinner copy of the same entity — one business, one record, so the sameAs
+     profiles and address on that node carry over to every article. */
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: article.title,
-    description: article.description,
-    image: `${base}${article.heroImage}`,
-    datePublished: article.date,
-    author: { "@type": "Organization", name: "Ceylon Gem Maison", url: base },
-    publisher: {
-      "@type": "Organization",
-      name: "Ceylon Gem Maison",
-      logo: { "@type": "ImageObject", url: `${base}/logo.jpeg` },
-    },
-    mainEntityOfPage: `${base}/articles/${article.slug}`,
+    "@graph": [
+      breadcrumbJsonLd([
+        { name: "Journal", path: "/articles" },
+        { name: article.title, path: `/articles/${article.slug}` },
+      ]),
+      {
+        "@type": "Article",
+        "@id": `${url}#article`,
+        headline: article.title,
+        description: article.description,
+        image: absoluteUrl(article.heroImage),
+        datePublished: article.date,
+        // No revision history is tracked, so the two dates are the same. Google
+        // wants dateModified present; omitting it is treated as "unknown age".
+        dateModified: article.date,
+        articleSection: article.category,
+        inLanguage: "en-SG",
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        author: { "@id": `${SITE_URL}/#organization` },
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        mainEntityOfPage: { "@type": "WebPage", "@id": url },
+      },
+    ],
   };
 
   return (

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 /**
  * OurWork
@@ -233,7 +234,7 @@ export default function OurWork() {
               Recent commissions photographed as they left the atelier — every
               stone certified, every setting finished by hand.
             </p>
-            <a href="/atelier" className="group mt-6 inline-flex items-center gap-4">
+            <Link href="/atelier" className="group mt-6 inline-flex items-center gap-4">
               <span className="font-sans text-[0.68rem] font-semibold uppercase tracking-[0.25em] text-[#13294B] underline decoration-amber-500/50 decoration-[1px] underline-offset-8 transition-colors duration-300 group-hover:text-amber-700">
                 Commission Your Own
               </span>
@@ -242,7 +243,7 @@ export default function OurWork() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 17L17 7m0 0H9m8 0v8" />
                 </svg>
               </span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>

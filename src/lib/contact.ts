@@ -31,6 +31,29 @@ export function whatsAppLink(message?: string): string {
   return message ? `${base}?text=${encodeURIComponent(message)}` : base;
 }
 
+/**
+ * The published telephone line. It IS the WhatsApp line — one number answers
+ * both — so it is derived from the number above rather than written out a
+ * second time. A hardcoded copy is exactly how the site ended up advertising a
+ * second, wrong number alongside the real one.
+ *
+ * E.164 for `tel:` hrefs and schema.org; the display form reuses the same
+ * spacing logic as WHATSAPP_DISPLAY.
+ */
+export const TELEPHONE_E164 = `+${WHATSAPP_NUMBER}`;
+export const TELEPHONE_DISPLAY = WHATSAPP_DISPLAY;
+
+/** Where enquiries land, and the address on the maison's schema.org record. */
+export const SUPPORT_EMAIL = "support@ceylongemmaison.com";
+
+/** The Singapore atelier, by appointment. */
+export const ATELIER_ADDRESS = {
+  street: "66 Flora Road, #05-10, The Gale",
+  locality: "Singapore",
+  postalCode: "506912",
+  country: "SG",
+} as const;
+
 export const INSTAGRAM_URL =
   "https://www.instagram.com/ceylongemmaison?igsh=enJ4YzVyMnYxenZ2&utm_source=qr";
 export const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61592437971310";

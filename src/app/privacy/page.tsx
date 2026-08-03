@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Privacy Policy",
   description:
     "How Ceylon Gem Maison collects, uses and protects your personal information across our website, digital atelier and private client services.",
-  alternates: { canonical: "/privacy" },
-  robots: { index: false },
-};
+  path: "/privacy",
+  index: false,
+});
 
 const SECTIONS: { heading: string; body: string[] }[] = [
   {

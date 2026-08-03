@@ -7,13 +7,14 @@ import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 import ScrollFX from "@/components/fx/ScrollFX";
 import LuxeCursor from "@/components/fx/LuxeCursor";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "The Collections",
   description:
     "Rings, necklaces, earrings and bracelets from the Ceylon Gem Maison ateliers — hand-cut Ceylon stones in 18k gold, each piece signed in the house ledger.",
-  alternates: { canonical: "/collections" },
-};
+  path: "/collections",
+});
 
 const CRAFT_MARKS = [
   {

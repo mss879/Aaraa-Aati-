@@ -700,9 +700,13 @@ function AtelierGate({ onEnter }: { onEnter: (requestId: string | null) => void 
             <p className="font-sans text-[0.62rem] font-medium uppercase tracking-[0.4em] text-gold-300">
               Begin your commission
             </p>
-            <h1 className="mt-3 font-serif text-3xl font-light leading-[1.1] tracking-wide text-gold-50 md:text-[2.6rem]">
+            {/* h2, not h1: the page's single h1 is server-rendered in
+                app/atelier/page.tsx so crawlers see a heading before hydration.
+                globals.css styles h1 and h2 identically, so this is unchanged
+                on screen. */}
+            <h2 className="mt-3 font-serif text-3xl font-light leading-[1.1] tracking-wide text-gold-50 md:text-[2.6rem]">
               Who are we <span className="italic text-gold-200">designing for?</span>
-            </h1>
+            </h2>
             <p className="mt-4 font-body text-sm font-light leading-relaxed tracking-wide text-[#A9B8D0]">
               A few details so our atelier concierge can follow up with your quote and
               certification — then your private design studio opens.
@@ -1087,9 +1091,11 @@ export default function AtelierConfigurator() {
             <p data-step-item className="mb-3 font-sans text-[0.62rem] font-medium uppercase tracking-[0.4em] text-gold-400">
               {stepInfo.eyebrow}
             </p>
-            <h1 data-step-item className="font-serif text-3xl font-light tracking-wide text-gold-50 md:text-[2.6rem] md:leading-[1.1]">
+            {/* h2 for the same reason as the gate heading above — and this one
+                changes with every step, so it was never a stable page h1. */}
+            <h2 data-step-item className="font-serif text-3xl font-light tracking-wide text-gold-50 md:text-[2.6rem] md:leading-[1.1]">
               {stepInfo.title}
-            </h1>
+            </h2>
             <p data-step-item className="mt-3 max-w-md font-body text-xs font-light leading-relaxed tracking-wide text-[#A9B8D0] md:text-sm">
               {stepInfo.body}
             </p>

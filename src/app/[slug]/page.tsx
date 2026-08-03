@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import { PILLARS, getPillar, type PillarSection } from "@/lib/pillars";
+import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 /**
  * SEO pillar pages — one statically prerendered page per primary key phrase.
@@ -29,18 +30,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const pillar = getPillar(slug);
   if (!pillar) return {};
-  return {
+  return pageMetadata({
     title: pillar.title,
     description: pillar.description,
-    alternates: { canonical: `/${pillar.slug}` },
-    openGraph: {
-      title: pillar.title,
-      description: pillar.description,
-      type: "article",
-      url: `/${pillar.slug}`,
-      images: [{ url: pillar.image.src }],
-    },
-  };
+    path: `/${pillar.slug}`,
+    type: "article",
+    image: { url: pillar.image.src, alt: pillar.image.alt },
+  });
 }
 
 /** Render a paragraph string, converting [label](/path) into real links. */
@@ -145,18 +141,7 @@ export default async function PillarPage({ params }: Props) {
         about: { "@id": `${base}/#organization` },
         inLanguage: "en-SG",
       },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: `${base}/` },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: pillar.h1Top,
-            item: `${base}/${pillar.slug}`,
-          },
-        ],
-      },
+      breadcrumbJsonLd([{ name: pillar.h1Top, path: `/${pillar.slug}` }]),
       {
         "@type": "FAQPage",
         mainEntity: pillar.faqs.map((f) => ({

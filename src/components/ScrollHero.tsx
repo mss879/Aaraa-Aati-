@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 
 /**
  * ScrollHero
@@ -364,7 +365,7 @@ export default function ScrollHero() {
                         </svg>
                       </span>
                     </a>
-                    <a
+                    <Link
                       href="/atelier"
                       className="group inline-flex items-center gap-3"
                     >
@@ -376,7 +377,7 @@ export default function ScrollHero() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 17L17 7m0 0H9m8 0v8" />
                         </svg>
                       </span>
-                    </a>
+                    </Link>
                   </div>
                 )}
               </div>

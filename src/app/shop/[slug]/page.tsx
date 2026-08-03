@@ -10,6 +10,7 @@ import OrderForm from "@/components/shop/OrderForm";
 import { getShopProduct, getShopProductSlugs } from "@/lib/shop-data";
 import { productImageUrl } from "@/lib/supabase/env";
 import { formatMoney } from "@/lib/shop";
+import { SITE_URL, absoluteUrl, breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
 
@@ -36,17 +37,14 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
     product.description.slice(0, 200) ||
     `${product.title} — available to order from Ceylon Gem Maison.`;
 
-  return {
+  return pageMetadata({
     title: product.title,
     description,
-    alternates: { canonical: `/shop/${product.slug}` },
-    openGraph: {
-      title: product.title,
-      description,
-      type: "website",
-      images: cover ? [{ url: cover }] : undefined,
-    },
-  };
+    path: `/shop/${product.slug}`,
+    ...(cover
+      ? { image: { url: cover, alt: product.images[0]?.alt || product.title } }
+      : {}),
+  });
 }
 
 const ASSURANCES = [
@@ -64,25 +62,61 @@ export default async function ProductPage({ params }: PageParams) {
     .map((image) => ({ url: productImageUrl(image.path), alt: image.alt }))
     .filter((image): image is { url: string; alt: string | null } => Boolean(image.url));
 
+  const productUrl = absoluteUrl(`/shop/${product.slug}`);
+
+  /* Google treats a published price as stale without an expiry, so the offer is
+     valid for a year from the row's last edit — republishing the piece renews it.
+     Deliberately NOT declared: hasMerchantReturnPolicy and shippingDetails. Both
+     are rich-result inputs, but the maison has no published returns window or
+     shipping rate card yet, and inventing one here would put a commitment on the
+     site that nobody agreed to. Add them once the real policy exists. */
+  const priceValidUntil = new Date(
+    new Date(product.updated_at).getTime() + 365 * 24 * 60 * 60 * 1000,
+  )
+    .toISOString()
+    .slice(0, 10);
+
   // Product structured data, generated from the same row the page renders.
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.title,
-    description: product.description || undefined,
-    image: images.map((i) => i.url),
-    brand: { "@type": "Brand", name: "Ceylon Gem Maison" },
-    category: product.category?.name,
-    ...(product.price != null && {
-      offers: {
-        "@type": "Offer",
-        price: product.price,
-        priceCurrency: product.currency,
-        availability: product.in_stock
-          ? "https://schema.org/InStock"
-          : "https://schema.org/SoldOut",
+    "@graph": [
+      breadcrumbJsonLd([
+        { name: "Shop", path: "/shop" },
+        ...(product.category
+          ? [{ name: product.category.name, path: `/shop?category=${product.category.slug}` }]
+          : []),
+        { name: product.title, path: `/shop/${product.slug}` },
+      ]),
+      {
+        "@type": "Product",
+        "@id": `${productUrl}#product`,
+        name: product.title,
+        description: product.description || undefined,
+        image: images.map((i) => i.url),
+        url: productUrl,
+        // No SKU column on the row; the slug is the stable public identifier.
+        sku: product.slug,
+        productID: product.id,
+        brand: { "@type": "Brand", name: "Ceylon Gem Maison" },
+        manufacturer: { "@id": `${SITE_URL}/#organization` },
+        category: product.category?.name,
+        itemCondition: "https://schema.org/NewCondition",
+        ...(product.price != null && {
+          offers: {
+            "@type": "Offer",
+            url: productUrl,
+            price: product.price,
+            priceCurrency: product.currency,
+            priceValidUntil,
+            itemCondition: "https://schema.org/NewCondition",
+            availability: product.in_stock
+              ? "https://schema.org/InStock"
+              : "https://schema.org/SoldOut",
+            seller: { "@id": `${SITE_URL}/#organization` },
+          },
+        }),
       },
-    }),
+    ],
   };
 
   return (

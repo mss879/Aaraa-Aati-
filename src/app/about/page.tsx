@@ -5,13 +5,14 @@ import PageHero from "@/components/PageHero";
 import Footer from "@/components/Footer";
 import ScrollFX from "@/components/fx/ScrollFX";
 import LuxeCursor from "@/components/fx/LuxeCursor";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Our Story — The Maison Behind the Stone",
   description:
     "From years of exporting world-class, ethically sourced Ceylon gemstones to the West, to a bespoke sapphire atelier serving Singapore — the story of Ceylon Gem Maison.",
-  alternates: { canonical: "/about" },
-};
+  path: "/about",
+});
 
 const STATS = [
   { value: "100%", label: "Traceable, Ethical Stones" },

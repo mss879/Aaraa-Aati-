@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { FAQ_ITEMS } from "@/lib/faq";
 
 /**
@@ -36,7 +37,7 @@ export default function FAQ() {
             Everything Singapore clients ask us most — and anything else, the
             concierge answers within the day.
           </p>
-          <a href="/contact" className="group mt-8 inline-flex items-center gap-3">
+          <Link href="/contact" className="group mt-8 inline-flex items-center gap-3">
             <span className="btn-luxe-pill">
               Ask the Concierge
             </span>
@@ -45,7 +46,7 @@ export default function FAQ() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 17L17 7m0 0H9m8 0v8" />
               </svg>
             </span>
-          </a>
+          </Link>
         </div>
 
         {/* Accordion */}

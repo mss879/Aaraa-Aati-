@@ -5,13 +5,14 @@ import Footer from "@/components/Footer";
 import ScrollFX from "@/components/fx/ScrollFX";
 import LuxeCursor from "@/components/fx/LuxeCursor";
 import { SERVICES } from "@/lib/services";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Services — Bespoke Jewellery, Sapphire Sourcing & Concierge",
   description:
     "Bespoke wedding and engagement rings, instant online quotations, Ceylon sapphire sourcing, virtual consultations and private concierge — Ceylon Gem Maison's services for clients in Singapore.",
-  alternates: { canonical: "/services" },
-};
+  path: "/services",
+});
 
 export default function ServicesPage() {
   return (

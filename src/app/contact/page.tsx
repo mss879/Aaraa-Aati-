@@ -5,13 +5,15 @@ import Footer from "@/components/Footer";
 import ContactForm from "@/components/ContactForm";
 import ScrollFX from "@/components/fx/ScrollFX";
 import LuxeCursor from "@/components/fx/LuxeCursor";
+import { pageMetadata } from "@/lib/seo";
+import { TELEPHONE_DISPLAY, TELEPHONE_E164 } from "@/lib/contact";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Contact & Private Appointments",
   description:
     "Reach the Ceylon Gem Maison concierge — enquiries, private viewings at the Singapore atelier, bespoke commissions, and lifetime care for your pieces.",
-  alternates: { canonical: "/contact" },
-};
+  path: "/contact",
+});
 
 const CHANNELS = [
   {
@@ -26,8 +28,8 @@ const CHANNELS = [
   },
   {
     label: "By Telephone",
-    lines: ["+65 9842 3404"],
-    href: "tel:+6598423404",
+    lines: [TELEPHONE_DISPLAY],
+    href: `tel:${TELEPHONE_E164}`,
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
@@ -211,7 +213,7 @@ export default function ContactPage() {
                 Request an Appointment
               </a>
               <a
-                href="tel:+6598423404"
+                href={`tel:${TELEPHONE_E164}`}
  className="w-full btn-platinum sm:w-auto"
               >
                 Call the Atelier
