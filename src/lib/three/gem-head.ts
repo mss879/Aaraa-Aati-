@@ -28,8 +28,14 @@ export const GIRDLE_Y = 0.26;
 /** Radius of the prong wire. */
 const PRONG_TUBE = 0.028;
 
-/** Where a claw tip comes to rest on the crown, and how hard it bites in. */
-const TIP_Y = 0.372;
+/**
+ * Where a claw tip comes to rest on the crown, and how hard it bites in.
+ * The tip stops on the lower crown just above the girdle — the minimum grip
+ * that secures the stone. Any higher and the claws start to cover the crown:
+ * the girdle tops out at 0.272 and the table sits at 0.4, so 0.302 leaves the
+ * tip (plus its bead cap) well clear of the table.
+ */
+const TIP_Y = 0.302;
 const TIP_BITE = 0.3; // fraction of PRONG_TUBE the tip sits proud of the crown
 
 /**
@@ -145,8 +151,8 @@ function prongCurve(g: number): THREE.CatmullRomCurve3 {
       new THREE.Vector3(0.155, -0.005, 0), // foot, buried in the seat
       new THREE.Vector3(0.78 * g, 0.09, 0), // flares out clear of the pavilion
       new THREE.Vector3(g + PRONG_TUBE, 0.24, 0), // hugs the girdle from OUTSIDE
-      new THREE.Vector3(g + PRONG_TUBE * 0.6, 0.325, 0), // the curl begins
-      new THREE.Vector3(tipR, TIP_Y, 0), // claw tip, biting the crown
+      new THREE.Vector3(g + PRONG_TUBE * 0.65, 0.278, 0), // curl begins at the girdle's top edge
+      new THREE.Vector3(tipR, TIP_Y, 0), // claw tip, biting the lower crown
     ],
     false,
     "catmullrom",

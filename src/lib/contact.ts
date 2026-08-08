@@ -46,13 +46,28 @@ export const TELEPHONE_DISPLAY = WHATSAPP_DISPLAY;
 /** Where enquiries land, and the address on the maison's schema.org record. */
 export const SUPPORT_EMAIL = "support@ceylongemmaison.com";
 
+/**
+ * The concierge's live diary. A thirty-minute slot: private viewings, bespoke
+ * briefs and stone consultations all book through this one link, so it is
+ * quoted verbatim by the floating widget, the contact page, the footer and the
+ * AI concierge's instructions. If the maison ever moves scheduler, this line is
+ * the only edit.
+ */
+export const BOOKING_URL = "https://calendly.com/ceylongemmaison-support/30min";
+
 /** The Singapore atelier, by appointment. */
 export const ATELIER_ADDRESS = {
-  street: "66 Flora Road, #05-10, The Gale",
+  street: "1 Fullerton Road, One Fullerton",
   locality: "Singapore",
-  postalCode: "506912",
+  postalCode: "049213",
   country: "SG",
 } as const;
+
+/** The address as it is printed for readers: street line, then "Singapore NNNNNN". */
+export const ATELIER_ADDRESS_LINES = [
+  ATELIER_ADDRESS.street,
+  `${ATELIER_ADDRESS.locality} ${ATELIER_ADDRESS.postalCode}`,
+] as const;
 
 export const INSTAGRAM_URL =
   "https://www.instagram.com/ceylongemmaison?igsh=enJ4YzVyMnYxenZ2&utm_source=qr";

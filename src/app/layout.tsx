@@ -2,8 +2,11 @@ import type { Metadata, Viewport } from "next";
 import { Cinzel, EB_Garamond } from "next/font/google";
 import Preloader from "@/components/fx/Preloader";
 import Navbar from "@/components/Navbar";
+import FloatingActions from "@/components/FloatingActions";
+import AiConcierge from "@/components/AiConcierge";
 import {
   ATELIER_ADDRESS,
+  BOOKING_URL,
   SUPPORT_EMAIL,
   TELEPHONE_E164,
 } from "@/lib/contact";
@@ -128,6 +131,26 @@ const structuredData = {
       // Ties the site's entity to its verified public profiles — the strongest
       // signal Google has for "these accounts are the same business".
       sameAs: SOCIAL_PROFILES,
+      // The atelier takes appointments, and this is where. Declared as a
+      // ReserveAction so search engines and AI assistants can answer "book a
+      // consultation" with the real diary rather than a phone number.
+      potentialAction: {
+        "@type": "ReserveAction",
+        name: "Book a private consultation",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: BOOKING_URL,
+          inLanguage: SITE_LOCALE,
+          actionPlatform: [
+            "http://schema.org/DesktopWebPlatform",
+            "http://schema.org/MobileWebPlatform",
+          ],
+        },
+        result: {
+          "@type": "Reservation",
+          name: "30-minute private consultation with the atelier concierge",
+        },
+      },
       // The atelier is by appointment, not a walk-in shopfront.
       openingHoursSpecification: {
         "@type": "OpeningHoursSpecification",
@@ -201,6 +224,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#F7F4EC] text-[#13294B]">
         <Preloader />
         <Navbar />
+        <FloatingActions />
+        <AiConcierge />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

@@ -36,6 +36,9 @@ export const SOURCE_META: Record<LeadSource, { label: string; accent: string }> 
   craft: { label: "Crafting", accent: "#4f7bee" },
   inquiry: { label: "Inquiry", accent: "#f0b429" },
   manual: { label: "Manual", accent: "#8595ad" },
+  // The concierge opens these herself, mid-conversation — they arrive in the
+  // pipeline without a human triaging them first, so they get their own colour.
+  ai: { label: "Concierge", accent: "#12b981" },
 };
 
 /**

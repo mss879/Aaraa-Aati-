@@ -6,7 +6,12 @@ import ContactForm from "@/components/ContactForm";
 import ScrollFX from "@/components/fx/ScrollFX";
 import LuxeCursor from "@/components/fx/LuxeCursor";
 import { pageMetadata } from "@/lib/seo";
-import { TELEPHONE_DISPLAY, TELEPHONE_E164 } from "@/lib/contact";
+import {
+  ATELIER_ADDRESS_LINES,
+  BOOKING_URL,
+  TELEPHONE_DISPLAY,
+  TELEPHONE_E164,
+} from "@/lib/contact";
 
 export const metadata: Metadata = pageMetadata({
   title: "Contact & Private Appointments",
@@ -18,11 +23,22 @@ export const metadata: Metadata = pageMetadata({
 const CHANNELS = [
   {
     label: "The Singapore Atelier",
-    lines: ["66 Flora Road, #05-10, The Gale", "Singapore 506912"],
+    lines: [...ATELIER_ADDRESS_LINES],
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+      </svg>
+    ),
+  },
+  {
+    label: "Book a Private Consultation",
+    lines: ["30 minutes with the concierge", "Choose your own time"],
+    href: BOOKING_URL,
+    external: true,
+    icon: (
+      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
       </svg>
     ),
   },
@@ -58,6 +74,10 @@ const CHANNELS = [
 ];
 
 const FAQS = [
+  {
+    q: "How do I book a consultation?",
+    a: `Choose a time straight from the concierge's diary at ${BOOKING_URL} — a private thirty-minute consultation, held at the Singapore atelier or by video, whichever suits you. Bring a brief, a budget, or nothing at all; the first conversation is about what you want the piece to mean.`,
+  },
   {
     q: "Do you accept bespoke commissions?",
     a: "Yes — bespoke is the heart of the maison. Begin in the digital atelier or over a private consultation; from first sketch to final fitting typically takes six to ten weeks.",
@@ -131,6 +151,9 @@ export default function ContactPage() {
                           <a
                             key={line}
                             href={channel.href}
+                            {...(channel.external
+                              ? { target: "_blank", rel: "noopener noreferrer" }
+                              : {})}
                             className="mt-1 block font-body text-sm text-[#2C405C] transition-colors hover:text-amber-700 md:text-base"
                           >
                             {line}

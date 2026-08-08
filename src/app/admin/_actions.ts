@@ -213,6 +213,19 @@ export async function promoteCraftRequest(formData: FormData) {
 
 // ------------------------------------------------------------------ notes
 
+/* --------------------------------------------------------- ai concierge */
+
+export async function setAiConversationStatus(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const status = String(formData.get("status") ?? "");
+  if (!id || !["new", "read", "archived"].includes(status)) return;
+  const supabase = await createSupabaseServerClient();
+  await supabase.from("ai_conversations").update({ status }).eq("id", id);
+  revalidatePath("/admin/ai-inbox");
+  revalidatePath("/admin");
+}
+
 export async function createNote(formData: FormData) {
   const admin = await requireAdmin();
   const body = String(formData.get("body") ?? "").slice(0, 4000);

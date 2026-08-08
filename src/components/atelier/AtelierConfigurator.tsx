@@ -32,6 +32,7 @@ import {
 } from "@/lib/ring-options";
 
 import { WHATSAPP_NUMBER } from "@/lib/contact";
+import { validateLead } from "@/lib/lead-validation";
 
 function WhatsAppIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -615,28 +616,109 @@ const LOADING_LINES = [
 ];
 
 const REQUEST_ID_KEY = "cgm_craft_request_id";
-const LEAD_ENTERED_KEY = "cgm_atelier_entered";
-
-/* ------------------------------------------------- lead-capture intro gate */
 
 /**
- * Shown once before the configurator. Captures name + phone + email so every
- * visitor who designs opens a craft request in the Crafting inbox (which the
- * admin promotes to the CRM by hand). Fails open: if the backend is
- * unconfigured or the save fails, the visitor still enters — we never block the
- * design experience on persistence.
+ * Versioned deliberately. The old key (`cgm_atelier_entered`) was written by the
+ * full-page door gate and meant "has passed the door". This one means "we hold
+ * their details" — a different claim. Reusing the name made every visitor who
+ * had already passed the old gate look, to the new code, like a captured lead,
+ * so their prompt never fired. Renaming retires those stale flags.
  */
-function AtelierGate({ onEnter }: { onEnter: (requestId: string | null) => void }) {
+const LEAD_ENTERED_KEY = "cgm_lead_captured_v2";
+
+/**
+ * How long a visitor gets alone with their piece before we ask who they are.
+ * The details used to be demanded at the door, which meant the first thing the
+ * atelier showed a prospective client was a form — plenty turned round there
+ * without ever seeing the thing they came for. Long enough to turn the jewel
+ * and feel it is theirs; short enough that they are still in the room.
+ */
+const PROMPT_AFTER_MS = 5000;
+
+/* ---------------------------------------------- lead-capture prompt (modal) */
+
+/**
+ * Captures name + phone + email so every visitor who designs opens a craft
+ * request in the Crafting inbox (which the admin promotes to the CRM by hand).
+ *
+ * This was once a full-page gate standing in front of the configurator. It now
+ * arrives as an overlay after PROMPT_AFTER_MS, with the piece still turning
+ * behind it — the visitor has handled the thing they came for, so the ask lands
+ * on somebody already interested rather than on a stranger at the door. That is
+ * the only concession: there is no dismiss. The studio exists to earn these
+ * details, and a form you can wave away is a form nobody fills in.
+ *
+ * Fails open on OUR failures only: if the backend is unconfigured or the save
+ * errors, the visitor carries on — we never punish them for our outage. Details
+ * that fail validation are a different matter and are refused.
+ */
+function LeadPrompt({ onCaptured }: { onCaptured: (requestId: string | null) => void }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState(""); // honeypot
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /* Complaints stay quiet until they have tried once — flagging an email as
+     malformed while someone is still typing the third character is nagging. */
+  const [submitted, setSubmitted] = useState(false);
+  const panelRef = useRef<HTMLFormElement>(null);
+
+  const { ok, errors } = validateLead({ name, phone, email });
+  const shown = submitted ? errors : {};
+
+  /* No Escape handler and no backdrop click: this does not close. What it does
+     do is keep the keyboard inside itself, so tabbing cannot wander off into
+     the configurator behind — a dialog you cannot see but can still type into
+     is worse than one that traps you honestly. The page behind stops scrolling,
+     and the entrance is a lift rather than a hard cut so it reads as arriving
+     over the studio instead of replacing it. */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab" || !panelRef.current) return;
+      const focusable = panelRef.current.querySelectorAll<HTMLElement>(
+        'input:not([tabindex="-1"]), button, [href], select, textarea',
+      );
+      if (!focusable.length) return;
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
+      const active = document.activeElement;
+      if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      } else if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (active instanceof HTMLElement && !panelRef.current.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    let ctx: gsap.Context | undefined;
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      ctx = gsap.context(() => {
+        gsap.fromTo(
+          panelRef.current,
+          { opacity: 0, y: 28, scale: 0.97 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power3.out" },
+        );
+      });
+    }
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+      ctx?.revert();
+    };
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (sending) return;
+    setSubmitted(true);
+    if (sending || !ok) return;
     setSending(true);
     setError(null);
     try {
@@ -646,15 +728,15 @@ function AtelierGate({ onEnter }: { onEnter: (requestId: string | null) => void 
         body: JSON.stringify({ name, phone, email, company }),
       });
       if (res.status === 503) {
-        // Backend not wired up yet — let them design anyway.
-        onEnter(null);
+        // Backend not wired up yet — our problem, not theirs. Let them carry on.
+        onCaptured(null);
         return;
       }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(data.error || "Could not start your commission. Please try again.");
       }
-      onEnter(typeof data.requestId === "string" ? data.requestId : null);
+      onCaptured(typeof data.requestId === "string" ? data.requestId : null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setSending(false);
@@ -668,33 +750,42 @@ function AtelierGate({ onEnter }: { onEnter: (requestId: string | null) => void 
      there was nothing to show where you could type. Body serif for the value, a
      mid-blue placeholder that reads as a hint without disappearing, and a faint
      filled well with a brighter rule under it. */
-  const field =
-    "mt-2 w-full rounded-t-md border-b-2 border-[#3A5E96] bg-white/[0.05] px-3.5 py-3 font-body text-base tracking-wide text-white outline-none transition-colors placeholder:text-[#7186AC] hover:border-[#4C77C0] focus:border-gold-400 focus:bg-white/[0.09]";
-  const label =
-    "font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-200";
+  const fieldBase =
+    "mt-2 w-full rounded-t-md border-b-2 bg-white/[0.05] px-3.5 py-3 font-body text-base tracking-wide text-white outline-none transition-colors placeholder:text-[#7186AC] focus:bg-white/[0.09]";
+  const field = (invalid?: string) =>
+    `${fieldBase} ${
+      invalid
+        ? "border-rose-400/80 focus:border-rose-300"
+        : "border-[#3A5E96] hover:border-[#4C77C0] focus:border-gold-400"
+    }`;
+  const label = "font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-200";
+  const note = "mt-2 font-body text-[0.72rem] leading-snug tracking-wide text-rose-300";
 
   return (
-    <div className="relative flex min-h-[calc(100svh_-_var(--nav-h))] w-full items-center justify-center overflow-hidden bg-[#0A1F3D] px-6 py-16 text-gold-50">
-      {/* ambient dressing, matching the configurator stage */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(46,91,224,0.12)_0%,transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(46,91,224,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(46,91,224,0.025)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(circle_at_center,black_25%,transparent_72%)]" />
-
-      {/* The floating "Maison Home" pill that used to sit here is gone: the site
-          navbar now runs across every public page, so it carried a second home
-          link directly under the first one. */}
-
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="lead-prompt-title"
+      className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto bg-[#04102A]/80 px-5 py-10 text-gold-50 backdrop-blur-[3px]"
+    >
       {/* The form sits on its own panel. Navy type on a navy stage with only
           ambient wash behind it gave the eye no edge to catch — a faint lifted
           surface with a hairline is what separates the form from the room. */}
+      {/* noValidate: the browser's own bubbles would fire first and say
+          "please fill in this field" where our checks have something specific
+          to say. Validation is not weakened — submit() refuses on the same
+          rules, and so does the API. */}
       <form
+        ref={panelRef}
         onSubmit={submit}
-        className="relative w-full max-w-4xl rounded-2xl border border-[#2A4C80] bg-[#0C2447]/80 p-7 shadow-[0_24px_60px_rgba(3,10,28,0.55)] backdrop-blur-xl md:p-10"
+        noValidate
+        className="relative my-auto w-full max-w-3xl rounded-2xl border border-[#2A4C80] bg-[#0C2447]/95 p-7 shadow-[0_24px_60px_rgba(3,10,28,0.55)] backdrop-blur-xl md:p-9"
       >
         {/* Laid out across rather than down. Three fields stacked in a 448px
             column left most of a wide stage empty either side; the invitation and
             the fields sitting side by side use that width and shorten the form to
             about half its height. Stacks back to one column below md. */}
-        <div className="grid items-center gap-9 md:grid-cols-[0.95fr_1.05fr] md:gap-14">
+        <div className="grid items-center gap-8 md:grid-cols-[0.95fr_1.05fr] md:gap-12">
           {/* the invitation */}
           <div>
             <p className="font-sans text-[0.62rem] font-medium uppercase tracking-[0.4em] text-gold-300">
@@ -704,56 +795,73 @@ function AtelierGate({ onEnter }: { onEnter: (requestId: string | null) => void 
                 app/atelier/page.tsx so crawlers see a heading before hydration.
                 globals.css styles h1 and h2 identically, so this is unchanged
                 on screen. */}
-            <h2 className="mt-3 font-serif text-3xl font-light leading-[1.1] tracking-wide text-gold-50 md:text-[2.6rem]">
+            <h2
+              id="lead-prompt-title"
+              className="mt-3 font-serif text-3xl font-light leading-[1.1] tracking-wide text-gold-50 md:text-[2.4rem]"
+            >
               Who are we <span className="italic text-gold-200">designing for?</span>
             </h2>
             <p className="mt-4 font-body text-sm font-light leading-relaxed tracking-wide text-[#A9B8D0]">
-              A few details so our atelier concierge can follow up with your quote and
-              certification — then your private design studio opens.
+              Lovely choices so far. Your details, and our atelier concierge can follow
+              up with your quotation and certification — then carry on composing exactly
+              where you left off.
             </p>
           </div>
 
           {/* the details */}
           <div>
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div>
                 <label htmlFor="lead-name" className={label}>Full name</label>
                 <input
                   id="lead-name"
                   type="text"
-                  required
+                  autoFocus
                   autoComplete="name"
                   placeholder="Amara Perera"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className={field}
+                  aria-invalid={Boolean(shown.name)}
+                  aria-describedby={shown.name ? "lead-name-error" : undefined}
+                  className={field(shown.name)}
                 />
+                {shown.name && (
+                  <p id="lead-name-error" className={note}>{shown.name}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="lead-phone" className={label}>Phone / WhatsApp</label>
                 <input
                   id="lead-phone"
                   type="tel"
-                  required
                   autoComplete="tel"
                   placeholder="+65 9123 4567"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className={field}
+                  aria-invalid={Boolean(shown.phone)}
+                  aria-describedby={shown.phone ? "lead-phone-error" : undefined}
+                  className={field(shown.phone)}
                 />
+                {shown.phone && (
+                  <p id="lead-phone-error" className={note}>{shown.phone}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="lead-email" className={label}>Email</label>
                 <input
                   id="lead-email"
                   type="email"
-                  required
                   autoComplete="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={field}
+                  aria-invalid={Boolean(shown.email)}
+                  aria-describedby={shown.email ? "lead-email-error" : undefined}
+                  className={field(shown.email)}
                 />
+                {shown.email && (
+                  <p id="lead-email-error" className={note}>{shown.email}</p>
+                )}
               </div>
             </div>
 
@@ -773,9 +881,9 @@ function AtelierGate({ onEnter }: { onEnter: (requestId: string | null) => void 
             <button
               type="submit"
               disabled={sending}
-              className="btn-luxe-pill mt-8 w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
+              className="btn-luxe-pill mt-7 w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {sending ? "Opening the atelier…" : "Enter the atelier"}
+              {sending ? "Saving your commission…" : "Continue my commission"}
             </button>
 
             {error && (
@@ -799,41 +907,77 @@ export default function AtelierConfigurator() {
   const [config, setConfig] = useState<RingConfig>(DEFAULT_CONFIG);
   const [gen, setGen] = useState<GenState>({ status: "idle" });
   const [loadingLine, setLoadingLine] = useState(0);
-  // Contact gate: `entered` unlocks the configurator; `requestId` links renders
-  // to the craft request opened at the gate. `null` before hydration so we don't
-  // flash the gate for a returning visitor whose session already entered.
-  const [entered, setEntered] = useState<boolean | null>(null);
+  // Lead capture: `captured` records whether we have their details; `requestId`
+  // links renders to the craft request opened when they gave them. `null` before
+  // hydration means "not known yet", which only holds the prompt's timer — the
+  // studio itself renders straight away either way.
+  const [captured, setCaptured] = useState<boolean | null>(null);
   const [requestId, setRequestId] = useState<string | null>(null);
+  const [promptOpen, setPromptOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  /* Mirrors `captured` for the guards below, which run inside event handlers
+     that closed over the old value — a stale `false` there would re-open the
+     prompt on someone who had just filled it in. */
+  const capturedRef = useRef(false);
 
-  // Restore gate state so a reload mid-design doesn't re-prompt. This must run
-  // after mount (not a lazy useState initializer): the server has no
-  // sessionStorage and always renders the neutral `entered === null` branch, so
-  // reading storage here and reconciling on the client avoids a hydration
-  // mismatch. The one extra render is intended.
+  // Restore capture state so a reload mid-design doesn't re-prompt. This must
+  // run after mount (not a lazy useState initializer): the server has no
+  // sessionStorage, so reading storage here and reconciling on the client avoids
+  // a hydration mismatch. The one extra render is intended.
   /* eslint-disable react-hooks/set-state-in-effect -- mount-time read from an external system (sessionStorage) */
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem(REQUEST_ID_KEY);
       if (saved) setRequestId(saved);
-      setEntered(sessionStorage.getItem(LEAD_ENTERED_KEY) === "1");
+      const had = sessionStorage.getItem(LEAD_ENTERED_KEY) === "1";
+      capturedRef.current = had;
+      setCaptured(had);
     } catch {
-      setEntered(false);
+      setCaptured(false);
     }
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const enterAtelier = useCallback((id: string | null) => {
+  /* The grace period. It runs once per session: dismissing leaves `captured`
+     false without re-running this effect, so the prompt does not nag on a
+     timer — it comes back only when they reach for the reveal. */
+  useEffect(() => {
+    if (captured !== false) return;
+    const id = setTimeout(() => setPromptOpen(true), PROMPT_AFTER_MS);
+    return () => clearTimeout(id);
+  }, [captured]);
+
+  /* What the prompt interrupted, so filling it in carries straight on instead of
+     making them press the same button twice. */
+  const resumeRef = useRef<null | (() => void)>(null);
+
+  const captureLead = useCallback((id: string | null) => {
+    capturedRef.current = true;
     setRequestId(id);
-    setEntered(true);
+    setCaptured(true);
+    setPromptOpen(false);
     try {
       if (id) sessionStorage.setItem(REQUEST_ID_KEY, id);
       sessionStorage.setItem(LEAD_ENTERED_KEY, "1");
     } catch {
       /* sessionStorage unavailable — fine, just won't persist across reloads */
     }
+    const resume = resumeRef.current;
+    resumeRef.current = null;
+    resume?.();
+  }, []);
+
+  /* Exploring is free; proceeding is not. Anything that carries the visitor
+     forward calls this, and it either passes or raises the prompt. It also
+     covers the visitor quick enough to press Continue inside the five seconds,
+     who would otherwise walk the whole flow before the timer caught up. */
+  const requireLead = useCallback((resume?: () => void) => {
+    if (capturedRef.current) return true;
+    resumeRef.current = resume ?? null;
+    setPromptOpen(true);
+    return false;
   }, []);
 
   const price = estimatePrice(config);
@@ -897,15 +1041,17 @@ export default function AtelierConfigurator() {
   // step, so the Crafting inbox reflects what they configured even if they never
   // render.
   useEffect(() => {
-    if (!entered || !requestId || stepKey !== "review") return;
+    if (!requestId || stepKey !== "review") return;
     fetch(`/api/craft-requests/${requestId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ config }),
     }).catch(() => {});
-  }, [entered, requestId, stepKey, config]);
+  }, [requestId, stepKey, config]);
 
   const generate = async () => {
+    // The render is the commission — never produced for an anonymous visitor.
+    if (!requireLead()) return;
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -975,17 +1121,16 @@ export default function AtelierConfigurator() {
         ];
   const stepIndexOf = (key: string) => Math.max(0, STEPS.findIndex((s) => s.key === key));
 
-  /* ------------------------------------------------------------ rendering */
+  /* The details buy passage through the flow, not entry to it. Turning the
+     jewel, swapping metals and stones on the step you are on stay free forever
+     — but moving forward is proceeding, and that is what they are for. */
+  const advance = () => setStep((s) => Math.min(STEPS.length - 1, s + 1));
+  const goNext = () => {
+    if (!requireLead(advance)) return;
+    advance();
+  };
 
-  // Pre-hydration: hold a plain navy field so the gate never flashes for a
-  // returning visitor whose session already entered.
-  if (entered === null) {
-    return <div className="min-h-[calc(100svh_-_var(--nav-h))] w-full bg-[#0A1F3D]" />;
-  }
-  // Lead-capture gate — contact details before any design happens.
-  if (!entered) {
-    return <AtelierGate onEnter={enterAtelier} />;
-  }
+  /* ------------------------------------------------------------ rendering */
 
   return (
     <div className="relative flex min-h-[calc(100svh_-_var(--nav-h))] w-full flex-col bg-[#0A1F3D] text-gold-50 lg:flex-row">
@@ -1401,7 +1546,7 @@ export default function AtelierConfigurator() {
             {step < STEPS.length - 1 && (
               <button
                 type="button"
-                onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}
+                onClick={goNext}
                 className="rounded-full bg-gold-400 px-8 py-3 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.25em] text-white shadow-[0_4px_20px_rgba(46,91,224,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-300 active:translate-y-0 cursor-pointer"
               >
                 Continue →
@@ -1410,6 +1555,9 @@ export default function AtelierConfigurator() {
           </div>
         </div>
       </div>
+
+      {/* ================== LEAD PROMPT (after the grace period) ================== */}
+      {promptOpen && <LeadPrompt onCaptured={captureLead} />}
 
       {/* ======================= AI REVEAL OVERLAY ======================= */}
       {gen.status !== "idle" && (

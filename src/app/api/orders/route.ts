@@ -11,10 +11,10 @@ import {
   cleanText,
   getClientIp,
   hashIp,
-  isEmailish,
   isSameOrigin,
   rateLimit,
 } from "@/lib/server/security";
+import { validateEmail, validateName, validatePhone } from "@/lib/lead-validation";
 
 /**
  * POST /api/orders
@@ -71,11 +71,13 @@ export async function POST(req: Request) {
   if (!UUID_RE.test(productId)) {
     return NextResponse.json({ error: "That piece could not be found." }, { status: 400 });
   }
-  if (!name || !email) {
-    return NextResponse.json({ error: "Name and email are required." }, { status: 400 });
-  }
-  if (!isEmailish(email)) {
-    return NextResponse.json({ error: "Please enter a valid email." }, { status: 400 });
+  /* Same rules as the atelier prompt — a delivery that cannot be addressed to
+     a real person, or confirmed to a real mailbox, is not an order we can
+     fulfil. Phone is optional at checkout but validated when supplied. */
+  const invalid =
+    validateName(name) ?? validateEmail(email) ?? (phone ? validatePhone(phone) : undefined);
+  if (invalid) {
+    return NextResponse.json({ error: invalid }, { status: 400 });
   }
 
   const supabase = createSupabaseAdminClient();

@@ -3,6 +3,9 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { signGenerationUrl } from "@/lib/admin/storage";
 import type {
+  AiConversation,
+  AiConversationWithMessages,
+  AiMessage,
   CraftRequest,
   Generation,
   Inquiry,
@@ -90,6 +93,42 @@ export async function getCraftRequests(): Promise<CraftRequestWithRenders[]> {
 }
 
 /* --------------------------------------------------------------- shop */
+
+/**
+ * Every AI conversation with its transcript, newest thread first.
+ *
+ * Two queries, not one per thread: the inbox shows a dozen conversations and a
+ * per-row fetch would be a dozen round trips. Messages come back in one sweep
+ * and are bucketed in memory.
+ */
+export async function getAiConversations(limit = 100): Promise<AiConversationWithMessages[]> {
+  if (!hasSupabaseEnv) return [];
+  const supabase = await createSupabaseServerClient();
+
+  const { data: conversations } = await supabase
+    .from("ai_conversations")
+    .select("*")
+    .order("last_message_at", { ascending: false, nullsFirst: false })
+    .limit(limit);
+
+  const rows = (conversations as AiConversation[]) ?? [];
+  if (rows.length === 0) return [];
+
+  const { data: messages } = await supabase
+    .from("ai_messages")
+    .select("*")
+    .in("conversation_id", rows.map((c) => c.id))
+    .order("created_at", { ascending: true });
+
+  const byConversation = new Map<string, AiMessage[]>();
+  for (const m of ((messages as AiMessage[]) ?? [])) {
+    const bucket = byConversation.get(m.conversation_id);
+    if (bucket) bucket.push(m);
+    else byConversation.set(m.conversation_id, [m]);
+  }
+
+  return rows.map((c) => ({ ...c, messages: byConversation.get(c.id) ?? [] }));
+}
 
 export async function getProductCategories(): Promise<ProductCategory[]> {
   if (!hasSupabaseEnv) return [];

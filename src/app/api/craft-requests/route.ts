@@ -6,10 +6,10 @@ import {
   cleanText,
   getClientIp,
   hashIp,
-  isEmailish,
   isSameOrigin,
   rateLimit,
 } from "@/lib/server/security";
+import { validateEmail, validateName, validatePhone } from "@/lib/lead-validation";
 
 /**
  * POST /api/craft-requests
@@ -50,14 +50,20 @@ export async function POST(req: Request) {
 
   const name = cleanText(body.name, 120);
   const phone = cleanText(body.phone, 40);
-  const emailRaw = cleanText(body.email, 160).toLowerCase();
-  const email = emailRaw && isEmailish(emailRaw) ? emailRaw : null;
+  const email = cleanText(body.email, 160).toLowerCase();
 
-  if (!name || !phone) {
-    return NextResponse.json(
-      { error: "Name and phone are required." },
-      { status: 400 },
-    );
+  /* The same rules the atelier prompt applies, run again here. The client check
+     is a courtesy to the visitor; this one is the actual gate — nothing stops a
+     script POSTing straight at this route, and the Crafting inbox is only worth
+     opening if what lands in it can be dialled and written to. Email is
+     required now, not optional: a commission's quotation and certificate go by
+     mail, so a request without one is not workable. */
+  const invalid =
+    validateName(name) ??
+    validatePhone(phone) ??
+    validateEmail(email);
+  if (invalid) {
+    return NextResponse.json({ error: invalid }, { status: 400 });
   }
 
   const supabase = createSupabaseAdminClient();

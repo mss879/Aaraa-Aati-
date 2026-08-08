@@ -26,7 +26,8 @@ export default function PageHero({
   image,
 }: PageHeroProps) {
   return (
-    <section className="relative z-10 w-full">
+    /* data-hero: usePastHero keeps the floating concierge stack off this band. */
+    <section data-hero className="relative z-10 w-full">
       <div className="relative flex min-h-[68svh] w-full flex-col overflow-hidden bg-[#0A1F3D] md:min-h-[74svh]">
         {/* Backdrop portrait */}
         {image && (

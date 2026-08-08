@@ -287,6 +287,9 @@ export default function ScrollHero() {
     <section
       ref={sectionRef}
       aria-label="The making of a Ceylon Gem Maison solitaire"
+      /* Read by usePastHero: the floating concierge stack holds off until this
+         whole track — the film, not merely the first screen — is behind us. */
+      data-hero
       className="relative z-10 w-full"
       style={{ height: `${TRACK_VH}vh` }}
     >

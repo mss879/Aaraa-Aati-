@@ -7,6 +7,7 @@ import {
   FACEBOOK_URL,
   INSTAGRAM_URL,
   LINKEDIN_URL,
+  BOOKING_URL,
   WHATSAPP_DISPLAY,
   whatsAppLink,
 } from "@/lib/contact";
@@ -123,7 +124,16 @@ export default function Footer() {
                 <Link href="/articles" className="hover:text-gold-200 transition-colors">The Journal</Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-gold-200 transition-colors">Book Private Appointment</Link>
+                {/* Straight into the concierge's live diary rather than to the
+                    contact page and a second click. */}
+                <a
+                  href={BOOKING_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-gold-200 transition-colors"
+                >
+                  Book Private Appointment
+                </a>
               </li>
             </ul>
           </div>

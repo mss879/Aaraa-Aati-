@@ -225,7 +225,9 @@ function makeHead(state: ThreeState, config: RingConfig, disposables: Disposable
     rim.scale.set(spec.sx, spec.sz, 1);
     head.add(rim);
   } else if (three.head === "tension") {
-    // No metal at all — the stone hangs in the band's gap, girdle at band level.
+    // No metal of its own — the open band's grip faces hold the stone;
+    // buildRing solves the gap and drops this head so the girdle seats
+    // between them rather than floating above the opening.
     head = new THREE.Group();
     const stone = makeStone(config.cut, gemMat, disposables);
     stone.position.y = -GIRDLE_Y;
@@ -272,6 +274,23 @@ function buildRing(state: ThreeState, config: RingConfig): THREE.Group {
   const three = settingById(config.setting).three;
   const band = three.band ?? "round";
 
+  /* --- tension grip solve (band === "open") ---
+     A tension stone is held by the band's two cut ends pressing on its girdle,
+     so the gap is not a fixed angle: each end stops where the stone begins,
+     cast against the real girdle outline (a pear's point reaches further than
+     its bowl) at the current carat. The faces then bite 8% over the girdle —
+     the seat that visually holds the stone. Carat changes REBUILD the ring
+     (see the rebuild effect) so the grip stays closed instead of tweening
+     the stone loose. */
+  const caratScale = Math.cbrt(config.carat);
+  const gripFace = 0.06; // how far each flat grip face reaches past the band's cut
+  const gripTheta = (dir: number) =>
+    Math.asin(
+      Math.min(0.6, (girdleRadiusAt(dir, CUT_SPEC[config.cut]) * caratScale * 0.92 + gripFace) / R),
+    );
+  const thetaR = gripTheta(0); // half-gap on the +X flank of the stone
+  const thetaL = gripTheta(Math.PI); // half-gap on the −X flank
+
   /* --- band --- */
   if (band === "round" || band === "wide" || band === "thin" || band === "signet") {
     const tube = band === "thin" ? 0.06 : spec.tube;
@@ -292,20 +311,25 @@ function buildRing(state: ThreeState, config: RingConfig): THREE.Group {
       model.add(dome);
     }
   } else if (band === "open") {
-    // tension: a broad band whose two ends stop short of each other at the top
-    const gap = 0.55;
-    const bandGeo = new THREE.TorusGeometry(R, spec.tube, q.bandRadial, q.bandTubular, Math.PI * 2 - gap);
-    const capGeo = new THREE.SphereGeometry(spec.tube, 12, 8);
+    // tension: a broad band whose two ends stop exactly where the stone begins
+    const arc = Math.PI * 2 - thetaL - thetaR;
+    const bandGeo = new THREE.TorusGeometry(R, spec.tube, q.bandRadial, q.bandTubular, arc);
+    // flat discs seal the tube's open ends and reach past the cut to bite
+    // over the girdle — the seat that actually holds a tension stone
+    const capGeo = new THREE.CylinderGeometry(
+      spec.tube * 1.02, spec.tube * 1.02, gripFace * 2, q.bandRadial,
+    );
     disposables.push(bandGeo, capGeo);
     const mesh = new THREE.Mesh(bandGeo, metalMat);
-    mesh.rotation.z = Math.PI / 2 + gap / 2; // centre the gap on top
+    mesh.rotation.z = Math.PI / 2 + thetaL; // arc runs from the −X grip round to +X
     mesh.scale.z = 1.8;
     model.add(mesh);
-    for (const s of [-1, 1]) {
-      const a = Math.PI / 2 + (s * gap) / 2;
+    for (const [s, theta] of [[-1, thetaR], [1, thetaL]] as const) {
+      const a = Math.PI / 2 + s * theta;
       const cap = new THREE.Mesh(capGeo, metalMat);
       cap.position.set(Math.cos(a) * R, Math.sin(a) * R, 0);
-      cap.scale.z = 1.8;
+      cap.rotation.z = a; // cylinder axis onto the band's tangent
+      cap.scale.z = 1.8; // match the broad band's cross-section
       model.add(cap);
     }
   } else if (band === "split") {
@@ -347,21 +371,36 @@ function buildRing(state: ThreeState, config: RingConfig): THREE.Group {
     for (const s of [-1, 1]) {
       const end = Math.PI / 2 + s * 0.34;
       const mesh = new THREE.Mesh(arcGeo, metalMat);
-      mesh.rotation.z = end - arcLen;
+      // the tip LEADS its arc on one side and TRAILS it on the other, so the
+      // strands climb opposite sides of the finger and together close the
+      // circle — anchored the same way they stack on the same three-quarters
+      // and leave a hole where neither passes
+      mesh.rotation.z = s === 1 ? end - arcLen : end;
       mesh.position.z = s * 0.075;
       model.add(mesh);
-      const cap = new THREE.Mesh(capGeo, metalMat);
-      cap.position.set(Math.cos(end) * R, Math.sin(end) * R, s * 0.075);
-      model.add(cap);
+      // the torus tube is open at both cuts — cap the sweeping tip, and the
+      // far end too, which sits shoulder-to-shoulder with the other strand
+      for (const a of [end, end - s * arcLen]) {
+        const cap = new THREE.Mesh(capGeo, metalMat);
+        cap.position.set(Math.cos(a) * R, Math.sin(a) * R, s * 0.075);
+        model.add(cap);
+      }
     }
   }
 
   /* --- crown --- */
   const head = makeHead(state, config, disposables);
   // flush stones ride the surface they sink into: the signet's dome crests
-  // higher than a wide band's outer wall
+  // higher than a wide band's outer wall; a tension girdle sits level with
+  // the grip faces, which stop a touch below the band's centreline circle
   const headY =
-    three.head === "flush" ? (band === "signet" ? R + 0.3 : R + 0.1) : R;
+    three.head === "flush"
+      ? band === "signet"
+        ? R + 0.3
+        : R + 0.1
+      : three.head === "tension"
+        ? (R * (Math.cos(thetaL) + Math.cos(thetaR))) / 2
+        : R;
   head.position.set(0, headY, 0);
   model.add(head);
   if (three.head !== "none") {
@@ -1217,8 +1256,14 @@ export default function BespokeJewel3D({ config }: { config: RingConfig }) {
   /* ---------- rebuild model when the silhouette changes ----------
      Bracelets also rebuild on carat: their whole layout (stone counts, chain
      terminations) is solved from the stone size, so a tweened scale would
-     re-open the gaps the solver closed. */
-  const braceletCarat = config.piece === "bracelet" ? config.carat : 0;
+     re-open the gaps the solver closed. Tension rings likewise — the open
+     band's gap is solved from the girdle, and a tweened stone would float
+     free of (or sink into) the grip faces. */
+  const solvedCarat =
+    config.piece === "bracelet" ||
+    (config.piece === "ring" && settingById(config.setting).three.band === "open")
+      ? config.carat
+      : 0;
   useEffect(() => {
     const state = stateRef.current;
     if (!state) return;
@@ -1251,7 +1296,7 @@ export default function BespokeJewel3D({ config }: { config: RingConfig }) {
       gsap.fromTo(model.rotation, { y: -0.6 }, { y: 0, duration: 1.1, ease: "power3.out" });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config.piece, config.setting, config.cut, config.braceletStyle, braceletCarat]);
+  }, [config.piece, config.setting, config.cut, config.braceletStyle, solvedCarat]);
 
   /* ---------- tween metal color ---------- */
   useEffect(() => {

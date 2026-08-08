@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { validateEmail, validateName, validatePhone } from "@/lib/lead-validation";
 import { useSearchParams } from "next/navigation";
 
 import { WHATSAPP_NUMBER } from "@/lib/contact";
@@ -66,6 +67,16 @@ export default function ContactForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (sending) return;
+
+    /* Caught here so the complaint is instant and specific. The API runs the
+       same rules regardless — this is the courtesy, not the guard. */
+    const invalid =
+      validateName(name) ?? validateEmail(email) ?? (phone ? validatePhone(phone) : undefined);
+    if (invalid) {
+      setError(invalid);
+      return;
+    }
+
     setSending(true);
     setError(null);
     try {

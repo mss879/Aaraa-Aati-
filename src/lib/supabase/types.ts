@@ -11,7 +11,7 @@ export type LeadStage =
   | "lost";
 
 /** 'atelier' is historical — atelier visitors now arrive as 'craft' promotions. */
-export type LeadSource = "atelier" | "inquiry" | "manual" | "craft";
+export type LeadSource = "atelier" | "inquiry" | "manual" | "craft" | "ai";
 
 export interface Lead {
   id: string;
@@ -28,6 +28,8 @@ export interface Lead {
   note: string | null;
   inquiry_id: string | null;
   craft_request_id: string | null;
+  /** Set when the concierge opened this lead from a chat. */
+  ai_conversation_id: string | null;
   archived: boolean;
 }
 
@@ -90,6 +92,43 @@ export interface Generation {
   status: "done" | "failed";
   ip_hash: string | null;
   user_agent: string | null;
+}
+
+/* ------------------------------------------------------ ai concierge */
+
+export type AiConversationStatus = "new" | "read" | "archived";
+
+/** One visitor session with the AI concierge — the AI Inbox. */
+export interface AiConversation {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  session_id: string;
+  visitor_name: string | null;
+  visitor_phone: string | null;
+  visitor_email: string | null;
+  /** The agent's own one-line reason for capturing them. */
+  qualification: string | null;
+  lead_id: string | null;
+  status: AiConversationStatus;
+  message_count: number;
+  last_message_at: string | null;
+  page_path: string | null;
+  ip_hash: string | null;
+  user_agent: string | null;
+}
+
+export interface AiMessage {
+  id: string;
+  created_at: string;
+  conversation_id: string;
+  role: "user" | "assistant";
+  content: string;
+}
+
+/** A conversation with its transcript, oldest message first. */
+export interface AiConversationWithMessages extends AiConversation {
+  messages: AiMessage[];
 }
 
 /* ------------------------------------------------------------- e-commerce */

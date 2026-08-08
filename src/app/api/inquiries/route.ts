@@ -5,10 +5,10 @@ import {
   cleanText,
   getClientIp,
   hashIp,
-  isEmailish,
   isSameOrigin,
   rateLimit,
 } from "@/lib/server/security";
+import { validateEmail, validateName, validatePhone } from "@/lib/lead-validation";
 
 /**
  * POST /api/inquiries
@@ -47,14 +47,16 @@ export async function POST(req: Request) {
   const interest = cleanText(body.interest, 80) || null;
   const source_piece = cleanText(body.sourcePiece, 120) || null;
 
-  if (!name || !email || !message) {
-    return NextResponse.json(
-      { error: "Name, email and message are required." },
-      { status: 400 },
-    );
+  if (!message) {
+    return NextResponse.json({ error: "Please tell us how we can help." }, { status: 400 });
   }
-  if (!isEmailish(email)) {
-    return NextResponse.json({ error: "Please enter a valid email." }, { status: 400 });
+  /* Same rules as the atelier prompt. Phone stays optional on the contact form
+     — a written enquiry is legitimate without one — but a number that IS given
+     has to be dialable. */
+  const invalid =
+    validateName(name) ?? validateEmail(email) ?? (phone ? validatePhone(phone) : undefined);
+  if (invalid) {
+    return NextResponse.json({ error: invalid }, { status: 400 });
   }
 
   const supabase = createSupabaseAdminClient();

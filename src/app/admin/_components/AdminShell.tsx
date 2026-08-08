@@ -14,6 +14,7 @@ import { signOut } from "@/app/admin/_actions";
 export type NavBadges = {
   inquiries: number;
   crafting: number;
+  aiInbox: number;
   orders: number;
 };
 
@@ -35,6 +36,7 @@ const SECTIONS: { heading?: string; tone?: "ecom"; items: NavItem[] }[] = [
       { href: "/admin/crm", label: "CRM Pipeline", icon: "pipeline" },
       { href: "/admin/inquiries", label: "Inquiries", icon: "inbox", badge: "inquiries" },
       { href: "/admin/crafting", label: "Crafting", icon: "gem", badge: "crafting" },
+      { href: "/admin/ai-inbox", label: "AI Inbox", icon: "spark", badge: "aiInbox" },
       { href: "/admin/notes", label: "Notes", icon: "note" },
     ],
   },
@@ -84,6 +86,14 @@ function Icon({ name, className = "h-4 w-4" }: { name: string; className?: strin
         <>
           <path d="M7 4h10l4 5-9 11L3 9z" {...common} />
           <path d="M3 9h18M9.5 9L12 20M14.5 9L12 20M7 4l2.5 5M17 4l-2.5 5" {...common} />
+        </>
+      )}
+      {/* ai inbox — a speech bubble struck through with a spark, so it reads as
+          "conversation" first and "machine" second */}
+      {name === "spark" && (
+        <>
+          <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" {...common} />
+          <path d="M12.4 8l.85 2.15L15.4 11l-2.15.85-.85 2.15-.85-2.15L9.4 11l2.15-.85z" {...common} />
         </>
       )}
       {name === "tag" && (

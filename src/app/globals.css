@@ -8,11 +8,18 @@
      hardcoding the number in half a dozen places. It is the logo's height plus
      the bar's padding and hairline. */
   --nav-h: 61px;
+  /* Headroom the concierge gem occupies at the bottom right — its own height
+     plus the margin it keeps off the corner. The Book/WhatsApp stack sits on
+     top of this, so resizing the gem is a one-line change here rather than a
+     hunt through components. 48px stone + 0.75rem margin. */
+  --agent-h: 60px;
 }
 
 @media (min-width: 768px) {
   :root {
     --nav-h: 69px;
+    /* 54px stone + 1.25rem margin */
+    --agent-h: 74px;
   }
 }
 
@@ -269,7 +276,8 @@ p {
 .btn-luxe-pill,
 .btn-platinum,
 .chip-luxe,
-.eyebrow-gem {
+.eyebrow-gem,
+.gem-fab {
   --gem-point: 18px;
   --gem-clip: polygon(
     var(--gem-point) 0%,
@@ -483,6 +491,232 @@ p {
   .btn-platinum::after {
     --gem-inner-point: 9.7px;
     inset: 6px 8px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   The floating concierge stack — Book, WhatsApp and Amara, parked at the right
+   edge. Three discs used to sit there in three unrelated materials; they are now
+   the same cut stone as the CTA tabs, shrunk until a collapsed one is very
+   nearly square, so the column reads as a set of three gems rather than as
+   chat-widget furniture.
+
+   Same three-layer build as .btn-luxe-pill — element background is the setting's
+   hairline, ::before the crown, ::after the table — on insets re-solved from the
+   formulas above .btn-luxe-pill for this size: H = 54px, P = 17px, giving
+   sqrt(P² + (H/2)²) = 31.91, a 1px rim at 1.2px horizontal / 16.4px inner point
+   and a 7px crown at 8.3px / 12.6px.
+
+   Height is fixed (the frame is cut from it) but width is free, because the clip
+   path's extents are percentages: that is what lets a gem grow into its label on
+   hover without its facets tearing.
+--------------------------------------------------------------------------- */
+.gem-fab {
+  --gem-point: 17px;
+  --gem-h: 54px;
+  height: var(--gem-h);
+  /* Enough that the glyph clears the table's diagonals: at the icon's own top
+     edge the inner face has only reached x = 8.3 + 12.6·(10.4/20) ≈ 14.9px. */
+  padding-inline: 1rem;
+  font-family: var(--font-serif);
+  font-size: 0.62rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.gem-fab::before,
+.gem-fab::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  clip-path: polygon(
+    var(--gem-inner-point) 0%,
+    calc(100% - var(--gem-inner-point)) 0%,
+    100% 50%,
+    calc(100% - var(--gem-inner-point)) 100%,
+    var(--gem-inner-point) 100%,
+    0% 50%
+  );
+}
+.gem-fab::before {
+  --gem-inner-point: 16.4px;
+  inset: 1px 1.2px;
+}
+.gem-fab::after {
+  --gem-inner-point: 12.6px;
+  inset: 7px 8.3px;
+}
+
+.gem-fab__icon {
+  flex: none;
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+/* Width, not display: a hidden label cannot animate, and the stone has to grow
+   into its name rather than snap. The negative right margin pays back the
+   trailing letter-space that would otherwise drag the pair off the axis. */
+.gem-fab__label {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  margin-inline: 0;
+  transition: max-width 0.35s ease, opacity 0.3s ease, margin-inline 0.35s ease;
+}
+.gem-fab:hover .gem-fab__label,
+.gem-fab:focus-visible .gem-fab__label {
+  max-width: 9rem;
+  opacity: 1;
+  margin-inline: 0.55rem -0.2em;
+}
+
+/* Sapphire — the concierge, the same stone as the primary CTA. */
+.gem-fab--sapphire {
+  background: linear-gradient(180deg, #fbf7ec 0%, #e7dfcc 55%, #cdc4ae 100%);
+  color: #ffffff;
+  text-shadow: 0 0 9px rgba(150, 186, 255, 0.45);
+  filter: drop-shadow(0 4px 16px rgba(35, 78, 200, 0.42));
+}
+.gem-fab--sapphire::before {
+  background: linear-gradient(
+    180deg,
+    #f2f6ff 0%,
+    #b9d0fd 4%,
+    #5e8cf2 9%,
+    #3563de 14%,
+    #2350c9 50%,
+    #1b3ca8 86%,
+    #3f6fe4 93%,
+    #8fb4f8 100%
+  );
+}
+.gem-fab--sapphire::after {
+  background:
+    radial-gradient(60% 210% at 50% 106%, rgba(46, 91, 224, 0.55) 0%, rgba(46, 91, 224, 0) 70%),
+    linear-gradient(180deg, #050f2a 0%, #0b1e47 55%, #03091d 100%);
+}
+.gem-fab--sapphire:hover,
+.gem-fab--sapphire:focus-visible {
+  filter: brightness(1.1) drop-shadow(0 8px 24px rgba(46, 91, 224, 0.55));
+}
+
+/* Platinum glass — the secondary CTA's material, for the diary. */
+.gem-fab--platinum {
+  background: linear-gradient(180deg, #ffffff 0%, #e8eef6 45%, #b6c2d2 78%, #f7fafd 100%);
+  color: #13294b;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  filter:
+    drop-shadow(0 0 7px rgba(190, 214, 250, 0.3))
+    drop-shadow(0 5px 14px rgba(10, 24, 60, 0.28));
+}
+.gem-fab--platinum::before {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #e1e8f2 6%,
+    #b0bdcf 14%,
+    #8a98ad 50%,
+    #7e8ca1 86%,
+    #c5d0df 93%,
+    #f3f7fc 100%
+  );
+}
+.gem-fab--platinum::after {
+  background:
+    radial-gradient(
+      125% 190% at 28% -55%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.42) 36%,
+      rgba(255, 255, 255, 0) 64%
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0) 52%, rgba(103, 121, 148, 0.3) 100%),
+    linear-gradient(180deg, #fbfdff 0%, #e7edf5 42%, #ccd6e3 74%, #eff4f9 100%);
+}
+.gem-fab--platinum:hover,
+.gem-fab--platinum:focus-visible {
+  filter:
+    brightness(1.06)
+    drop-shadow(0 0 10px rgba(200, 222, 255, 0.45))
+    drop-shadow(0 9px 20px rgba(10, 24, 60, 0.38));
+}
+
+/* Emerald — WhatsApp keeps its own green, because that colour is a brand mark
+   people scan for; it is simply set in the maison's metal like the others. */
+.gem-fab--emerald {
+  background: linear-gradient(180deg, #fbf7ec 0%, #e7dfcc 55%, #cdc4ae 100%);
+  color: #eafff3;
+  text-shadow: 0 0 9px rgba(120, 240, 175, 0.45);
+  filter: drop-shadow(0 4px 16px rgba(18, 140, 76, 0.4));
+}
+.gem-fab--emerald::before {
+  background: linear-gradient(
+    180deg,
+    #f2fff8 0%,
+    #b8f5d3 4%,
+    #4fe08f 9%,
+    #25d366 14%,
+    #12a94f 50%,
+    #0b7c39 86%,
+    #2fc46e 93%,
+    #86edb3 100%
+  );
+}
+.gem-fab--emerald::after {
+  background:
+    radial-gradient(60% 210% at 50% 106%, rgba(37, 211, 102, 0.5) 0%, rgba(37, 211, 102, 0) 70%),
+    linear-gradient(180deg, #02160c 0%, #06301a 55%, #010b06 100%);
+}
+.gem-fab--emerald:hover,
+.gem-fab--emerald:focus-visible {
+  filter: brightness(1.1) drop-shadow(0 8px 24px rgba(37, 211, 102, 0.45));
+}
+
+.gem-fab:hover,
+.gem-fab:focus-visible {
+  transform: translateY(-2px);
+}
+.gem-fab:active {
+  transform: translateY(0);
+}
+/* clip-path crops an outline away along the diagonals, so the keyboard ring is
+   a glow around the silhouette instead — the one thing clip-path cannot eat. */
+.gem-fab:focus-visible {
+  outline: none;
+}
+.gem-fab--sapphire:focus-visible,
+.gem-fab--emerald:focus-visible,
+.gem-fab--platinum:focus-visible {
+  /* drop-shadow has no spread, so the ring is two tight, opaque passes stacked
+     until they read as a solid halo hugging the facets. */
+  filter:
+    brightness(1.08)
+    drop-shadow(0 0 1px rgba(143, 176, 248, 1))
+    drop-shadow(0 0 2px rgba(143, 176, 248, 0.95))
+    drop-shadow(0 0 6px rgba(143, 176, 248, 0.7))
+    drop-shadow(0 8px 22px rgba(10, 24, 60, 0.45));
+}
+
+/* Re-solved for the phone stone: H = 48px, P = 15px, giving 28.30 — a 1px rim
+   at 1.2px / 14.4px and a 6px crown at 7.1px / 11.3px. */
+@media (max-width: 767px) {
+  .gem-fab {
+    --gem-point: 15px;
+    --gem-h: 48px;
+    padding-inline: 0.9rem;
+  }
+  .gem-fab::before {
+    --gem-inner-point: 14.4px;
+    inset: 1px 1.2px;
+  }
+  .gem-fab::after {
+    --gem-inner-point: 11.3px;
+    inset: 6px 7.1px;
   }
 }
 
