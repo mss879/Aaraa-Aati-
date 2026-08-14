@@ -458,7 +458,7 @@ export async function deleteProduct(formData: FormData) {
 
 /** The columns an order email needs, plus the status we are moving away from. */
 const ORDER_EMAIL_COLUMNS =
-  "id, order_number, customer_name, email, currency, total, address_line1, address_line2, city, postal_code, country, courier, tracking_number, tracking_url, status";
+  "id, order_number, customer_name, email, currency, total, payment_method, address_line1, address_line2, city, postal_code, country, courier, tracking_number, tracking_url, status";
 
 /** Which email a fulfilment state sends. 'pending' is the state an order starts
  *  in — moving back to it says nothing worth an email. */

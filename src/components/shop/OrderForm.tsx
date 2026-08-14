@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { MAX_ORDER_QUANTITY, formatMoney } from "@/lib/shop";
 import { WHATSAPP_NUMBER } from "@/lib/contact";
+import BankTransferPanel from "@/components/shop/BankTransferPanel";
+import type { PaymentMethod } from "@/lib/supabase/types";
 
 /**
  * Place an order for one piece.
@@ -12,6 +14,12 @@ import { WHATSAPP_NUMBER } from "@/lib/contact";
  * sizing and shipping by hand, then invoices. So this is one honest form: who
  * you are, where it goes, how many. The price is re-read on the server; nothing
  * here is trusted.
+ *
+ * Pieces that need no fitting can also be settled there and then by bank
+ * transfer (`allowTransfer`, decided from the category and the price — see
+ * lib/shop.ts). A ring cannot: it is sized to one finger, and that conversation
+ * has to happen before the house takes money for it. The server re-derives this
+ * either way; the prop only decides what the buyer is shown.
  */
 
 const inputClasses =
@@ -25,15 +33,21 @@ export default function OrderForm({
   price,
   currency,
   inStock,
+  allowTransfer = false,
 }: {
   productId: string;
   productTitle: string;
   price: number | null;
   currency: string;
   inStock: boolean;
+  allowTransfer?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  /* Defaults to the way the house has always sold, even where transfer is on
+     offer: the buyer opts in to paying now, rather than discovering they have
+     been asked to. */
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("invoice");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -45,8 +59,17 @@ export default function OrderForm({
   const [note, setNote] = useState("");
   const [company, setCompany] = useState(""); // honeypot
   const [sending, setSending] = useState(false);
-  const [placed, setPlaced] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /* The placed order as the SERVER recorded it — reference, amount and the
+     method it actually accepted. The confirmation quotes these rather than the
+     local state, so what the buyer is told to wire is what the house wrote
+     down, even if the server declined the transfer they asked for. */
+  const [placed, setPlaced] = useState<{
+    orderNumber: string;
+    total: number | null;
+    currency: string;
+    paymentMethod: PaymentMethod;
+  } | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +83,7 @@ export default function OrderForm({
         body: JSON.stringify({
           productId,
           quantity,
+          paymentMethod,
           name,
           email,
           phone,
@@ -76,7 +100,17 @@ export default function OrderForm({
       if (!res.ok) {
         throw new Error(data.error || "Your order could not be placed. Please try again.");
       }
-      setPlaced(typeof data.orderNumber === "string" ? data.orderNumber : "—");
+      /* Coerced rather than type-checked: Postgres `numeric` reaches JSON as a
+         number today, but a string would fail a `typeof` test silently and the
+         buyer would be shown "to be confirmed" in place of the figure they are
+         meant to wire. NaN and null both fall back honestly. */
+      const total = data.total == null || data.total === "" ? NaN : Number(data.total);
+      setPlaced({
+        orderNumber: typeof data.orderNumber === "string" ? data.orderNumber : "—",
+        total: Number.isFinite(total) ? total : null,
+        currency: typeof data.currency === "string" ? data.currency : currency,
+        paymentMethod: data.paymentMethod === "transfer" ? "transfer" : "invoice",
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
@@ -85,20 +119,41 @@ export default function OrderForm({
   };
 
   if (placed) {
+    const byTransfer = placed.paymentMethod === "transfer";
     return (
       <div className="rounded-3xl border border-zinc-200 bg-white p-8 shadow-[0_20px_60px_rgba(0,0,0,0.06)]">
         <h3 className="font-serif text-2xl font-normal tracking-wide text-[#13294B]">
           Your order is with us
         </h3>
         <p className="mt-3 font-body text-sm leading-relaxed text-[#4A6285] md:text-base">
-          Reference <span className="font-medium text-[#13294B]">{placed}</span>. A gemologist will
-          write within one business day to confirm the piece, sizing and delivery, and to arrange
-          payment. Nothing has been charged.
+          Reference <span className="font-medium text-[#13294B]">{placed.orderNumber}</span>.{" "}
+          {byTransfer ? (
+            <>
+              The details for your transfer are below, and are on their way to you by email as well.
+              A gemologist will write within one business day to confirm the piece and the delivery,
+              and again once your payment reaches us.
+            </>
+          ) : (
+            <>
+              A gemologist will write within one business day to confirm the piece, sizing and
+              delivery, and to arrange payment. Nothing has been charged.
+            </>
+          )}
         </p>
+
+        {byTransfer && (
+          <BankTransferPanel
+            className="mt-7"
+            orderNumber={placed.orderNumber}
+            amount={placed.total}
+            currency={placed.currency}
+          />
+        )}
+
         {WHATSAPP_NUMBER && (
           <a
             href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-              `Hello — I've just placed order ${placed} for the ${productTitle}.`,
+              `Hello — I've just placed order ${placed.orderNumber} for the ${productTitle}.`,
             )}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -133,8 +188,9 @@ export default function OrderForm({
       {!open ? (
         <>
           <p className="font-body text-sm leading-relaxed text-[#4A6285] md:text-base">
-            Orders are confirmed by a gemologist before anything is charged — availability, sizing
-            and shipping are settled with you first.
+            {allowTransfer
+              ? "This piece needs no fitting, so it can be settled straight away by bank transfer — or invoiced after a gemologist has confirmed availability and delivery with you."
+              : "Orders are confirmed by a gemologist before anything is charged — availability, sizing and shipping are settled with you first."}
           </p>
           <button
             type="button"
@@ -290,6 +346,61 @@ export default function OrderForm({
               </div>
             </div>
 
+            {/* Offered only where the piece needs no fitting. A ring is absent
+                from here on purpose — see the note above the component. */}
+            {allowTransfer && (
+              <fieldset>
+                <legend className={labelClasses}>How would you like to settle?</legend>
+                <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                  {(
+                    [
+                      {
+                        id: "invoice" as const,
+                        title: "Invoice me",
+                        body: "We confirm the piece first, then send an invoice. Nothing is charged now.",
+                      },
+                      {
+                        id: "transfer" as const,
+                        title: "Bank transfer",
+                        body: "Our account details arrive with your confirmation, quoting this order as the reference.",
+                      },
+                    ]
+                  ).map((option) => {
+                    const selected = paymentMethod === option.id;
+                    return (
+                      <label
+                        key={option.id}
+                        className={`cursor-pointer rounded-2xl border p-4 transition-colors ${
+                          selected
+                            ? "border-amber-600 bg-amber-50/40"
+                            : "border-zinc-200 hover:border-zinc-300"
+                        }`}
+                      >
+                        <span className="flex items-start gap-3">
+                          <input
+                            type="radio"
+                            name="order-payment-method"
+                            value={option.id}
+                            checked={selected}
+                            onChange={() => setPaymentMethod(option.id)}
+                            className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-amber-600"
+                          />
+                          <span className="min-w-0">
+                            <span className="block font-sans text-[0.7rem] font-medium uppercase tracking-[0.16em] text-[#13294B]">
+                              {option.title}
+                            </span>
+                            <span className="mt-1.5 block font-body text-[0.82rem] leading-relaxed text-[#4A6285]">
+                              {option.body}
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            )}
+
             <div>
               <label htmlFor="order-note" className={labelClasses}>
                 Anything we should know?{" "}
@@ -337,7 +448,9 @@ export default function OrderForm({
           </div>
 
           <p className="mt-5 font-body text-[0.78rem] leading-relaxed text-[#5E7495]">
-            No payment is taken here. We confirm the piece, then send an invoice.
+            {allowTransfer && paymentMethod === "transfer"
+              ? "No card is charged here. You will receive our account details and your order reference, and send the transfer yourself."
+              : "No payment is taken here. We confirm the piece, then send an invoice."}
           </p>
 
           {error && (

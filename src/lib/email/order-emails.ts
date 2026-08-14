@@ -2,6 +2,7 @@ import "server-only";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasServiceRole } from "@/lib/supabase/env";
 import { formatMoney } from "@/lib/shop";
+import { BANK_TRANSFER, bankTransferRows, paymentReference } from "@/lib/bank";
 import { ORDERS_NOTIFY_EMAIL, sendEmail, type SendResult } from "@/lib/email/resend";
 import type { Order, OrderEmailKind, OrderItem } from "@/lib/supabase/types";
 
@@ -32,6 +33,7 @@ export type OrderForEmail = Pick<
   | "city"
   | "postal_code"
   | "country"
+  | "payment_method"
   | "courier"
   | "tracking_number"
   | "tracking_url"
@@ -103,6 +105,76 @@ const COPY: Record<
   },
 };
 
+/**
+ * The account block, for an order the buyer said they would wire.
+ *
+ * Rendered from the same lib/bank.ts rows as the on-site panel, so the email and
+ * the confirmation screen cannot come to list the account differently — and
+ * built as a table with inline styles like the rest of this file, because mail
+ * clients are not browsers.
+ *
+ * The reference sits at the top in its own bordered cell for the same reason it
+ * does on the site: an unreferenced transfer is an anonymous sum.
+ */
+function bankPanel(order: OrderForEmail): string {
+  const rows = bankTransferRows()
+    .map(
+      (row) => `
+        <tr>
+          <td style="padding:7px 0;font:600 10px/1.4 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#5E7495;white-space:nowrap;vertical-align:top;width:130px;">
+            ${esc(row.label)}${row.overseasOnly ? ' <span style="text-transform:none;letter-spacing:0;color:#A9B8D0;">(from abroad)</span>' : ""}
+          </td>
+          <td style="padding:7px 0;font:400 14px/1.5 Georgia,'Times New Roman',serif;color:#13294B;">
+            ${esc(row.value)}
+          </td>
+        </tr>`,
+    )
+    .join("");
+
+  return `<tr>
+            <td style="padding:24px 32px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FAF8F3;border:1px solid #E7E2D5;">
+                <tr>
+                  <td style="padding:18px 20px;">
+                    <div style="font:600 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:#5E7495;">
+                      Payment by bank transfer
+                    </div>
+
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;background:#ffffff;border:1px solid rgba(180,140,40,.32);">
+                      <tr>
+                        <td style="padding:12px 14px;">
+                          <div style="font:600 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#5E7495;">
+                            Reference — please quote
+                          </div>
+                          <div style="margin-top:5px;font:400 18px/1.3 Georgia,'Times New Roman',serif;letter-spacing:.04em;color:#13294B;">
+                            ${esc(paymentReference(order.order_number))}
+                          </div>
+                        </td>
+                        <td align="right" style="padding:12px 14px;">
+                          <div style="font:600 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#5E7495;">
+                            Amount
+                          </div>
+                          <div style="margin-top:5px;font:400 18px/1.3 Georgia,'Times New Roman',serif;color:#13294B;white-space:nowrap;">
+                            ${esc(order.total > 0 ? formatMoney(order.total, order.currency) : "To be confirmed")}
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
+                      ${rows}
+                    </table>
+
+                    <div style="margin-top:12px;font:400 12px/1.6 Georgia,'Times New Roman',serif;color:#5E7495;">
+                      Transfers within ${esc(BANK_TRANSFER.country)} need only the bank and branch codes; from abroad, use the SWIFT code and the bank&rsquo;s address. Your piece is held for you from now — we write again the day your payment reaches us.
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>`;
+}
+
 function addressLines(order: OrderForEmail): string[] {
   return [
     order.address_line1,
@@ -131,6 +203,29 @@ export function renderOrderEmail(
   const tracking = trackingLines(order);
   const showTracking = tracking.length > 0 && (kind === "shipped" || kind === "out_for_delivery");
 
+  /* The account goes out with the two mails where the buyer still owes money
+     and has said they will wire it. Not on 'shipped' or 'completed': repeating
+     bank details after a piece has been paid for and sent is how a second,
+     unwanted payment gets made — and it is what a spoofed invoice looks like. */
+  const showBank =
+    order.payment_method === "transfer" && (kind === "placed" || kind === "confirmed");
+
+  /* Both of these mails otherwise promise an invoice — "to arrange payment",
+     "an invoice follows separately" — which contradicts the account details
+     printed directly underneath. A buyer told to wait for an invoice will wait,
+     and the piece sits unpaid in the dashboard while everyone is being polite. */
+  const lines = showBank
+    ? kind === "placed"
+      ? [
+          "Thank you — this is the maison confirming we have your order. Nothing has been charged: the transfer is yours to send, using the details below.",
+          "A gemologist will write within one business day to confirm the piece and the delivery, and again the day your payment reaches us.",
+        ]
+      : [
+          "The piece is now reserved in your name and is being prepared for despatch.",
+          "Our account details are repeated below should you still need them. Please quote your order number as the reference.",
+        ]
+    : copy.lines;
+
   const itemRows = items
     .map(
       (item) => `
@@ -156,7 +251,7 @@ export function renderOrderEmail(
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(subject)}</title></head>
 <body style="margin:0;padding:0;background:#F7F4EC;-webkit-font-smoothing:antialiased;">
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${esc(copy.lines[0])}</div>
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${esc(lines[0])}</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F7F4EC;">
     <tr>
       <td align="center" style="padding:32px 16px;">
@@ -181,7 +276,7 @@ export function renderOrderEmail(
               <p style="margin:18px 0 0;font:400 15px/1.65 Georgia,'Times New Roman',serif;color:#4A6285;">
                 Dear ${esc(order.customer_name)},
               </p>
-              ${copy.lines
+              ${lines
                 .map(
                   (line) =>
                     `<p style="margin:14px 0 0;font:400 15px/1.65 Georgia,'Times New Roman',serif;color:#4A6285;">${esc(line)}</p>`,
@@ -242,6 +337,8 @@ export function renderOrderEmail(
             </td>
           </tr>
 
+          ${showBank ? bankPanel(order) : ""}
+
           ${
             address.length
               ? `<tr>
@@ -292,7 +389,7 @@ export function renderOrderEmail(
     "",
     `Dear ${order.customer_name},`,
     "",
-    ...copy.lines,
+    ...lines,
     ...(showTracking ? ["", "TRACKING", ...tracking] : []),
     "",
     "YOUR ORDER",
@@ -303,6 +400,18 @@ export function renderOrderEmail(
         }`,
     ),
     `Total: ${order.total > 0 ? formatMoney(order.total, order.currency) : "To be quoted"}`,
+    ...(showBank
+      ? [
+          "",
+          "PAYMENT BY BANK TRANSFER",
+          `Reference (please quote): ${paymentReference(order.order_number)}`,
+          `Amount: ${order.total > 0 ? formatMoney(order.total, order.currency) : "To be confirmed"}`,
+          ...bankTransferRows().map(
+            (row) => `${row.label}${row.overseasOnly ? " (from abroad)" : ""}: ${row.value}`,
+          ),
+          `Transfers within ${BANK_TRANSFER.country} need only the bank and branch codes; from abroad, use the SWIFT code and the bank's address.`,
+        ]
+      : []),
     ...(address.length ? ["", "DELIVERING TO", ...address] : []),
     "",
     "With our regards,",

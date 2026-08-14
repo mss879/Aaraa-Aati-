@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasServiceRole } from "@/lib/supabase/env";
-import { MAX_ORDER_QUANTITY } from "@/lib/shop";
+import { MAX_ORDER_QUANTITY, isTransferEligible } from "@/lib/shop";
 import {
   notifyHouseOfOrder,
   sendOrderEmail,
@@ -19,13 +19,19 @@ import { validateEmail, validateName, validatePhone } from "@/lib/lead-validatio
 /**
  * POST /api/orders
  * Places an order for one piece from the shop. Body:
- *   { productId, quantity?, name, email, phone?, address1?, address2?, city?,
- *     postalCode?, country?, note?, company? }   (company = honeypot)
- * Returns { ok, orderNumber }.
+ *   { productId, quantity?, paymentMethod?, name, email, phone?, address1?,
+ *     address2?, city?, postalCode?, country?, note?, company? }
+ *   (company = honeypot)
+ * Returns { ok, orderNumber, total, currency, paymentMethod }.
  *
  * The price is read from the products table on the server — never from the
  * browser — and the piece must be published and in stock. Orders land as
  * `pending` / `unpaid`; the concierge confirms and invoices from the dashboard.
+ *
+ * `paymentMethod` is a request, not an instruction: the server re-derives
+ * whether this piece may be settled by transfer from its own category and
+ * price, so a hand-posted body cannot talk the house into quoting bank details
+ * for a ring that has never been sized.
  */
 
 export const runtime = "nodejs";
@@ -91,10 +97,13 @@ export async function POST(req: Request) {
     );
   }
 
-  // Authoritative product read — price, title and thumbnail all come from here.
+  // Authoritative product read — price, title, thumbnail and the category that
+  // decides whether this piece may be paid for outright all come from here.
   const { data: product } = await supabase
     .from("products")
-    .select("id, slug, title, price, currency, status, in_stock, product_images(path, position)")
+    .select(
+      "id, slug, title, price, currency, status, in_stock, product_images(path, position), category:product_categories(slug)",
+    )
     .eq("id", productId)
     .eq("status", "active")
     .maybeSingle();
@@ -118,6 +127,24 @@ export async function POST(req: Request) {
   const thumbnail =
     [...images].sort((a, b) => a.position - b.position)[0]?.path ?? null;
 
+  /* Aliased `category:` to match the embed everywhere else in the shop (see
+     lib/shop-data.ts). Supabase types a to-one embed as either shape depending
+     on how it infers the relationship, so normalise before reading the slug. */
+  const embeddedCategory = product.category as { slug: string } | { slug: string }[] | null;
+  const categorySlug = Array.isArray(embeddedCategory)
+    ? (embeddedCategory[0]?.slug ?? null)
+    : (embeddedCategory?.slug ?? null);
+
+  /* The buyer may ask to pay by transfer; the piece decides whether they may.
+     Anything unrecognised, or a request against a fitted or unpriced piece,
+     falls back to an invoice rather than being refused — the order is still a
+     good order, it just gets settled the way it always was. */
+  const wantsTransfer = cleanText(body.paymentMethod, 20) === "transfer";
+  const paymentMethod =
+    wantsTransfer && isTransferEligible({ categorySlug, price: unitPrice })
+      ? "transfer"
+      : "invoice";
+
   const { data: order, error } = await supabase
     .from("orders")
     .insert({
@@ -135,11 +162,12 @@ export async function POST(req: Request) {
       total: lineTotal ?? 0,
       status: "pending",
       payment_status: "unpaid",
+      payment_method: paymentMethod,
       ip_hash: ipHash,
       user_agent: req.headers.get("user-agent"),
     })
     .select(
-      "id, order_number, customer_name, email, currency, total, address_line1, address_line2, city, postal_code, country, courier, tracking_number, tracking_url",
+      "id, order_number, customer_name, email, currency, total, payment_method, address_line1, address_line2, city, postal_code, country, courier, tracking_number, tracking_url",
     )
     .single();
 
@@ -176,5 +204,14 @@ export async function POST(req: Request) {
     notifyHouseOfOrder(forEmail, [item]),
   ]);
 
-  return NextResponse.json({ ok: true, orderNumber: order.order_number });
+  /* The confirmation screen quotes the amount to wire, so it is answered from
+     the row that was actually written rather than recomputed in the browser —
+     the figure someone transfers must be the figure the house recorded. */
+  return NextResponse.json({
+    ok: true,
+    orderNumber: order.order_number,
+    total: order.total,
+    currency: order.currency,
+    paymentMethod: order.payment_method,
+  });
 }

@@ -9,7 +9,7 @@ import ProductGallery from "@/components/shop/ProductGallery";
 import OrderForm from "@/components/shop/OrderForm";
 import { getShopProduct, getShopProductSlugs } from "@/lib/shop-data";
 import { productImageUrl } from "@/lib/supabase/env";
-import { formatMoney } from "@/lib/shop";
+import { formatMoney, isTransferEligible } from "@/lib/shop";
 import { SITE_URL, absoluteUrl, breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
@@ -195,6 +195,13 @@ export default async function ProductPage({ params }: PageParams) {
                 price={product.price}
                 currency={product.currency}
                 inStock={product.in_stock}
+                /* Decided here, from the piece's own category and price, so the
+                   choice is already settled by the time the page is cached.
+                   The order route re-derives it regardless. */
+                allowTransfer={isTransferEligible({
+                  categorySlug: product.category?.slug,
+                  price: product.price,
+                })}
               />
             </div>
 

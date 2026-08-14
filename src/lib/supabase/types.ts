@@ -189,6 +189,13 @@ export type OrderStatus =
 
 export type PaymentStatus = "unpaid" | "paid" | "refunded";
 
+/**
+ * How the buyer said they would settle — their intent, not their payment.
+ * Whether the money actually arrived is `PaymentStatus`, and the two move
+ * independently.
+ */
+export type PaymentMethod = "invoice" | "transfer";
+
 /** One transactional email we sent (or tried to send) about an order. */
 export type OrderEmailKind =
   | "placed"
@@ -230,6 +237,7 @@ export interface Order {
   total: number;
   status: OrderStatus;
   payment_status: PaymentStatus;
+  payment_method: PaymentMethod;
   courier: string | null;
   tracking_number: string | null;
   tracking_url: string | null;

@@ -7,7 +7,7 @@ import {
   setOrderStatus,
   updateOrderNote,
 } from "@/app/admin/_actions";
-import { ORDER_STATUSES, PAYMENT_STATUSES, formatMoney } from "@/lib/shop";
+import { ORDER_STATUSES, PAYMENT_METHODS, PAYMENT_STATUSES, formatMoney } from "@/lib/shop";
 import { productImageUrl } from "@/lib/supabase/env";
 import { formatDate } from "@/lib/leads";
 import type {
@@ -358,6 +358,28 @@ export default function OrdersView({
               <p className="mt-5 adm-label">
                 Payment
               </p>
+              {/* What the buyer SAID they would do, which is not what they have
+                  done — the pills below are still the record of that. Read-only
+                  on purpose: it is their statement, not ours to revise. */}
+              {(() => {
+                const method =
+                  PAYMENT_METHODS.find((m) => m.id === selected.payment_method) ??
+                  PAYMENT_METHODS[0];
+                return (
+                  <p
+                    className="mt-1.5 font-sans text-[0.62rem] uppercase tracking-[0.14em]"
+                    style={{ color: method.accent }}
+                  >
+                    {method.label}
+                    {selected.payment_method === "transfer" &&
+                      selected.payment_status === "unpaid" && (
+                        <span className="ml-1.5 normal-case tracking-normal text-[var(--adm-ink-soft)]">
+                          — expect {selected.order_number} as the reference
+                        </span>
+                      )}
+                  </p>
+                );
+              })()}
               <div className="mt-2.5 flex flex-wrap gap-1.5">
                 {PAYMENT_STATUSES.map((s) => (
                   <form key={s.id} action={setOrderPayment}>

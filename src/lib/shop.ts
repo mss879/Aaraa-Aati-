@@ -1,4 +1,9 @@
-import type { OrderStatus, PaymentStatus, ProductStatus } from "@/lib/supabase/types";
+import type {
+  OrderStatus,
+  PaymentMethod,
+  PaymentStatus,
+  ProductStatus,
+} from "@/lib/supabase/types";
 
 /** Shared shop vocabulary — used by both the storefront and the back office. */
 
@@ -36,6 +41,54 @@ export const PAYMENT_STATUSES: { id: PaymentStatus; label: string; accent: strin
   { id: "paid", label: "Paid", accent: "#34d399" },
   { id: "refunded", label: "Refunded", accent: "#fb7185" },
 ];
+
+/**
+ * How the buyer said they would settle. Not a gateway — the house still has to
+ * see the money arrive — but it tells the concierge whether to expect a
+ * transfer against the order number or to raise an invoice by hand.
+ */
+export const PAYMENT_METHODS: { id: PaymentMethod; label: string; accent: string }[] = [
+  { id: "invoice", label: "Invoice to follow", accent: "#8595ad" },
+  { id: "transfer", label: "Bank transfer", accent: "#4f7bee" },
+];
+
+export const PAYMENT_METHOD_IDS = PAYMENT_METHODS.map((m) => m.id);
+
+/**
+ * Categories that have to be fitted to the wearer before the piece can be made
+ * up and sent. A ring is sized to one finger — the maison will not take money
+ * for one before that conversation has happened, because the sizing is the
+ * order. Everything else in the house (necklaces, cufflinks, bracelets,
+ * earrings and studs) ships as it is photographed, so it can simply be bought.
+ *
+ * Kept as a deny-list on purpose: a category added later — pendants, brooches,
+ * chains — can be bought by default, and only a genuinely fitted one has to be
+ * named here. The alternative silently withholds payment from every new
+ * category until someone remembers this file.
+ */
+export const FITTED_CATEGORY_SLUGS = ["rings"] as const;
+
+export function isFittedCategory(categorySlug: string | null | undefined): boolean {
+  return !!categorySlug && (FITTED_CATEGORY_SLUGS as readonly string[]).includes(categorySlug);
+}
+
+/**
+ * Whether a piece can be settled by bank transfer at checkout.
+ *
+ * Two conditions, both necessary: it must not need fitting, and it must carry a
+ * price. "Price upon request" means the figure is quoted by hand, and inviting
+ * someone to wire an amount nobody has named yet is worse than not offering.
+ *
+ * Called on the server from the order route as well as on the product page —
+ * the browser's answer is a hint for what to show, never the authority for what
+ * is accepted.
+ */
+export function isTransferEligible(opts: {
+  categorySlug: string | null | undefined;
+  price: number | null | undefined;
+}): boolean {
+  return !isFittedCategory(opts.categorySlug) && opts.price != null;
+}
 
 export const ORDER_STATUS_IDS = ORDER_STATUSES.map((s) => s.id);
 export const PAYMENT_STATUS_IDS = PAYMENT_STATUSES.map((s) => s.id);

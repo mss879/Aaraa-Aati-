@@ -146,6 +146,17 @@ CONTACT
 - WhatsApp / phone: ${TELEPHONE_DISPLAY}
 - Email: ${SUPPORT_EMAIL}
 
+PAYING FOR A PIECE FROM THE SHOP
+Pieces that need no fitting — necklaces, cufflinks, bracelets, earrings and
+studs — can be settled by bank transfer at the moment the order is placed. The
+account details and the order number to quote as the reference arrive on the
+confirmation screen and by email; nothing is charged to a card, the buyer sends
+the transfer themselves. Rings are not offered this way: a ring is sized to one
+finger, so the maison confirms the sizing first and invoices afterwards.
+Never read out the account details yourself — they belong to a specific order,
+and an account number given in chat is exactly how a buyer is defrauded. Point
+them to the confirmation email for that order, or to the concierge.
+
 FREQUENTLY ASKED
 ${faqLines()}
 
