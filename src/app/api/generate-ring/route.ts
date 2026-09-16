@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { buildJewelPrompt, estimatePrice, sanitizeConfig } from "@/lib/ring-options";
+import { getCraftingPrices } from "@/lib/crafting-prices";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { GENERATIONS_BUCKET, hasServiceRole } from "@/lib/supabase/env";
 import { getClientIp, hashIp, isSameOrigin, rateLimit } from "@/lib/server/security";
@@ -191,7 +192,7 @@ async function recordGeneration(
     craft_request_id: args.requestId,
     lead_id: args.leadId ?? null,
     config: args.config,
-    estimated_price: estimatePrice(args.config),
+    estimated_price: estimatePrice(args.config, await getCraftingPrices()),
     prompt: args.prompt,
     image_path: args.imagePath,
     image_mime: args.mime,

@@ -19,6 +19,8 @@ import {
   type ItemForEmail,
   type OrderForEmail,
 } from "@/lib/email/order-emails";
+import { PRICE_FIELD_BY_KEY, PRICE_FIELDS } from "@/lib/pricing";
+import { priceKey } from "@/lib/ring-options";
 import type {
   LeadStage,
   NoteColor,
@@ -581,6 +583,75 @@ export async function deleteOrder(formData: FormData) {
 }
 
 // ------------------------------------------------------------------- auth
+
+// ------------------------------------------------------- atelier crafting prices
+
+/**
+ * Save the atelier price list.
+ *
+ * The form posts one field per editable number, named with the same
+ * `group:option:field` key the price table uses. Every submitted key is checked
+ * against PRICE_FIELD_BY_KEY before it is written, so a hand-crafted post
+ * cannot invent rows for options that don't exist — the table has no foreign
+ * key to lean on, because the options live in code rather than in Postgres.
+ *
+ * Rows are upserted on the (group_id, option_id, field) unique index. A blank
+ * input means "fall back to the code default", so the row is deleted rather
+ * than stored as zero — zero is a legitimate price (a ring's crafting premium
+ * is 0) and must stay distinguishable from "unset".
+ */
+export async function saveCraftingPrices(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createSupabaseServerClient();
+
+  const upserts: { group_id: string; option_id: string; field: string; value: number }[] = [];
+  const clears: string[] = [];
+
+  for (const def of PRICE_FIELDS) {
+    const key = priceKey(def.group, def.optionId, def.field);
+    if (!formData.has(key)) continue;
+
+    const raw = String(formData.get(key) ?? "").trim();
+    if (raw === "") {
+      clears.push(key);
+      continue;
+    }
+
+    const value = Number(raw);
+    // Reject anything that isn't a sane non-negative number rather than writing
+    // NaN into the quote engine.
+    if (!Number.isFinite(value) || value < 0) continue;
+
+    upserts.push({
+      group_id: def.group,
+      option_id: def.optionId,
+      field: def.field,
+      value,
+    });
+  }
+
+  if (upserts.length > 0) {
+    await supabase
+      .from("crafting_prices")
+      .upsert(upserts, { onConflict: "group_id,option_id,field" });
+  }
+
+  for (const key of clears) {
+    const def = PRICE_FIELD_BY_KEY.get(key);
+    if (!def) continue;
+    await supabase
+      .from("crafting_prices")
+      .delete()
+      .eq("group_id", def.group)
+      .eq("option_id", def.optionId)
+      .eq("field", def.field);
+  }
+
+  // The atelier is an ISR page holding a 60s copy of the old prices; drop it so
+  // the next visitor is quoted the new ones immediately.
+  revalidatePath("/admin/crafting-prices");
+  revalidatePath("/atelier");
+}
 
 export async function signOut() {
   // Only a real admin session can sign out; harmless otherwise.

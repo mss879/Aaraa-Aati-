@@ -22,6 +22,7 @@ import {
   caratRuleFor,
   cutById,
   estimatePrice,
+  type PriceTable,
   fitById,
   gemById,
   isAppointmentCarat,
@@ -902,7 +903,13 @@ function LeadPrompt({ onCaptured }: { onCaptured: (requestId: string | null) => 
   );
 }
 
-export default function AtelierConfigurator() {
+/**
+ * `prices` is the back-office override table, fetched server-side in
+ * app/atelier/page.tsx and handed down. It is optional so the component still
+ * renders standalone; when absent, estimatePrice() uses the values compiled
+ * into ring-options.ts.
+ */
+export default function AtelierConfigurator({ prices }: { prices?: PriceTable }) {
   const [step, setStep] = useState(0);
   const [config, setConfig] = useState<RingConfig>(DEFAULT_CONFIG);
   const [gen, setGen] = useState<GenState>({ status: "idle" });
@@ -980,7 +987,7 @@ export default function AtelierConfigurator() {
     return false;
   }, []);
 
-  const price = estimatePrice(config);
+  const price = estimatePrice(config, prices);
   const piece = pieceById(config.piece);
   const STEPS = stepsFor(config.piece);
   const stepInfo = STEPS[Math.min(step, STEPS.length - 1)];

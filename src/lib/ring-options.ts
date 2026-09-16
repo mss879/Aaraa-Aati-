@@ -718,31 +718,96 @@ export const pendantStyleById = (id: PendantStyleId) =>
   PENDANT_STYLES.find((p) => p.id === id) ?? PENDANT_STYLES[0];
 export const fitById = (id: FitId) => FITS.find((f) => f.id === id) ?? FITS[1];
 
-export function estimatePrice(config: RingConfig): number {
+/* ------------------------------------------------------------------ pricing */
+
+/** The families of options that carry an editable number. */
+export type PriceGroupId =
+  | "piece"
+  | "setting"
+  | "metal"
+  | "gem"
+  | "bracelet_style"
+  | "pendant_style";
+
+/**
+ * Admin-set price overrides, keyed `group:optionId:field`.
+ *
+ * Every value below is optional. A missing key falls back to the number
+ * compiled into the option arrays above, which is what keeps the atelier
+ * quoting correctly when Supabase is unreachable and lets a newly added option
+ * price itself from code until someone sets it in the back office.
+ */
+export type PriceTable = Record<string, number>;
+
+export const priceKey = (
+  group: PriceGroupId,
+  optionId: string,
+  field: string,
+): string => `${group}:${optionId}:${field}`;
+
+/** Read one override, falling back to the compiled-in default. */
+export function priceOf(
+  table: PriceTable | undefined,
+  group: PriceGroupId,
+  optionId: string,
+  field: string,
+  fallback: number,
+): number {
+  const v = table?.[priceKey(group, optionId, field)];
+  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+}
+
+/**
+ * The indicative quotation.
+ *
+ * `prices` is the back-office override table (see /admin/crafting-prices).
+ * It is optional so every existing caller keeps working untouched and so the
+ * function stays pure — callers that have the table pass it, callers that don't
+ * get the compiled-in defaults.
+ */
+export function estimatePrice(config: RingConfig, prices?: PriceTable): number {
   const piece = pieceById(config.piece);
+  const craftBase = priceOf(prices, "piece", piece.id, "craftBase", piece.craftBase);
+  const metalFactor = priceOf(prices, "piece", piece.id, "metalFactor", piece.metalFactor);
+  const settingFactor = priceOf(prices, "piece", piece.id, "settingFactor", piece.settingFactor);
+
+  const metal = metalById(config.metal);
+  const metalPrice = priceOf(prices, "metal", metal.id, "price", metal.price);
+
+  const gem = gemById(config.gem);
+  const perCarat = priceOf(prices, "gem", gem.id, "pricePerCarat", gem.pricePerCarat);
+
   let raw: number;
   if (config.piece === "bracelet") {
     // Stone-set designs: metalwork by style, then every stone at its per-carat
     // rate. Melee-sized multi-stone lines trade well below centre-stone rates.
     const style = braceletStyleById(config.braceletStyle);
-    const gem = gemById(config.gem);
+    const priceFactor = priceOf(
+      prices,
+      "bracelet_style",
+      style.id,
+      "priceFactor",
+      style.priceFactor,
+    );
     const multi = style.stoneCount > 1;
     raw =
-      piece.craftBase +
-      metalById(config.metal).price * piece.metalFactor * style.priceFactor +
-      gem.pricePerCarat * config.carat * style.stoneCount * (multi ? 0.35 : 1);
+      craftBase +
+      metalPrice * metalFactor * priceFactor +
+      perCarat * config.carat * style.stoneCount * (multi ? 0.35 : 1);
   } else if (config.piece === "necklace") {
+    const pendant = pendantStyleById(config.pendantStyle);
     raw =
-      piece.craftBase +
-      pendantStyleById(config.pendantStyle).basePrice +
-      metalById(config.metal).price * piece.metalFactor +
-      gemById(config.gem).pricePerCarat * config.carat;
+      craftBase +
+      priceOf(prices, "pendant_style", pendant.id, "basePrice", pendant.basePrice) +
+      metalPrice * metalFactor +
+      perCarat * config.carat;
   } else {
+    const setting = settingById(config.setting);
     raw =
-      piece.craftBase +
-      settingById(config.setting).basePrice * piece.settingFactor +
-      metalById(config.metal).price * piece.metalFactor +
-      gemById(config.gem).pricePerCarat * config.carat;
+      craftBase +
+      priceOf(prices, "setting", setting.id, "basePrice", setting.basePrice) * settingFactor +
+      metalPrice * metalFactor +
+      perCarat * config.carat;
   }
   return Math.round(raw / 50) * 50;
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasServiceRole } from "@/lib/supabase/env";
 import { estimatePrice, sanitizeConfig } from "@/lib/ring-options";
+import { getCraftingPrices } from "@/lib/crafting-prices";
 import {
   getClientIp,
   hashIp,
@@ -54,12 +55,13 @@ export async function PATCH(
   }
 
   const config = sanitizeConfig(body.config);
+  const prices = await getCraftingPrices();
 
   // Only requests still sitting untriaged in the inbox may be rewritten by a
   // public caller — never one the admin has already read or promoted.
   const { error } = await supabase
     .from("craft_requests")
-    .update({ config, estimated_price: estimatePrice(config) })
+    .update({ config, estimated_price: estimatePrice(config, prices) })
     .eq("id", id)
     .eq("status", "new")
     .is("promoted_lead_id", null);

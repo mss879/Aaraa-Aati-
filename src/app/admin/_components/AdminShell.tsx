@@ -36,6 +36,7 @@ const SECTIONS: { heading?: string; tone?: "ecom"; items: NavItem[] }[] = [
       { href: "/admin/crm", label: "CRM Pipeline", icon: "pipeline" },
       { href: "/admin/inquiries", label: "Inquiries", icon: "inbox", badge: "inquiries" },
       { href: "/admin/crafting", label: "Crafting", icon: "gem", badge: "crafting" },
+      { href: "/admin/crafting-prices", label: "Crafting Prices", icon: "tally" },
       { href: "/admin/ai-inbox", label: "AI Inbox", icon: "spark", badge: "aiInbox" },
       { href: "/admin/notes", label: "Notes", icon: "note" },
     ],
@@ -94,6 +95,15 @@ function Icon({ name, className = "h-4 w-4" }: { name: string; className?: strin
         <>
           <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" {...common} />
           <path d="M12.4 8l.85 2.15L15.4 11l-2.15.85-.85 2.15-.85-2.15L9.4 11l2.15-.85z" {...common} />
+        </>
+      )}
+      {/* crafting prices — stacked discs, the shorthand for a rate card. A tag
+          would have read as "a thing for sale" and collided with Products. */}
+      {name === "tally" && (
+        <>
+          <ellipse cx="12" cy="6" rx="7" ry="2.8" {...common} />
+          <path d="M5 6v6c0 1.55 3.13 2.8 7 2.8s7-1.25 7-2.8V6" {...common} />
+          <path d="M5 12v6c0 1.55 3.13 2.8 7 2.8s7-1.25 7-2.8v-6" {...common} />
         </>
       )}
       {name === "tag" && (
