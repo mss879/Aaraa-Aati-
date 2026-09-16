@@ -44,8 +44,17 @@ export default function Navbar() {
           />
         </Link>
 
-        {/* Desktop menu — centered */}
-        <div className="absolute left-1/2 hidden -translate-x-1/2 items-center space-x-12 md:flex">
+        {/* Desktop menu — centered.
+
+            Shown from xl (1280px), not md (768px). This block is absolutely
+            positioned and centred on the bar, so when the viewport gets tight it
+            cannot reflow — it simply slides underneath the right-hand buttons.
+            The three pieces need 155px of logo + 347px of links + 348px of
+            buttons + 64px of padding, and because the links are centred while the
+            buttons are flush right, the two only clear each other above ~1107px.
+            That is why this is xl and not lg: at 1024px "Services" was still
+            sitting under the Contact button. Below xl the hamburger takes over. */}
+        <div className="absolute left-1/2 hidden -translate-x-1/2 items-center space-x-12 xl:flex">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.label}
@@ -58,8 +67,8 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Actions */}
-        <div className="hidden items-center space-x-3 md:flex">
+        {/* Actions — same xl gate as the centred links above. */}
+        <div className="hidden items-center space-x-3 xl:flex">
           <Link
             href="/contact"
             className="btn-platinum"
@@ -77,7 +86,7 @@ export default function Navbar() {
         {/* Mobile toggle */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 text-[#13294B] transition-colors hover:text-gold-600 focus:outline-none md:hidden"
+          className="p-2 text-[#13294B] transition-colors hover:text-gold-600 focus:outline-none xl:hidden"
           aria-label="Toggle Menu"
           aria-expanded={isOpen}
         >
@@ -103,7 +112,7 @@ export default function Navbar() {
 
       {/* Mobile drawer */}
       {isOpen && (
-        <div className="absolute inset-x-0 top-full border-b border-[#13294B]/10 bg-white p-6 shadow-[0_18px_40px_rgba(19,41,75,0.10)] duration-300 animate-in fade-in slide-in-from-top-4 md:hidden">
+        <div className="absolute inset-x-0 top-full border-b border-[#13294B]/10 bg-white p-6 shadow-[0_18px_40px_rgba(19,41,75,0.10)] duration-300 animate-in fade-in slide-in-from-top-4 xl:hidden">
           <div className="flex flex-col items-center space-y-6">
             {NAV_LINKS.map((link) => (
               <Link
