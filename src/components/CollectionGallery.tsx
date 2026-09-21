@@ -8,6 +8,42 @@ import { CATEGORIES, PIECES, type Category } from "@/lib/collections";
 
 type Filter = Category | "All";
 
+/**
+ * Shop checkout is not switched on yet, so every piece here is shown but not yet
+ * for sale — this is where the home page's "View All" and "View Collection"
+ * both land.
+ *
+ * Translucent, and over the image only: the piece is still the reason to be on
+ * the page, so it stays visible through frosted glass rather than behind a
+ * panel, and the name, notes and Enquire link below stay fully legible and live.
+ * The card itself is inert — no image zoom, no name colour on hover — because
+ * motion under the mouse says "available now", which is the one thing this
+ * veil exists to deny. Only Enquire still responds, on its own hover, since
+ * enquiring IS open. Restore the card's `group` and the image's
+ * `group-hover:scale-105` with the veil's removal. aria-hidden because nine
+ * identical announcements are noise — the grid says it once, to screen
+ * readers, above the first card.
+ *
+ * Remove the <ComingSoonVeil /> in the grid when the shop goes live.
+ */
+function ComingSoonVeil() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
+    >
+      <span className="rounded-full border border-white/25 bg-white/[0.08] px-7 py-3 text-center shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-md">
+        <span className="block font-sans text-[0.55rem] font-medium uppercase tracking-[0.38em] text-gold-200/90">
+          Collections
+        </span>
+        <span className="mt-1 block font-serif text-base tracking-[0.18em] text-white/95 md:text-lg">
+          Coming Soon
+        </span>
+      </span>
+    </div>
+  );
+}
+
 /** Map a ?f= query value (e.g. "rings") onto a gallery filter. */
 function filterFromParam(param: string | null): Filter {
   if (!param) return "All";
@@ -71,6 +107,7 @@ export default function CollectionGallery() {
         <p className="mx-auto mt-6 max-w-7xl font-sans text-[0.7rem] uppercase tracking-[0.25em] text-[#5E7495]">
           {shown.length} {shown.length === 1 ? "piece" : "pieces"}
           {active !== "All" && ` · ${active}`}
+          <span className="sr-only">. Collections coming soon — these pieces are not yet available to buy online; enquire about any of them.</span>
         </p>
       </div>
 
@@ -79,7 +116,7 @@ export default function CollectionGallery() {
         {shown.map((piece) => (
           <div
             key={piece.slug}
-            className="group relative flex aspect-[4/5] flex-col justify-between overflow-hidden bg-black p-6 md:p-7"
+            className="relative flex aspect-[4/5] flex-col justify-between overflow-hidden bg-black p-6 md:p-7"
           >
             {/* Category label */}
             <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.25em] text-[#A9B8D0]">
@@ -88,7 +125,7 @@ export default function CollectionGallery() {
 
             {/* Image */}
             <div className="relative my-3 min-h-0 w-full flex-1">
-              <div className="relative h-full w-full transition-transform duration-500 group-hover:scale-105">
+              <div className="relative h-full w-full">
                 <Image
                   src={piece.image}
                   alt={piece.name}
@@ -97,12 +134,13 @@ export default function CollectionGallery() {
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
               </div>
+              <ComingSoonVeil />
             </div>
 
             {/* Details */}
             <div className="space-y-3">
               <div>
-                <h3 className="font-serif text-lg tracking-wide text-white transition-colors group-hover:text-gold-300 md:text-xl">
+                <h3 className="font-serif text-lg tracking-wide text-white md:text-xl">
                   {piece.name}
                 </h3>
                 <p className="mt-1 font-sans text-[0.72rem] uppercase tracking-[0.15em] text-[#5E7495]">
@@ -118,11 +156,11 @@ export default function CollectionGallery() {
                 </span>
                 <Link
                   href={`/contact?piece=${encodeURIComponent(piece.name)}`}
-                  className="inline-flex items-center gap-2 font-sans text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-[#A9B8D0] transition-colors hover:text-white"
+                  className="group/enquire inline-flex items-center gap-2 font-sans text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-[#A9B8D0] transition-colors hover:text-white"
                   aria-label={`Enquire about the ${piece.name}`}
                 >
                   Enquire
-                  <svg className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <svg className="h-3.5 w-3.5 transition-transform duration-300 group-hover/enquire:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 17l9-9m0 0H9m8 0v8" />
                   </svg>
                 </Link>

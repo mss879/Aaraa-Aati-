@@ -68,9 +68,13 @@ function TeaserCard({
   );
 }
 
+/* Deliberately inert: no `group`, no pointer cursor, no hover colour on the
+   name. Every piece here is Coming Soon, and a card that lights up and fills its
+   "+" orb under the mouse is telling the visitor it can be had today. Restore
+   `group cursor-pointer` and the name's group-hover when the shop goes live. */
 function ProductCard({ piece }: { piece: Piece }) {
   return (
-    <div className="group relative aspect-square cursor-pointer overflow-hidden bg-[#081525]">
+    <div className="relative aspect-square overflow-hidden bg-[#081525]">
       <Image
         src={piece.image}
         alt={piece.name}
@@ -82,8 +86,17 @@ function ProductCard({ piece }: { piece: Piece }) {
 
       <span className="chip-luxe absolute left-6 top-6 z-20">{piece.category}</span>
 
+      {/* Same frosted material as the "Collections coming soon" veil on
+          /collections, so the two read as one message; small, and in the
+          opposite corner, so it never competes with the category chip. h-7
+          matches that chip's 28px so the pair sits on one line. Remove along
+          with the veil when the shop goes live. */}
+      <span className="absolute right-6 top-6 z-20 inline-flex h-7 items-center rounded-full border border-white/25 bg-white/10 px-3.5 font-sans text-[0.55rem] font-medium uppercase tracking-[0.3em] text-white/95 shadow-[0_4px_16px_rgba(0,0,0,0.3)] backdrop-blur-md">
+        Coming Soon
+      </span>
+
       <div className="absolute inset-x-0 bottom-0 z-20 flex items-end justify-between gap-4 p-6 md:p-7">
-        <h4 className="font-serif text-lg tracking-wide text-white transition-colors duration-300 group-hover:text-gold-200 md:text-xl">
+        <h4 className="font-serif text-lg tracking-wide text-white md:text-xl">
           {piece.name}
         </h4>
         <span className="btn-luxe-orb btn-luxe-orb--light h-10 w-10">
