@@ -19,8 +19,7 @@ import {
   type ItemForEmail,
   type OrderForEmail,
 } from "@/lib/email/order-emails";
-import { PRICE_FIELD_BY_KEY, PRICE_FIELDS } from "@/lib/pricing";
-import { priceKey } from "@/lib/ring-options";
+import { PRICE_FIELD_BY_KEY, PRICE_FIELDS, priceKey } from "@/lib/pricing";
 import type {
   LeadStage,
   NoteColor,
@@ -587,18 +586,24 @@ export async function deleteOrder(formData: FormData) {
 // ------------------------------------------------------- atelier crafting prices
 
 /**
- * Save the atelier price list.
+ * Save the atelier's cost figures — gold and gemstone prices, and each
+ * design's gold weight, labour and mark-up.
  *
- * The form posts one field per editable number, named with the same
- * `group:option:field` key the price table uses. Every submitted key is checked
- * against PRICE_FIELD_BY_KEY before it is written, so a hand-crafted post
- * cannot invent rows for options that don't exist — the table has no foreign
- * key to lean on, because the options live in code rather than in Postgres.
+ * The form posts one field per figure, named with the same `group:option:field`
+ * key the price table uses. Every submitted key is checked against
+ * PRICE_FIELD_BY_KEY before it is written, so a hand-crafted post cannot invent
+ * rows for options that don't exist — the table has no foreign key to lean on,
+ * because the options live in code rather than in Postgres.
+ *
+ * Each value must also sit inside its field's bounds (lib/pricing.ts): a
+ * mark-up of 20000% or a 3-kilo ring is a slipped key, and it would be live on
+ * the atelier within the minute. Out-of-range values are skipped, not clamped —
+ * a clamped typo is still a wrong price, just a less obvious one.
  *
  * Rows are upserted on the (group_id, option_id, field) unique index. A blank
- * input means "fall back to the code default", so the row is deleted rather
- * than stored as zero — zero is a legitimate price (a ring's crafting premium
- * is 0) and must stay distinguishable from "unset".
+ * input means "fall back to the starting value", so the row is deleted rather
+ * than stored as zero — zero is a legitimate figure (no labour, no mark-up) and
+ * must stay distinguishable from "unset".
  */
 export async function saveCraftingPrices(formData: FormData) {
   await requireAdmin();
@@ -618,9 +623,9 @@ export async function saveCraftingPrices(formData: FormData) {
     }
 
     const value = Number(raw);
-    // Reject anything that isn't a sane non-negative number rather than writing
-    // NaN into the quote engine.
-    if (!Number.isFinite(value) || value < 0) continue;
+    // Reject anything that isn't a finite number inside the field's bounds
+    // rather than writing NaN, a negative, or a slipped key into the quotes.
+    if (!Number.isFinite(value) || value < def.min || value > def.max) continue;
 
     upserts.push({
       group_id: def.group,

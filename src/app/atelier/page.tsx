@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import AtelierConfigurator from "@/components/atelier/AtelierConfigurator";
-import { getCraftingPrices } from "@/lib/crafting-prices";
+import { getQuoteTable } from "@/lib/crafting-prices";
 import { SITE_URL, breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -18,7 +18,9 @@ export const metadata: Metadata = pageMetadata({
 
 // Prices come from the back office, so the page re-reads them rather than
 // baking them into the build: an edit in /admin/crafting-prices is live for
-// new visitors within the minute, with no redeploy.
+// new visitors within the minute, with no redeploy. What the page carries is
+// the RETAIL price list — the cost figures it is built from stay on the server
+// (see lib/pricing.ts).
 export const revalidate = 60;
 
 /**
@@ -34,7 +36,7 @@ export const revalidate = 60;
  * an accurate account of the page instead of an empty div.
  */
 export default async function AtelierPage() {
-  const prices = await getCraftingPrices();
+  const quote = await getQuoteTable();
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -85,7 +87,7 @@ export default async function AtelierPage() {
         </p>
       </div>
 
-      <AtelierConfigurator prices={prices} />
+      <AtelierConfigurator quote={quote} />
     </main>
   );
 }

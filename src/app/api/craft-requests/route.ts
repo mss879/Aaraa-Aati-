@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasServiceRole } from "@/lib/supabase/env";
 import { estimatePrice, sanitizeConfig } from "@/lib/ring-options";
-import { getCraftingPrices } from "@/lib/crafting-prices";
+import { getQuoteTable } from "@/lib/crafting-prices";
 import {
   cleanText,
   getClientIp,
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     config = sanitizeConfig(body.config);
     // Priced with the back-office table so the snapshot stored against the
     // request matches what the client was quoted on screen.
-    estimated_price = estimatePrice(config, await getCraftingPrices());
+    estimated_price = estimatePrice(config, await getQuoteTable());
   }
 
   const { data, error } = await supabase

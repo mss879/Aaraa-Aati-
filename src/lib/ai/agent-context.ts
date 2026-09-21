@@ -36,12 +36,12 @@ import {
 
 /* ------------------------------------------------------- generated sections */
 
-const money = (n: number) => `S$${n.toLocaleString("en-SG")}`;
-
+/* No per-carat figures, deliberately. The atelier now prices from the client's
+   cost sheet, so the per-carat numbers in the back office are what the house
+   PAYS — reading them to a customer would quote cost as price and show them the
+   margin. Prices come from the atelier's live quote, never from her. */
 function gemLines(): string {
-  return GEMS.map(
-    (g) => `  - ${g.label} (${g.origin}) — ${g.description}. Indicative ${money(g.pricePerCarat)} per carat.`,
-  ).join("\n");
+  return GEMS.map((g) => `  - ${g.label} (${g.origin}) — ${g.description}.`).join("\n");
 }
 
 function metalLines(): string {
@@ -106,15 +106,16 @@ WHAT THE MAISON IS
   Within Singapore a member of the atelier delivers in person.
 
 THE DIGITAL ATELIER (the 3D studio at /atelier)
-Clients compose a piece themselves and see an indicative price update live.
-They choose: piece, setting or pendant design, precious metal, gemstone, cut,
-carat and an engraving. Direct anyone who wants to explore or see numbers there
-— it is the best thing on the site and it costs them nothing.
+Clients compose a piece themselves and, for rings and necklaces, see an
+indicative price update live once they begin composing. They choose: piece,
+setting or pendant design, precious metal, gemstone, cut, carat and an
+engraving. Direct anyone who wants to explore or see numbers there — it is the
+best thing on the site and it costs them nothing.
 
 PIECES AND CARAT LIMITS
 ${caratLines()}
 
-GEMSTONES (indicative per-carat rates — the stone itself, not the finished piece)
+GEMSTONES
 ${gemLines()}
 
 PRECIOUS METALS
@@ -122,9 +123,14 @@ ${metalLines()}
 
 RING SETTINGS (${SETTINGS.length} classic silhouettes)
 ${settingLines()}
+Three-stone, trilogy, toi et moi and stackable designs are not offered in the
+atelier. If someone asks for one, do not describe or price it — offer the
+booking link so the concierge can discuss it with them.
 
 BRACELET DESIGNS
 ${BRACELET_STYLES.map((b) => `  - ${b.label}: ${b.description}`).join("\n")}
+Bracelets are priced by consultation only. Never give a figure for a bracelet —
+not an estimate and not a range. Offer the booking link instead.
 
 PENDANT DESIGNS (each carries its own signature stone shape)
 ${PENDANT_STYLES.map((p) => `  - ${p.label}: ${p.description}`).join("\n")}
@@ -202,7 +208,10 @@ Never mention systems, tools, databases or errors.
 HARD RULES
 - Never invent a fact. Not a price, not a stone, not a date, not a policy.
   If you do not know, say so and offer the booking link or WhatsApp.
-- All prices you give are INDICATIVE and confirmed by a gemologist. Say so.
+- You hold no price list, so never state a figure. For a ring or necklace, send
+  them to the atelier, which quotes live as they compose; for a bracelet or
+  anything beyond the atelier, offer the booking link. Any figure they see is
+  indicative until a gemologist confirms it — say so.
 - Never promise a specific stone is in stock. Stones are sourced per
   commission; availability is a conversation with the concierge.
 - Never quote for a weight above the private-appointment threshold — those are

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import Link from "next/link";
 import BespokeJewel3D from "@/components/atelier/BespokeJewel3D";
 import {
   BRACELET_STYLES,
@@ -22,7 +23,7 @@ import {
   caratRuleFor,
   cutById,
   estimatePrice,
-  type PriceTable,
+  type QuoteTable,
   fitById,
   gemById,
   isAppointmentCarat,
@@ -115,7 +116,7 @@ function stepsFor(pieceId: PieceId): StepDef[] {
           ]
         : [
             pieceStep,
-            { key: "setting", short: "Setting", name: "The Setting", title: "Choose the architecture", body: "The eighteen classic silhouettes — how the stone is held, presented, and lived with." },
+            { key: "setting", short: "Setting", name: "The Setting", title: "Choose the architecture", body: "The fourteen classic silhouettes — how the stone is held, presented, and lived with." },
             metalStep,
             { key: "gem", short: "Stone", name: "The Gemstone", title: "Set the heart of the piece", body: "From glacial diamonds to pigeon-blood rubies — every stone is hand-selected and certified." },
             { key: "cut", short: "Cut", name: "The Cut", title: "Shape the light", body: "The cut decides how your stone breathes light. Six signatures, six temperaments." },
@@ -303,7 +304,7 @@ function PendantIcon({ id }: { id: PendantStyleId }) {
   );
 }
 
-/** The eighteen classic silhouettes, drawn to echo the Maison's style chart. */
+/** The fourteen classic silhouettes, drawn to echo the Maison's style chart. */
 function SettingIcon({ id }: { id: RingConfig["setting"] }) {
   const stroke = "currentColor";
   const common = {
@@ -336,14 +337,6 @@ function SettingIcon({ id }: { id: RingConfig["setting"] }) {
         <>
           <path d="M18.9 19.1 A12 12 0 1 0 29.1 19.1" {...common} strokeWidth={3.2} />
           <path d="M24 12.6l3.7 3.7L24 21.4l-3.7-5.1z" {...common} />
-        </>
-      )}
-      {id === "three-stone" && (
-        <>
-          {band}
-          <path d="M24 7.5l5 5-5 6.8-5-6.8z" {...common} />
-          <path d="M13.8 11.5l3.4 3.4-3.4 4.6-3.4-4.6z" {...common} />
-          <path d="M34.2 11.5l3.4 3.4-3.4 4.6-3.4-4.6z" {...common} />
         </>
       )}
       {id === "pave" && (
@@ -447,23 +440,6 @@ function SettingIcon({ id }: { id: RingConfig["setting"] }) {
           {edgeDots(10.4, [-42, -28, -14, 14, 28, 42])}
         </>
       )}
-      {id === "trilogy" && (
-        <>
-          {band}
-          <circle cx="24" cy="13.5" r="5" {...common} />
-          <path d="M24 8.5v10M19 13.5h10" {...thin} opacity={0.7} />
-          <circle cx="14.5" cy="17" r="3" {...common} />
-          <circle cx="33.5" cy="17" r="3" {...common} />
-        </>
-      )}
-      {id === "toi-et-moi" && (
-        <>
-          {band}
-          <path d="M17.5 8.2c3 1.6 4.6 4.8 3.5 7.4-1 2.3-4 2.9-5.9 1.2-2-1.8-1.9-5.6 2.4-8.6z" {...common} />
-          <circle cx="29.5" cy="14.5" r="4.2" {...common} />
-          <path d="M29.5 10.3v8.4M25.3 14.5h8.4" {...thin} opacity={0.7} />
-        </>
-      )}
       {id === "bypass" && (
         <>
           <path d="M14.2 23.1 A12 12 0 1 0 33.8 23.1" {...common} />
@@ -478,15 +454,6 @@ function SettingIcon({ id }: { id: RingConfig["setting"] }) {
           <circle cx="24" cy="30" r="11.5" {...common} strokeWidth={4} />
           <circle cx="24" cy="18.5" r="3.4" {...common} strokeWidth={1.1} />
           {dot(24, 18.5, 1.6)}
-        </>
-      )}
-      {id === "stackable" && (
-        <>
-          <circle cx="24" cy="24" r="12" {...common} />
-          {Array.from({ length: 12 }).map((_, i) => {
-            const a = (i / 12) * Math.PI * 2;
-            return dot(24 + Math.cos(a) * 12, 24 + Math.sin(a) * 12, 1.1, i);
-          })}
         </>
       )}
       {id === "signet" && (
@@ -648,6 +615,11 @@ const PROMPT_AFTER_MS = 5000;
  * on somebody already interested rather than on a stranger at the door. That is
  * the only concession: there is no dismiss. The studio exists to earn these
  * details, and a form you can wave away is a form nobody fills in.
+ *
+ * It can be LEFT, though: "Back to main page" takes the visitor out of the
+ * atelier entirely (client request, Sept 2026). Leaving is not dismissing — the
+ * studio stays behind the form — so the details remain the price of designing
+ * without anyone being stranded on a page with no way off it.
  *
  * Fails open on OUR failures only: if the backend is unconfigured or the save
  * errors, the visitor carries on — we never punish them for our outage. Details
@@ -887,6 +859,18 @@ function LeadPrompt({ onCaptured }: { onCaptured: (requestId: string | null) => 
               {sending ? "Saving your commission…" : "Continue my commission"}
             </button>
 
+            {/* The one way out. The prompt still cannot be dismissed back into
+                the studio — that would make the details optional — but a
+                visitor who does not want to give them can leave the atelier
+                altogether rather than being stranded behind a form. Platinum
+                under sapphire: the house's secondary-under-primary pairing.
+                A link, not a button, so the focus trap above (which collects
+                [href]) keeps it inside the tab cycle, and navigating away
+                unmounts the prompt, whose cleanup restores page scrolling. */}
+            <Link href="/" className="btn-platinum mt-3 w-full">
+              Back to main page
+            </Link>
+
             {error && (
               <p className="mt-4 text-center font-body text-[0.78rem] tracking-wide text-rose-300" role="alert">
                 {error}
@@ -904,12 +888,11 @@ function LeadPrompt({ onCaptured }: { onCaptured: (requestId: string | null) => 
 }
 
 /**
- * `prices` is the back-office override table, fetched server-side in
- * app/atelier/page.tsx and handed down. It is optional so the component still
- * renders standalone; when absent, estimatePrice() uses the values compiled
- * into ring-options.ts.
+ * `quote` is the retail price list, built server-side in app/atelier/page.tsx
+ * from the back office's cost figures. It is the only pricing this component
+ * ever sees: costs and mark-ups never reach the browser.
  */
-export default function AtelierConfigurator({ prices }: { prices?: PriceTable }) {
+export default function AtelierConfigurator({ quote }: { quote: QuoteTable }) {
   const [step, setStep] = useState(0);
   const [config, setConfig] = useState<RingConfig>(DEFAULT_CONFIG);
   const [gen, setGen] = useState<GenState>({ status: "idle" });
@@ -922,6 +905,8 @@ export default function AtelierConfigurator({ prices }: { prices?: PriceTable })
   const [requestId, setRequestId] = useState<string | null>(null);
   const [promptOpen, setPromptOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const stepPanelRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   /* Mirrors `captured` for the guards below, which run inside event handlers
@@ -987,7 +972,7 @@ export default function AtelierConfigurator({ prices }: { prices?: PriceTable })
     return false;
   }, []);
 
-  const price = estimatePrice(config, prices);
+  const price = estimatePrice(config, quote);
   const piece = pieceById(config.piece);
   const STEPS = stepsFor(config.piece);
   const stepInfo = STEPS[Math.min(step, STEPS.length - 1)];
@@ -1018,6 +1003,17 @@ export default function AtelierConfigurator({ prices }: { prices?: PriceTable })
   const overCap = isAppointmentCarat(config);
   const fmtCaratPiece = config.piece === "bracelet" ? fmtCarat2 : fmtCarat;
 
+  /* What the visitor is quoted — the client's rules (Sept 2026):
+     - Nothing on the opening screen. A visitor lands on the choice between the
+       three pieces, and a figure beside that choice reads as the price of
+       whichever card happens to be highlighted before they have chosen at all.
+       The estimate appears once they are composing.
+     - Never for a bracelet. The house prices those by consultation.
+     `price` is still computed — the craft request stores its own estimate for
+     the concierge server-side — the visitor just is not shown one. */
+  const quoteHidden = stepKey === "piece";
+  const byConsultation = config.piece === "bracelet";
+
   /* step-change entrance animation */
   useLayoutEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -1029,6 +1025,31 @@ export default function AtelierConfigurator({ prices }: { prices?: PriceTable })
       );
     }, panelRef);
     return () => ctx.revert();
+  }, [step]);
+
+  /* Each new step opens at its heading. Continue sits at the foot of a step,
+     so without this the next step would open wherever the last one was left —
+     and on a narrow screen, with the stage pinned over the top of the options,
+     its heading and first choices would be hidden under the ring. Only when the
+     panel's top has actually been scrolled out of sight: a step that is already
+     in view is left where it is rather than nudged. The panel's scroll margin
+     (stage height below lg, the navbar at lg) decides where it comes to rest. */
+  const firstStep = useRef(true);
+  useEffect(() => {
+    if (firstStep.current) {
+      firstStep.current = false;
+      return;
+    }
+    const panel = stepPanelRef.current;
+    const stage = stageRef.current;
+    if (!panel || !stage) return;
+    const stacked = !window.matchMedia("(min-width: 1024px)").matches;
+    const navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-h")) || 0;
+    const restsAt = stacked ? stage.getBoundingClientRect().bottom : navH;
+    if (panel.getBoundingClientRect().top < restsAt - 1) {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      panel.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    }
   }, [step]);
 
   /* overlay fade-in + rotating loading copy */
@@ -1141,8 +1162,20 @@ export default function AtelierConfigurator({ prices }: { prices?: PriceTable })
 
   return (
     <div className="relative flex min-h-[calc(100svh_-_var(--nav-h))] w-full flex-col bg-[#0A1F3D] text-gold-50 lg:flex-row">
-      {/* ======================= LEFT · LIVE 3D STAGE ======================= */}
-      <div className="sticky top-[var(--nav-h)] z-10 h-[44svh] w-full shrink-0 lg:h-[calc(100svh_-_var(--nav-h))] lg:w-[52%] xl:w-[55%]">
+      {/* ======================= LEFT · LIVE 3D STAGE =======================
+          Below lg the stage stacks above the options, and it is pinned there
+          ABOVE them (z-30) so the options scroll up underneath it. It used to sit
+          beneath the panel (z-10 under z-20), which meant scrolling down to
+          choose a setting slid the options over the ring — on a phone you could
+          never watch the piece change as you chose, which is the whole point of
+          the studio. The opaque ground stops options showing through the
+          transparent WebGL canvas as they pass under it, and the hairline and
+          shadow mark where the pinned stage ends. At lg the two sit side by side
+          and none of this applies. */}
+      <div
+        ref={stageRef}
+        className="sticky top-[var(--nav-h)] z-30 h-[44svh] w-full shrink-0 border-b border-[#1D3D6B] bg-[#0A1F3D] shadow-[0_14px_30px_rgba(3,10,28,0.45)] lg:z-10 lg:h-[calc(100svh_-_var(--nav-h))] lg:w-[52%] lg:border-b-0 lg:bg-transparent lg:shadow-none xl:w-[55%]"
+      >
         {/* ambient stage dressing */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(46,91,224,0.10)_0%,transparent_55%)]" />
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(46,91,224,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(46,91,224,0.025)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(circle_at_center,black_30%,transparent_75%)]" />
@@ -1188,27 +1221,38 @@ export default function AtelierConfigurator({ prices }: { prices?: PriceTable })
               </>
             )}
           </div>
-          <div className="text-right">
-            <p className="font-sans text-[0.6rem] uppercase tracking-[0.3em] text-gold-100/50">
-              {overCap ? "Reserved for" : "Estimated from"}
-            </p>
-            <p className="mt-1 font-serif text-2xl font-light text-gold-200 md:text-3xl">
-              {overCap ? (
-                <span className="text-lg italic md:text-xl">Private appointment</span>
-              ) : (
-                <AnimatedNumber value={price} format={fmtPrice} />
-              )}
-            </p>
-          </div>
+          {!quoteHidden && (
+            <div className="text-right">
+              <p className="font-sans text-[0.6rem] uppercase tracking-[0.3em] text-gold-100/50">
+                {overCap ? "Reserved for" : byConsultation ? "Pricing" : "Estimated from"}
+              </p>
+              <p className="mt-1 font-serif text-2xl font-light text-gold-200 md:text-3xl">
+                {overCap ? (
+                  <span className="text-lg italic md:text-xl">Private appointment</span>
+                ) : byConsultation ? (
+                  <span className="text-lg italic md:text-xl">By consultation</span>
+                ) : (
+                  <AnimatedNumber value={price} format={fmtPrice} />
+                )}
+              </p>
+            </div>
+          )}
         </div>
 
-        <span className="pointer-events-none absolute bottom-1/2 left-1/2 -translate-x-1/2 translate-y-[135px] font-sans text-[0.55rem] uppercase tracking-[0.35em] text-white/25 lg:translate-y-[175px]">
+        {/* Below lg the stage is too short for a hint under the ring — measured
+            from the centre it landed on the composition readout. So it takes
+            the empty top-left corner there (the Bespoke Atelier badge holds the
+            top-right), and returns under the ring once the stage is full height. */}
+        <span className="pointer-events-none absolute left-5 top-5 font-sans text-[0.55rem] uppercase tracking-[0.35em] text-white/25 md:left-7 md:top-7 lg:bottom-1/2 lg:left-1/2 lg:top-auto lg:-translate-x-1/2 lg:translate-y-[175px]">
           drag to rotate
         </span>
       </div>
 
       {/* ======================= RIGHT · STEP PANEL ======================= */}
-      <div className="relative z-20 flex-1 border-t border-[#1D3D6B] bg-[#0D2347] lg:border-l lg:border-t-0">
+      <div
+        ref={stepPanelRef}
+        className="relative z-20 flex-1 scroll-mt-[calc(var(--nav-h)_+_44svh)] bg-[#0D2347] lg:scroll-mt-[var(--nav-h)] lg:border-l lg:border-[#1D3D6B]"
+      >
         <div className="mx-auto flex min-h-full max-w-2xl flex-col px-6 py-10 md:px-12 md:py-14">
           {/* progress rail */}
           <nav aria-label="Design steps" className="mb-10">
@@ -1285,7 +1329,7 @@ export default function AtelierConfigurator({ prices }: { prices?: PriceTable })
                 </div>
               )}
 
-              {/* --- Setting: the eighteen classic silhouettes (rings) --- */}
+              {/* --- Setting: the fourteen classic silhouettes (rings) --- */}
               {stepKey === "setting" && (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {SETTINGS.map((s) => (
@@ -1488,10 +1532,10 @@ export default function AtelierConfigurator({ prices }: { prices?: PriceTable })
                     ))}
                     <div data-step-item className="flex items-center justify-between px-5 py-4">
                       <dt className="font-sans text-[0.62rem] uppercase tracking-[0.25em] text-gold-400">
-                        {overCap ? "Private appointment" : "Estimated from"}
+                        {overCap ? "Private appointment" : byConsultation ? "Pricing" : "Estimated from"}
                       </dt>
                       <dd className="font-serif text-2xl font-light text-gold-200">
-                        {overCap ? (
+                        {overCap || byConsultation ? (
                           <span className="text-lg italic">By consultation</span>
                         ) : (
                           <AnimatedNumber value={price} format={fmtPrice} />
@@ -1521,7 +1565,7 @@ export default function AtelierConfigurator({ prices }: { prices?: PriceTable })
                     </div>
 
                     <a
-                      href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(config))}`}
+                      href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(config, quote))}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex w-full items-center justify-center gap-3 rounded-full border border-[#25D366]/40 bg-[#25D366]/[0.08] px-8 py-4 font-sans text-xs font-semibold uppercase tracking-[0.25em] text-[#4be084] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#25D366]/80 hover:bg-[#25D366]/15 hover:shadow-[0_6px_30px_rgba(37,211,102,0.2)] active:translate-y-0"
@@ -1671,7 +1715,7 @@ export default function AtelierConfigurator({ prices }: { prices?: PriceTable })
                   Render again
                 </button>
                 <a
-                  href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(config))}`}
+                  href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(config, quote))}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex w-full items-center justify-center gap-2 rounded-full border border-[#25D366]/40 px-7 py-3 text-center font-sans text-[0.62rem] font-semibold uppercase tracking-[0.25em] text-[#4be084] transition-colors hover:border-[#25D366]/80 hover:bg-[#25D366]/10 sm:w-auto"

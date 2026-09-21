@@ -34,10 +34,10 @@ import {
  *  - carat changes tween the scale of every carat-bearing stone group
  * Drag to orbit; idles with a slow ambient sway.
  *
- * The eighteen ring settings are assembled from shared archetypes declared on
+ * The fourteen ring settings are assembled from shared archetypes declared on
  * each setting's `three` block (head type, halo count, side stones, band
  * profile, accent treatment) so the chart silhouettes stay recognisable
- * without eighteen bespoke builders.
+ * without fourteen bespoke builders.
  *
  * Performance: DPR is capped (tighter on mobile) and steps down if frames run
  * long, geometry density drops on coarse-pointer devices, chains are a single
@@ -233,7 +233,7 @@ function makeHead(state: ThreeState, config: RingConfig, disposables: Disposable
     stone.position.y = -GIRDLE_Y;
     head.add(stone);
   } else {
-    head = new THREE.Group(); // "none" — toi-et-moi and stackable build elsewhere
+    head = new THREE.Group(); // "none" — no live setting uses it since toi-et-moi and stackable were retired; kept for the parts library
   }
 
   // --- halos: one or two circlets of micro-diamonds around the girdle ---

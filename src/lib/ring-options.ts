@@ -1,10 +1,13 @@
+import { roundQuote } from "@/lib/cost-formula";
+
 /**
  * Shared model for the Bespoke Atelier jewellery configurator.
  * Used by the interactive form, the WebGL preview and the
  * /api/generate-ring route so every surface agrees on the options.
  *
  * The ring settings mirror the Maison's "Classic Engagement Ring Styles"
- * chart (18 silhouettes) and the bracelets mirror the "5 Simple Sapphire
+ * chart (14 silhouettes — see the note above SETTINGS for the four the house
+ * retired) and the bracelets mirror the "5 Simple Sapphire
  * Bracelet Designs" chart — clients pick the standardised design, then
  * change metal, stone shape, stone colour and carat within atelier limits.
  */
@@ -13,7 +16,6 @@ export type PieceId = "ring" | "necklace" | "bracelet";
 export type SettingId =
   | "solitaire"
   | "tension"
-  | "three-stone"
   | "pave"
   | "channel"
   | "bezel"
@@ -23,13 +25,23 @@ export type SettingId =
   | "cathedral"
   | "vintage"
   | "milgrain"
-  | "trilogy"
-  | "toi-et-moi"
   | "bypass"
   | "flush"
-  | "stackable"
   | "signet";
-export type MetalId = "yellow-gold" | "rose-gold" | "white-gold" | "platinum";
+/**
+ * The unsuffixed gold ids are 18K and keep their original names, so every saved
+ * design and craft request still resolves; 14K was added (Sept 2026) because the
+ * client prices gold by karat and a karat nobody can choose is a price nobody
+ * pays.
+ */
+export type MetalId =
+  | "yellow-gold"
+  | "rose-gold"
+  | "white-gold"
+  | "yellow-gold-14k"
+  | "rose-gold-14k"
+  | "white-gold-14k"
+  | "platinum";
 export type GemId = "diamond" | "ruby" | "sapphire" | "emerald" | "amethyst" | "aquamarine";
 export type CutId = "round" | "princess" | "oval" | "emerald" | "marquise" | "pear";
 export type BraceletStyleId = "single" | "tennis" | "station" | "bar" | "mixed";
@@ -96,12 +108,6 @@ export interface PieceOption {
   noun: string;
   /** Where the hidden engraving lives — used in UI copy and the AI prompt. */
   engravingSpot: string;
-  /** Extra metalwork relative to a ring (chain, bangle) scales the metal cost. */
-  metalFactor: number;
-  /** Settings translate differently per piece (a pavé chain ≠ a pavé band). */
-  settingFactor: number;
-  /** Flat crafting premium for the larger piece. */
-  craftBase: number;
 }
 
 export const PIECES: PieceOption[] = [
@@ -112,9 +118,6 @@ export const PIECES: PieceOption[] = [
     description: "A crown for the hand — engagement, promise, or a gift to yourself.",
     noun: "ring",
     engravingSpot: "on the inner surface of the band",
-    metalFactor: 1,
-    settingFactor: 1,
-    craftBase: 0,
   },
   {
     id: "necklace",
@@ -123,9 +126,6 @@ export const PIECES: PieceOption[] = [
     description: "A pendant suspended on a fine chain — the stone rests at the heart.",
     noun: "necklace",
     engravingSpot: "on the small clasp tag of the chain",
-    metalFactor: 2.1,
-    settingFactor: 0.9,
-    craftBase: 450,
   },
   {
     id: "bracelet",
@@ -134,9 +134,6 @@ export const PIECES: PieceOption[] = [
     description: "Stone-set designs for the wrist — from one bezel-set gem to a full line of light.",
     noun: "bracelet",
     engravingSpot: "on the polished clasp tag",
-    metalFactor: 2.2,
-    settingFactor: 0, // bracelets price their stones through the design instead
-    craftBase: 650,
   },
 ];
 
@@ -155,8 +152,6 @@ export interface BraceletStyleOption {
   prompt: string;
   /** How many stones the design carries — drives pricing and the 3D preview. */
   stoneCount: number;
-  /** Heavier metalwork costs more. */
-  priceFactor: number;
 }
 
 export const BRACELET_STYLES: BraceletStyleOption[] = [
@@ -168,7 +163,6 @@ export const BRACELET_STYLES: BraceletStyleOption[] = [
     prompt:
       "a delicate fine cable-chain bracelet centred on a single {stones} held in a sleek round polished bezel setting",
     stoneCount: 1,
-    priceFactor: 1.0,
   },
   {
     id: "tennis",
@@ -178,7 +172,6 @@ export const BRACELET_STYLES: BraceletStyleOption[] = [
     prompt:
       "a classic tennis bracelet — one continuous flexible line of {stones}, each stone held in its own four-prong setting",
     stoneCount: 38,
-    priceFactor: 1.45,
   },
   {
     id: "station",
@@ -188,7 +181,6 @@ export const BRACELET_STYLES: BraceletStyleOption[] = [
     prompt:
       "a station bracelet — three bezel-set {stones} spaced along the front of a delicate fine cable chain",
     stoneCount: 3,
-    priceFactor: 1.05,
   },
   {
     id: "bar",
@@ -198,7 +190,6 @@ export const BRACELET_STYLES: BraceletStyleOption[] = [
     prompt:
       "a bar bracelet — a slim polished horizontal bar channel-set with a neat row of {stones}, suspended between two fine chains",
     stoneCount: 13,
-    priceFactor: 1.15,
   },
   {
     id: "mixed",
@@ -208,7 +199,6 @@ export const BRACELET_STYLES: BraceletStyleOption[] = [
     prompt:
       "a delicate fine chain bracelet with four spaced bezel-set stones alternating between marquise-cut stones lying lengthwise along the chain and {stones}",
     stoneCount: 4,
-    priceFactor: 1.1,
   },
 ];
 
@@ -226,7 +216,6 @@ export interface PendantStyleOption {
   prompt: string;
   /** The signature stone shape this design is drawn around. */
   cut: CutId;
-  basePrice: number;
 }
 
 export const PENDANT_STYLES: PendantStyleOption[] = [
@@ -238,7 +227,6 @@ export const PENDANT_STYLES: PendantStyleOption[] = [
     prompt:
       "a single round stone fully encircled by a smooth polished round bezel rim, hanging from a small round bail loop",
     cut: "round",
-    basePrice: 1400,
   },
   {
     id: "prong",
@@ -249,7 +237,6 @@ export const PENDANT_STYLES: PendantStyleOption[] = [
     prompt:
       "an upright oval stone held in a classic four-prong claw setting beneath a gracefully tapered bail",
     cut: "oval",
-    basePrice: 1500,
   },
   {
     id: "pear-drop",
@@ -259,7 +246,6 @@ export const PENDANT_STYLES: PendantStyleOption[] = [
     prompt:
       "a pear-shaped stone hanging point-up in a delicate three-prong setting beneath a slender tapered bail",
     cut: "pear",
-    basePrice: 1700,
   },
   {
     id: "bar",
@@ -270,7 +256,6 @@ export const PENDANT_STYLES: PendantStyleOption[] = [
     prompt:
       "an upright rectangular step-cut stone held in a minimal bar setting that grips only its top and bottom edges, beneath a sleek flat bail",
     cut: "emerald",
-    basePrice: 1600,
   },
   {
     id: "solitaire-drop",
@@ -281,7 +266,6 @@ export const PENDANT_STYLES: PendantStyleOption[] = [
     prompt:
       "a small round stone in a tiny three-prong martini setting hanging from an elongated drop bail",
     cut: "round",
-    basePrice: 1200,
   },
 ];
 
@@ -301,7 +285,15 @@ export const FITS: FitOption[] = [
   { id: "generous", label: "Generous", size: "19 cm", scale3d: 1.06 },
 ];
 
-/* ---------- ring settings (the eighteen classic silhouettes) ---------- */
+/* ---------- ring settings (the fourteen classic silhouettes) ----------
+
+   Three Stone, Trilogy, Toi et Moi and Stackable were retired from the atelier
+   at the client's request (Sept 2026). Nothing else has to move with them:
+   sanitizeConfig() lands any stale id on Solitaire, and getCraftingPrices()
+   skips the crafting_prices rows they leave behind, so no migration is needed.
+   The WebGL parts they were built from (flanking and graduated side stones, the
+   toi-et-moi pair, the thin eternity band) stay in BespokeJewel3D as a parts
+   library — delete them only if these styles are certain never to return. */
 
 /** How the WebGL preview assembles the silhouette from shared parts. */
 export interface SettingThree {
@@ -320,7 +312,6 @@ export interface SettingOption {
   description: string;
   /** Prompt fragment describing the setting for the AI render. */
   prompt: string;
-  basePrice: number;
   three: SettingThree;
 }
 
@@ -332,7 +323,6 @@ export const SETTINGS: SettingOption[] = [
     description: "A single center stone on a plain band.",
     prompt:
       "a classic solitaire setting — the single center stone raised on a plain polished band in a delicate prong crown",
-    basePrice: 1800,
     three: { head: "prong" },
   },
   {
@@ -342,18 +332,7 @@ export const SETTINGS: SettingOption[] = [
     description: "The stone is held securely by the tension of the band.",
     prompt:
       "a modern tension setting — the center stone gripped in mid-air between the two open ends of a sleek broad band, appearing to float with no prongs",
-    basePrice: 2400,
     three: { head: "tension", band: "open" },
-  },
-  {
-    id: "three-stone",
-    label: "Three Stone",
-    tagline: "Past · Present · Future",
-    description: "A center stone flanked by two side stones.",
-    prompt:
-      "a three-stone setting — the large center stone flanked closely by two smaller matching side stones on the shoulders of the band",
-    basePrice: 3200,
-    three: { head: "prong", sides: "flank" },
   },
   {
     id: "pave",
@@ -362,7 +341,6 @@ export const SETTINGS: SettingOption[] = [
     description: "Small diamonds set closely together along the band.",
     prompt:
       "a pavé setting — the shoulders of the band micro-set with a continuous run of tiny sparkling accent diamonds",
-    basePrice: 2400,
     three: { head: "prong", accents: ["pave"] },
   },
   {
@@ -372,7 +350,6 @@ export const SETTINGS: SettingOption[] = [
     description: "Diamonds are set into a channel within the band.",
     prompt:
       "a channel setting — a neat row of small accent diamonds recessed into a smooth channel cut within the band, flush between two polished metal rails",
-    basePrice: 2600,
     three: { head: "prong", accents: ["channel"] },
   },
   {
@@ -382,7 +359,6 @@ export const SETTINGS: SettingOption[] = [
     description: "The stone is surrounded by a metal rim.",
     prompt:
       "a bezel setting — the center stone fully encircled by a smooth polished metal rim on a clean band",
-    basePrice: 2000,
     three: { head: "bezel" },
   },
   {
@@ -392,7 +368,6 @@ export const SETTINGS: SettingOption[] = [
     description: "A circle of small diamonds surrounds the center stone.",
     prompt:
       "a halo setting — the center stone encircled by a sparkling ring of small pavé micro-diamonds",
-    basePrice: 2600,
     three: { head: "prong", halos: 1 },
   },
   {
@@ -402,7 +377,6 @@ export const SETTINGS: SettingOption[] = [
     description: "Two halos of diamonds surround the center stone.",
     prompt:
       "a double-halo setting — the center stone encircled by two concentric sparkling rings of small pavé micro-diamonds",
-    basePrice: 3400,
     three: { head: "prong", halos: 2 },
   },
   {
@@ -412,7 +386,6 @@ export const SETTINGS: SettingOption[] = [
     description: "The band splits into two as it approaches the stone.",
     prompt:
       "a split-shank setting — the band dividing into two slender parallel strands as it rises toward the center stone",
-    basePrice: 2500,
     three: { head: "prong", band: "split" },
   },
   {
@@ -422,7 +395,6 @@ export const SETTINGS: SettingOption[] = [
     description: "Arched supports elevate the center stone.",
     prompt:
       "a cathedral setting — graceful arched supports rising from the shoulders of the band to elevate the center stone high above it",
-    basePrice: 2300,
     three: { head: "prong", band: "cathedral" },
   },
   {
@@ -432,7 +404,6 @@ export const SETTINGS: SettingOption[] = [
     description: "Intricate detailing inspired by vintage eras.",
     prompt:
       "a vintage antique-style setting — intricate filigree scrollwork, milgrain-beaded edges and tiny accent diamonds in an ornate old-world design",
-    basePrice: 3000,
     three: { head: "prong", accents: ["milgrain", "pave"] },
   },
   {
@@ -442,28 +413,7 @@ export const SETTINGS: SettingOption[] = [
     description: "Tiny beaded edges add a vintage-inspired touch.",
     prompt:
       "a milgrain setting — the edges of the band finished with rows of tiny hand-beaded milgrain detail framing the center stone",
-    basePrice: 2200,
     three: { head: "prong", accents: ["milgrain"] },
-  },
-  {
-    id: "trilogy",
-    label: "Trilogy",
-    tagline: "Three stones, one story",
-    description: "Three stones, often in graduated sizes.",
-    prompt:
-      "a trilogy setting — three stones in graduated sizes, the largest at the center stepping down to two smaller companions",
-    basePrice: 3400,
-    three: { head: "prong", sides: "graduated" },
-  },
-  {
-    id: "toi-et-moi",
-    label: "Toi et Moi",
-    tagline: "You and me, entwined",
-    description: "Two stones set side-by-side, symbolizing two souls.",
-    prompt:
-      "a toi et moi setting — two stones nestled side by side, the chosen stone paired with a complementary companion of contrasting shape, symbolizing two souls",
-    basePrice: 3000,
-    three: { head: "none", sides: "toi" },
   },
   {
     id: "bypass",
@@ -472,7 +422,6 @@ export const SETTINGS: SettingOption[] = [
     description: "The band curves around the center stone.",
     prompt:
       "a bypass setting — the two ends of the band sweeping past each other in a graceful curve that wraps around the center stone",
-    basePrice: 2400,
     three: { head: "prong", band: "bypass" },
   },
   {
@@ -482,18 +431,7 @@ export const SETTINGS: SettingOption[] = [
     description: "The stone is set level with the band.",
     prompt:
       "a flush setting — the stone sunk into a broad domed band so its table sits perfectly level with the polished metal surface",
-    basePrice: 1900,
     three: { head: "flush", band: "wide" },
-  },
-  {
-    id: "stackable",
-    label: "Stackable",
-    tagline: "One of many, complete alone",
-    description: "Designed to be stacked with other bands.",
-    prompt:
-      "a slender stackable eternity band — a delicate thin band set all the way around with a continuous line of small stones, designed to be stacked",
-    basePrice: 1600,
-    three: { head: "none", band: "thin", accents: ["eternity"] },
   },
   {
     id: "signet",
@@ -502,7 +440,6 @@ export const SETTINGS: SettingOption[] = [
     description: "A classic, bold look with a bezel-set stone.",
     prompt:
       "a signet-style ring — a bold classic domed signet form with the stone bezel-set flush into its broad polished face",
-    basePrice: 2600,
     three: { head: "flush", band: "signet" },
   },
 ];
@@ -517,7 +454,6 @@ export interface MetalOption {
   /** CSS gradient for the swatch chip. */
   swatch: string;
   prompt: string;
-  price: number;
 }
 
 export const METALS: MetalOption[] = [
@@ -529,7 +465,6 @@ export const METALS: MetalOption[] = [
     hex3d: 0xe9c877,
     swatch: "radial-gradient(circle at 30% 30%, #f7e7b2, #e2b64f 55%, #9c6c1e)",
     prompt: "richly polished 18k yellow gold",
-    price: 950,
   },
   {
     id: "rose-gold",
@@ -539,7 +474,6 @@ export const METALS: MetalOption[] = [
     hex3d: 0xe8a586,
     swatch: "radial-gradient(circle at 30% 30%, #f9d3c0, #e2a084 55%, #a5583b)",
     prompt: "romantic polished 18k rose gold with a soft blush tone",
-    price: 950,
   },
   {
     id: "white-gold",
@@ -549,7 +483,36 @@ export const METALS: MetalOption[] = [
     hex3d: 0xe8e8e4,
     swatch: "radial-gradient(circle at 30% 30%, #ffffff, #d9dadb 55%, #8f9194)",
     prompt: "bright rhodium-finished 18k white gold",
-    price: 1050,
+  },
+  /* 14K carries less fine gold (58.5% against 75%), so its yellow and rose read
+     a touch paler — the swatches and 3D tints are pulled back to match rather
+     than reusing the 18K colours under a different label. */
+  {
+    id: "yellow-gold-14k",
+    label: "Yellow Gold",
+    karat: "14K",
+    description: "Classic warmth, a lighter touch",
+    hex3d: 0xe6cd8c,
+    swatch: "radial-gradient(circle at 30% 30%, #f8ecc4, #e0bf6a 55%, #a07a2e)",
+    prompt: "polished 14k yellow gold with a soft, slightly paler warmth",
+  },
+  {
+    id: "rose-gold-14k",
+    label: "Rose Gold",
+    karat: "14K",
+    description: "A deeper, coppery blush",
+    hex3d: 0xe3a48a,
+    swatch: "radial-gradient(circle at 30% 30%, #f7d0bd, #db9a7e 55%, #9c5238)",
+    prompt: "polished 14k rose gold with a coppery blush tone",
+  },
+  {
+    id: "white-gold-14k",
+    label: "White Gold",
+    karat: "14K",
+    description: "Crisp and contemporary",
+    hex3d: 0xe6e6e1,
+    swatch: "radial-gradient(circle at 30% 30%, #ffffff, #d6d7d6 55%, #8c8e90)",
+    prompt: "bright rhodium-finished 14k white gold",
   },
   {
     id: "platinum",
@@ -559,7 +522,6 @@ export const METALS: MetalOption[] = [
     hex3d: 0xd8dcde,
     swatch: "radial-gradient(circle at 30% 30%, #f4f7f8, #c9cfd3 55%, #7e868b)",
     prompt: "dense lustrous 950 platinum with a cool silvery finish",
-    price: 1600,
   },
 ];
 
@@ -571,7 +533,6 @@ export interface GemOption {
   hex3d: number;
   swatch: string;
   prompt: string;
-  pricePerCarat: number;
   /** Optical hints for the WebGL material. */
   transmission: number;
   ior: number;
@@ -586,7 +547,6 @@ export const GEMS: GemOption[] = [
     hex3d: 0xffffff,
     swatch: "radial-gradient(circle at 32% 28%, #ffffff, #dfe9f2 45%, #8fa8bd 80%, #5d7488)",
     prompt: "flawless D-color white diamond with intense fire and scintillation",
-    pricePerCarat: 6800,
     transmission: 0.97,
     ior: 2.417,
   },
@@ -598,7 +558,6 @@ export const GEMS: GemOption[] = [
     hex3d: 0xc2103a,
     swatch: "radial-gradient(circle at 32% 28%, #ff8fa5, #d81b4b 50%, #7a0322)",
     prompt: "vivid pigeon-blood red Burmese ruby",
-    pricePerCarat: 4200,
     transmission: 0.85,
     ior: 1.77,
   },
@@ -610,7 +569,6 @@ export const GEMS: GemOption[] = [
     hex3d: 0x1a4fc4,
     swatch: "radial-gradient(circle at 32% 28%, #8db4ff, #2450c7 50%, #0a1e63)",
     prompt: "deep royal-blue Ceylon sapphire",
-    pricePerCarat: 3600,
     transmission: 0.86,
     ior: 1.77,
   },
@@ -622,7 +580,6 @@ export const GEMS: GemOption[] = [
     hex3d: 0x0e8a5f,
     swatch: "radial-gradient(circle at 32% 28%, #7fe6bd, #12996a 50%, #04422c)",
     prompt: "lush vivid-green Colombian emerald",
-    pricePerCarat: 3900,
     transmission: 0.82,
     ior: 1.58,
   },
@@ -634,7 +591,6 @@ export const GEMS: GemOption[] = [
     hex3d: 0x8b4fd8,
     swatch: "radial-gradient(circle at 32% 28%, #d9b8ff, #9256d9 50%, #451f78)",
     prompt: "rich violet Uruguayan amethyst",
-    pricePerCarat: 900,
     transmission: 0.92,
     ior: 1.54,
   },
@@ -646,7 +602,6 @@ export const GEMS: GemOption[] = [
     hex3d: 0x7fd0e8,
     swatch: "radial-gradient(circle at 32% 28%, #dff8ff, #8fd4e8 50%, #35849e)",
     prompt: "luminous sea-blue Santa Maria aquamarine",
-    pricePerCarat: 1200,
     transmission: 0.94,
     ior: 1.57,
   },
@@ -720,96 +675,84 @@ export const fitById = (id: FitId) => FITS.find((f) => f.id === id) ?? FITS[1];
 
 /* ------------------------------------------------------------------ pricing */
 
-/** The families of options that carry an editable number. */
-export type PriceGroupId =
-  | "piece"
-  | "setting"
-  | "metal"
-  | "gem"
-  | "bracelet_style"
-  | "pendant_style";
-
 /**
- * Admin-set price overrides, keyed `group:optionId:field`.
- *
- * Every value below is optional. A missing key falls back to the number
- * compiled into the option arrays above, which is what keeps the atelier
- * quoting correctly when Supabase is unreachable and lets a newly added option
- * price itself from code until someone sets it in the back office.
+ * Every atelier design, by one key per piece: `ring:halo`, `necklace:bezel`,
+ * `bracelet:tennis`. Each design carries its own gold weight, labour and
+ * mark-up in the back office — the client's "four variables for each design".
  */
-export type PriceTable = Record<string, number>;
+export type DesignKey =
+  | `ring:${SettingId}`
+  | `necklace:${PendantStyleId}`
+  | `bracelet:${BraceletStyleId}`;
 
-export const priceKey = (
-  group: PriceGroupId,
-  optionId: string,
-  field: string,
-): string => `${group}:${optionId}:${field}`;
+/** Every design the atelier offers, in the order the back office lists them. */
+export const DESIGNS: { key: DesignKey; piece: PieceId; id: string; label: string; stoneCount: number }[] = [
+  ...SETTINGS.map((s) => ({
+    key: `ring:${s.id}` as DesignKey,
+    piece: "ring" as const,
+    id: s.id,
+    label: s.label,
+    stoneCount: 1,
+  })),
+  ...PENDANT_STYLES.map((p) => ({
+    key: `necklace:${p.id}` as DesignKey,
+    piece: "necklace" as const,
+    id: p.id,
+    label: p.label,
+    stoneCount: 1,
+  })),
+  ...BRACELET_STYLES.map((b) => ({
+    key: `bracelet:${b.id}` as DesignKey,
+    piece: "bracelet" as const,
+    id: b.id,
+    label: b.label,
+    stoneCount: b.stoneCount,
+  })),
+];
 
-/** Read one override, falling back to the compiled-in default. */
-export function priceOf(
-  table: PriceTable | undefined,
-  group: PriceGroupId,
-  optionId: string,
-  field: string,
-  fallback: number,
-): number {
-  const v = table?.[priceKey(group, optionId, field)];
-  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+/** The design a configuration is built on — which one depends on the piece. */
+export function designKeyFor(config: RingConfig): DesignKey {
+  if (config.piece === "bracelet") return `bracelet:${config.braceletStyle}`;
+  if (config.piece === "necklace") return `necklace:${config.pendantStyle}`;
+  return `ring:${config.setting}`;
+}
+
+/** Stones of the chosen carat the piece carries: 1, or the bracelet design's count. */
+export function stoneCountFor(config: RingConfig): number {
+  return config.piece === "bracelet" ? braceletStyleById(config.braceletStyle).stoneCount : 1;
 }
 
 /**
- * The indicative quotation.
+ * The atelier's price list, in RETAIL terms only — built on the server by
+ * lib/pricing.ts from the back office's cost figures, then handed to the
+ * browser.
  *
- * `prices` is the back-office override table (see /admin/crafting-prices).
- * It is optional so every existing caller keeps working untouched and so the
- * function stays pure — callers that have the table pass it, callers that don't
- * get the compiled-in defaults.
+ * The cost formula is linear in carat, so every quote is exactly
+ *   base[metal] + perCarat[gem] × carat × stones
+ * where, for one design,
+ *   base     = gold used × gold cost per gram × (1 + mark-up) + labour
+ *   perCarat = stone cost per carat × (1 + mark-up)
+ * That lets the slider quote live without a server round trip while the page
+ * carries no cost price, no gram weight and no mark-up — what a visitor can
+ * read out of the page source is a price list, never the house's margins.
  */
-export function estimatePrice(config: RingConfig, prices?: PriceTable): number {
-  const piece = pieceById(config.piece);
-  const craftBase = priceOf(prices, "piece", piece.id, "craftBase", piece.craftBase);
-  const metalFactor = priceOf(prices, "piece", piece.id, "metalFactor", piece.metalFactor);
-  const settingFactor = priceOf(prices, "piece", piece.id, "settingFactor", piece.settingFactor);
+export type QuoteTable = Partial<
+  Record<DesignKey, { base: Partial<Record<MetalId, number>>; perCarat: Partial<Record<GemId, number>> }>
+>;
 
-  const metal = metalById(config.metal);
-  const metalPrice = priceOf(prices, "metal", metal.id, "price", metal.price);
-
-  const gem = gemById(config.gem);
-  const perCarat = priceOf(prices, "gem", gem.id, "pricePerCarat", gem.pricePerCarat);
-
-  let raw: number;
-  if (config.piece === "bracelet") {
-    // Stone-set designs: metalwork by style, then every stone at its per-carat
-    // rate. Melee-sized multi-stone lines trade well below centre-stone rates.
-    const style = braceletStyleById(config.braceletStyle);
-    const priceFactor = priceOf(
-      prices,
-      "bracelet_style",
-      style.id,
-      "priceFactor",
-      style.priceFactor,
-    );
-    const multi = style.stoneCount > 1;
-    raw =
-      craftBase +
-      metalPrice * metalFactor * priceFactor +
-      perCarat * config.carat * style.stoneCount * (multi ? 0.35 : 1);
-  } else if (config.piece === "necklace") {
-    const pendant = pendantStyleById(config.pendantStyle);
-    raw =
-      craftBase +
-      priceOf(prices, "pendant_style", pendant.id, "basePrice", pendant.basePrice) +
-      metalPrice * metalFactor +
-      perCarat * config.carat;
-  } else {
-    const setting = settingById(config.setting);
-    raw =
-      craftBase +
-      priceOf(prices, "setting", setting.id, "basePrice", setting.basePrice) * settingFactor +
-      metalPrice * metalFactor +
-      perCarat * config.carat;
-  }
-  return Math.round(raw / 50) * 50;
+/**
+ * The indicative quotation for a configuration, rounded to the nearest $50.
+ *
+ * The table is required rather than optional on purpose: the old version fell
+ * back to compiled-in figures when a caller forgot to pass the admin's prices,
+ * which is how the WhatsApp message came to quote a different number from the
+ * screen. Now forgetting it is a type error.
+ */
+export function estimatePrice(config: RingConfig, quote: QuoteTable): number {
+  const design = quote[designKeyFor(config)];
+  const base = design?.base[config.metal] ?? 0;
+  const perCarat = design?.perCarat[config.gem] ?? 0;
+  return roundQuote(base + perCarat * config.carat * stoneCountFor(config));
 }
 
 /** Clamp/whitelist an arbitrary payload into a safe RingConfig (used server-side). */
@@ -855,7 +798,12 @@ export function sanitizeConfig(input: unknown): RingConfig {
 }
 
 /** Pre-filled WhatsApp enquiry text for the configured piece. */
-export function buildWhatsAppMessage(config: RingConfig): string {
+/**
+ * `quote` must be the same table the screen quoted from, so the figure a
+ * visitor sends is the figure they were just shown — the one number a customer
+ * will hold the house to. Required, so a caller cannot quietly omit it.
+ */
+export function buildWhatsAppMessage(config: RingConfig, quote: QuoteTable): string {
   const piece = pieceById(config.piece);
   const overCap = isAppointmentCarat(config);
   const rule = caratRuleFor(config.piece);
@@ -895,8 +843,11 @@ export function buildWhatsAppMessage(config: RingConfig): string {
         : `• Note: a centre stone above ${rule.cap} ct exceeds the standard collection — I understand this becomes a private appointment.`,
       `• Estimate: by private consultation at the atelier`,
     );
+  } else if (config.piece === "bracelet") {
+    // Bracelets are priced by consultation — no figure anywhere the visitor sees.
+    lines.push(`• Estimate: by consultation`);
   } else {
-    lines.push(`• Estimated from: $${estimatePrice(config).toLocaleString("en-US")}`);
+    lines.push(`• Estimated from: $${estimatePrice(config, quote).toLocaleString("en-US")}`);
   }
   return lines.join("\n");
 }

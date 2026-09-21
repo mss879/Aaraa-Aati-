@@ -1,121 +1,115 @@
 import { getCraftingPrices } from "@/lib/crafting-prices";
-import { PRICE_GROUPS, formatPriceValue } from "@/lib/pricing";
-import { priceKey } from "@/lib/ring-options";
-import { hasSupabaseEnv } from "@/lib/supabase/env";
+import {
+  PRICE_FIELD_BY_KEY,
+  priceKey,
+  type DesignVariable,
+  type PriceFieldDef,
+  type PriceGroupId,
+  type PriceTable,
+} from "@/lib/pricing";
+import { DESIGNS, GEMS, METALS, type PieceId } from "@/lib/ring-options";
+import { hasServiceRole } from "@/lib/supabase/env";
 import ConfigNotice from "@/app/admin/_components/ConfigNotice";
+import CraftingPricesEditor, {
+  type EditorField,
+  type EditorSection,
+} from "@/app/admin/_components/CraftingPricesEditor";
 import { saveCraftingPrices } from "@/app/admin/_actions";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Crafting Prices — every number the atelier's live quotation is built from.
+ * Crafting Prices — the client's cost sheet for every atelier design.
  *
- * One <form> across all six groups rather than a form per row: the client
- * repricing a collection changes a dozen numbers in one sitting, and a save
- * button per input would mean a dozen round trips. Each input is named with its
- * `group:option:field` key, which is exactly what the price table is keyed by,
- * so the action can validate against the same allowlist the quote engine reads.
- *
- * Inputs are uncontrolled and carry `defaultValue`, so this stays a Server
- * Component — no client bundle for a page that is a grid of number fields.
+ * A Server Component that gathers the figures and hands them to the editor.
+ * These are COST prices and mark-ups, which is why this is the only page that
+ * ever puts them in a browser: it sits behind the admin sign-in, while the
+ * atelier is handed nothing but finished retail prices (lib/pricing.ts).
  */
+
+const SECTION_COPY: Record<PieceId, { title: string; blurb: string }> = {
+  ring: {
+    title: "Ring designs",
+    blurb:
+      "Gold used, labour and mark-up for each ring design. For halo, pavé and other designs set with small accent stones, include those stones in the labour figure.",
+  },
+  necklace: {
+    title: "Pendant designs",
+    blurb: "The gold used includes the chain.",
+  },
+  bracelet: {
+    title: "Bracelet designs",
+    blurb:
+      "The gold used is the whole bracelet, and every stone is charged at the full per-carat price. Customers are never shown a bracelet price — bracelets are priced by consultation — but this estimate is recorded on each commission for the concierge.",
+  },
+};
+
+/** "18K Yellow Gold", "Platinum 950": karat first only when it is a karat. */
+const metalName = (m: (typeof METALS)[number]) =>
+  /^\d+K$/.test(m.karat) ? `${m.karat} ${m.label}` : `${m.label} ${m.karat}`;
+
 export default async function CraftingPricesPage() {
-  const saved = await getCraftingPrices();
+  const saved: PriceTable = await getCraftingPrices();
+
+  const field = (group: PriceGroupId, optionId: string, name: string): EditorField => {
+    const key = priceKey(group, optionId, name);
+    const def: PriceFieldDef = PRICE_FIELD_BY_KEY.get(key)!;
+    return {
+      key,
+      defaultValue: def.defaultValue,
+      saved: saved[key] ?? null,
+      min: def.min,
+      max: def.max,
+      step: def.step,
+    };
+  };
+  const designField = (designKey: string, v: DesignVariable) => field("design", designKey, v);
+
+  const sections: EditorSection[] = (["ring", "necklace", "bracelet"] as const).map((piece) => ({
+    piece,
+    ...SECTION_COPY[piece],
+    designs: DESIGNS.filter((d) => d.piece === piece).map((d) => ({
+      key: d.key,
+      label: d.label,
+      stoneCount: d.stoneCount,
+      grams: designField(d.key, "metalGrams"),
+      labour: designField(d.key, "labour"),
+      markup: designField(d.key, "markupPct"),
+    })),
+  }));
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-6xl">
       <header className="mb-8">
         <h1 className="font-serif text-3xl font-light tracking-wide text-[var(--adm-ink)]">
           Crafting Prices
         </h1>
         <p className="mt-1.5 max-w-2xl font-body text-sm leading-relaxed text-[var(--adm-ink-soft)]">
-          The figures behind every quotation in the bespoke atelier. Change one here and the
-          next visitor is quoted the new price — no deploy. Leave a field empty to fall back
-          to the built-in default shown beneath it.
+          The figures behind every quotation in the bespoke atelier, worked out the same way as
+          your cost sheet. Change one here and the next visitor is quoted the new price — no
+          deploy.
         </p>
       </header>
 
-      {!hasSupabaseEnv && <ConfigNotice />}
+      {/* Reads now use the service role (costs are no longer public), so that is
+          the key whose absence means these are only the starting values. */}
+      {!hasServiceRole && <ConfigNotice />}
 
-      <form action={saveCraftingPrices}>
-        <div className="space-y-10">
-          {PRICE_GROUPS.map((group) => (
-            <section key={group.id} className="adm-card p-6">
-              <div className="mb-5">
-                <h2 className="font-serif text-xl font-light tracking-wide text-[var(--adm-ink)]">
-                  {group.label}
-                </h2>
-                <p className="mt-1.5 max-w-2xl font-body text-[0.82rem] leading-relaxed text-[var(--adm-muted)]">
-                  {group.blurb}
-                </p>
-              </div>
-
-              <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-                {group.fields.map((def) => {
-                  const key = priceKey(def.group, def.optionId, def.field);
-                  const current = saved[key];
-                  const isDefault = current === undefined;
-                  return (
-                    <div key={key}>
-                      <label htmlFor={key} className="adm-label">
-                        {def.optionLabel}
-                        {group.fields.filter((f) => f.optionId === def.optionId).length > 1 && (
-                          <span className="text-[var(--adm-muted)]"> · {def.fieldLabel}</span>
-                        )}
-                      </label>
-                      {def.optionHint && (
-                        <p className="mt-0.5 font-body text-[0.72rem] leading-snug text-[var(--adm-muted)]">
-                          {def.optionHint}
-                        </p>
-                      )}
-                      <div className="relative mt-1.5">
-                        {def.kind === "currency" && (
-                          <span
-                            aria-hidden
-                            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-body text-sm text-[var(--adm-muted)]"
-                          >
-                            $
-                          </span>
-                        )}
-                        <input
-                          id={key}
-                          name={key}
-                          type="number"
-                          min="0"
-                          // Currency is quoted in whole dollars; factors are fine
-                          // multipliers where 0.05 is a meaningful difference.
-                          step={def.kind === "currency" ? "1" : "0.01"}
-                          inputMode="decimal"
-                          defaultValue={current ?? def.defaultValue}
-                          className={`adm-field ${def.kind === "currency" ? "pl-7" : ""}`}
-                        />
-                      </div>
-                      <p className="mt-1 font-body text-[0.7rem] text-[var(--adm-muted)]">
-                        Default {formatPriceValue(def.defaultValue, def.kind)}
-                        {!isDefault && current !== def.defaultValue && (
-                          <span className="text-[var(--adm-ink-soft)]"> · edited</span>
-                        )}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          ))}
-        </div>
-
-        {/* The grid is long; the save control follows the client down it. */}
-        <div className="sticky bottom-0 z-10 mt-8 border-t border-[var(--adm-line)] bg-[var(--adm-canvas)]/95 py-4 backdrop-blur">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <p className="font-body text-[0.8rem] text-[var(--adm-muted)]">
-              Quotes are rounded to the nearest $50 when shown to the client.
-            </p>
-            <button type="submit" className="adm-btn">
-              Save prices
-            </button>
-          </div>
-        </div>
-      </form>
+      <CraftingPricesEditor
+        metals={METALS.map((m) => ({
+          id: m.id,
+          name: metalName(m),
+          field: field("metal", m.id, "costPerGram"),
+        }))}
+        gems={GEMS.map((g) => ({
+          id: g.id,
+          name: g.label,
+          hint: g.origin,
+          field: field("gem", g.id, "costPerCarat"),
+        }))}
+        sections={sections}
+        action={saveCraftingPrices}
+      />
     </div>
   );
 }
