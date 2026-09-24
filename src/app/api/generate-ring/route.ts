@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
 import { buildJewelPrompt, estimatePrice, sanitizeConfig } from "@/lib/ring-options";
 import { getQuoteTable } from "@/lib/crafting-prices";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -8,7 +7,8 @@ import { getClientIp, hashIp, isSameOrigin, rateLimit } from "@/lib/server/secur
 
 /**
  * POST /api/generate-ring
- * Renders the configured piece as a photoreal product shot via Gemini, then —
+ * Renders the configured piece as a photoreal product shot via OpenAI's image
+ * model, then —
  * when the Supabase backend is configured — persists the render (image in the
  * private ring-generations bucket + a generations row linked to the open craft
  * request) and enforces anti-abuse controls.
@@ -25,16 +25,16 @@ import { getClientIp, hashIp, isSameOrigin, rateLimit } from "@/lib/server/secur
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
+const IMAGE_MODEL = process.env.OPENAI_IMAGE_MODEL || "gpt-image-2.5-flare";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function POST(req: Request) {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
       {
         error:
-          "The AI atelier is not configured yet — add your GEMINI_API_KEY to .env.local and restart the server.",
+          "The AI atelier is not configured yet — add your OPENAI_API_KEY to .env.local and restart the server.",
       },
       { status: 503 },
     );
@@ -86,20 +86,41 @@ export async function POST(req: Request) {
   }
 
   // ---- Generate ------------------------------------------------------------
-  let mime = "image/png";
+  const mime = "image/png";
   let base64: string;
   try {
-    const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({
-      model: IMAGE_MODEL,
-      contents: prompt,
+    const res = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: IMAGE_MODEL,
+        prompt,
+        size: "1024x1024",
+        quality: "medium",
+        output_format: "png",
+      }),
     });
+    const data = (await res.json().catch(() => ({}))) as {
+      data?: { b64_json?: string }[];
+      error?: { message?: string; code?: string };
+    };
 
-    const parts = response.candidates?.[0]?.content?.parts ?? [];
-    const imagePart = parts.find((p) => p.inlineData?.data);
+    if (!res.ok) {
+      const message = data.error?.message || `HTTP ${res.status}`;
+      console.error("[generate-ring]", res.status, data.error?.code, message);
+      const friendly =
+        res.status === 401 || res.status === 403
+          ? "The OpenAI API key was rejected — double-check OPENAI_API_KEY."
+          : res.status === 429
+            ? "The AI atelier is briefly over capacity. Please try again in a moment."
+            : data.error?.code === "moderation_blocked"
+              ? "The atelier couldn't render this combination. Try adjusting the design and render again."
+              : "The render failed unexpectedly. Please try again.";
+      return NextResponse.json({ error: friendly }, { status: 502 });
+    }
 
-    if (!imagePart?.inlineData?.data) {
-      const text = parts.map((p) => p.text).filter(Boolean).join(" ").slice(0, 300);
+    const b64 = data.data?.[0]?.b64_json;
+    if (!b64) {
       if (backend && supabase) {
         await recordGeneration(supabase, {
           requestId,
@@ -113,22 +134,18 @@ export async function POST(req: Request) {
         });
       }
       return NextResponse.json(
-        { error: text || "The model returned no image. Please try again." },
+        { error: "The model returned no image. Please try again." },
         { status: 502 },
       );
     }
 
-    mime = imagePart.inlineData.mimeType || "image/png";
-    base64 = imagePart.inlineData.data;
+    base64 = b64;
   } catch (err) {
     console.error("[generate-ring]", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    const friendly = /api key|permission|401|403/i.test(message)
-      ? "The Gemini API key was rejected — double-check GEMINI_API_KEY in .env.local."
-      : /quota|429|resource.?exhausted/i.test(message)
-        ? "The AI atelier is briefly over capacity (rate limit). Please try again in a moment."
-        : "The render failed unexpectedly. Please try again.";
-    return NextResponse.json({ error: friendly }, { status: 502 });
+    return NextResponse.json(
+      { error: "The render failed unexpectedly. Please try again." },
+      { status: 502 },
+    );
   }
 
   // ---- Persist (best-effort; never blocks the visitor's reveal) ------------

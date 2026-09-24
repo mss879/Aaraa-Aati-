@@ -147,7 +147,8 @@ export interface BraceletStyleOption {
   description: string;
   /**
    * Prompt fragment for the AI render. "{stones}" is replaced with the
-   * client's per-stone carat, cut and gem (e.g. "0.5 carat round Ceylon sapphires").
+   * client's per-stone carat, cut and gem (e.g. "0.5 carat round Ceylon sapphires");
+   * "{alt}" (Mixed Shape only) with the second shape in the same gem.
    */
   prompt: string;
   /** How many stones the design carries — drives pricing and the 3D preview. */
@@ -197,7 +198,7 @@ export const BRACELET_STYLES: BraceletStyleOption[] = [
     tagline: "Two shapes, one rhythm",
     description: "Alternating round and marquise stones for a subtle touch of interest.",
     prompt:
-      "a delicate fine chain bracelet with four spaced bezel-set stones alternating between marquise-cut stones lying lengthwise along the chain and {stones}",
+      "a delicate fine chain bracelet with four spaced bezel-set stones alternating between {alt} lying lengthwise along the chain and {stones}",
     stoneCount: 4,
   },
 ];
@@ -876,7 +877,10 @@ export function buildJewelPrompt(config: RingConfig): string {
       `${(() => {
         const style = braceletStyleById(config.braceletStyle);
         const stones = `${config.carat.toFixed(2)} carat ${cut.prompt} ${gem.prompt}${style.stoneCount === 1 ? "" : " stones"}`;
-        return style.prompt.replace("{stones}", stones);
+        // Mixed Shape pairs the client's cut with a second shape in the same
+        // gem — marquise, or round when marquise is the chosen cut (as in 3D).
+        const alt = `${cutById(config.cut === "marquise" ? "round" : "marquise").prompt} ${gem.prompt} stones`;
+        return style.prompt.replace("{stones}", stones).replace("{alt}", alt);
       })()}.`,
       `All the metalwork — chain, settings and clasp — is crafted from ${metal.prompt}.`,
     ],
